@@ -1,19 +1,21 @@
 import { Text, View, TextInput,TouchableOpacity, Alert  } from 'react-native'
 import { useState } from 'react'
 import { router } from 'expo-router'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/app/FirebaceConfig/firebaseConfig'
 
 export default function Login(){
 
     const [email,setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    const handleLogin = () => {
-        if (email === "vimu@gmail.com" && password  === "123")
-        {
+    const handleLogin = async () => {
+        try {
+            const userCrediatials = await signInWithEmailAndPassword(auth, email, password)
+            console.log('Login success..!')
             router.replace('/Home/home')
-        }
-        else{
-            Alert.alert("Error" ,'Check credinatials again')
+        } catch (error) {
+            console.log('Login failed..!')
         }
     }
 
