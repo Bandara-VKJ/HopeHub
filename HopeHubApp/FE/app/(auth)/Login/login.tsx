@@ -1,8 +1,10 @@
-import { Text, View, TextInput,TouchableOpacity, Alert  } from 'react-native'
+import { Text, View, TextInput,TouchableOpacity, Alert,ImageBackground,Image } from 'react-native'
 import { useState } from 'react'
 import { router } from 'expo-router'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/app/FirebaceConfig/firebaseConfig'
+import { loginStyles } from './loginStyles'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function Login(){
 
@@ -20,12 +22,24 @@ export default function Login(){
     }
 
   return (
-    <View>
-        <Text>Login</Text>
-         <TextInput placeholder='Enter Email' value={email} onChangeText={setEmail} />
-         <TextInput placeholder='Enter Password' value={password} onChangeText={setPassword} />
-         <TouchableOpacity onPress={handleLogin}><Text>Login</Text></TouchableOpacity>
-         
+
+    <View style= {loginStyles.container}>
+        <Text style={loginStyles.name}>HopeHub</Text>
+        <View style= {loginStyles.innerContainer}>
+        <Image source={require('../../../assets/images/logo.png')} style={loginStyles.logo} resizeMode="contain"/>
+         <Text style= {loginStyles.title}>Login</Text>
+        <View style={loginStyles.inputWrapper}>
+            <Ionicons name="mail-outline"  size={20}  color="gray" style={loginStyles.icon}/>
+            <TextInput placeholder="Enter Email" value={email} onChangeText={setEmail} style={loginStyles.input} />
+        </View>
+        <View style={loginStyles.inputWrapper}>
+            <Ionicons name='lock-closed-outline' size={20} color='gray' style={loginStyles.icon}/>
+            <TextInput placeholder='Enter Password' value={password} onChangeText={setPassword} style= {loginStyles.input}/>
+        </View>
+         <TouchableOpacity onPress={handleLogin} style= {loginStyles.button}><Text style= {loginStyles.buttonText}>Login</Text></TouchableOpacity>
+         <Text style={loginStyles.last}>Don’t have an account ?<Text style={loginStyles.createAccount}>Create now</Text></Text>
+        </View>
     </View>
+    
   )
 }
