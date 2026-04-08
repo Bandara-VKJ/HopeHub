@@ -1,19 +1,50 @@
 //rnfes
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, Image } from 'react-native'
-import React, { useState } from 'react'
+import { Text, View, TouchableOpacity, TextInput, Image, ActivityIndicator } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import { profileStyles } from './profileStyles'
 import { signOut } from 'firebase/auth'
 import { router } from 'expo-router'
 import * as ImagePicker from 'expo-image-picker'
 import { storage, db, auth } from '@/app/FirebaceConfig/firebaseConfig';
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { onAuthStateChanged, User } from 'firebase/auth';
+
 
 
 export default function Profile()  {
   const [picture, setPicture] = useState<string | null>(null);
   const [first, setFirst] = useState('');
   const [last, setLast] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth,async (user:User | null) => {
+      if (!user){
+        setLoading(false);
+        return;
+      } 
+
+      try {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          const data = userDocSnap.data();
+          setFirst(data.firstName || '');
+          setLast(data.lastName || '');
+          setPicture(data.profilePic || null);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    return unsubscribe
+  },[]);
 
     const handleLogout = async () =>{
         try {
@@ -46,44 +77,70 @@ export default function Profile()  {
       }
   };
   const handleSaveProfile = async () => {
-  if (!auth.currentUser) return alert("No user logged in!");
+    if (!auth.currentUser) return alert("No user logged in!");
 
-  try {
-    let imageUrl = picture; // Default to current URI
+    try {
+      let imageUrl = picture; // Default to current URI
 
-    // Upload Image to Firebase Storage if it's a new local URI
-    if (picture && picture.startsWith('file://')) {
-      const response = await fetch(picture);
-      const blob = await response.blob();
-      const storageRef = ref(storage, `profiles/${auth.currentUser.uid}`);
-      
-      await uploadBytes(storageRef, blob);
-      imageUrl = await getDownloadURL(storageRef);
-      console.log("Image uploaded!");
+      // Upload Image to Firebase Storage if it's a new local URI
+      if (picture && (picture.startsWith('file://') || picture.startsWith('blob:'))) {
+        const response = await fetch(picture);
+        const blob = await response.blob();
+
+        const storageRef = ref(storage, `profiles/${auth.currentUser.uid}`);
+
+        await uploadBytes(storageRef, blob);
+        const imageUrl = await getDownloadURL(storageRef);
+
+        setPicture(imageUrl);
+        console.log("Uploaded URL:", imageUrl);
+
+        // Save correct URL
+        await setDoc(doc(db, "users", auth.currentUser.uid), {
+          firstName: first,
+          lastName: last,
+          profilePic: imageUrl,
+          updatedAt: new Date()
+        }, { merge: true });
+
+        alert("Profile saved successfully!");
+        return;
+      }
+
+      // Save Name and Image URL to Firestore
+      await setDoc(doc(db, "users", auth.currentUser.uid), {
+        firstName: first,
+        lastName: last,
+        profilePic: imageUrl,
+        updatedAt: new Date()
+      },{ merge: true });
+
+      alert("Profile saved successfully!");
+    } catch (error) {
+      console.error("Save Error:", error);
+      alert("Failed to save profile.");
     }
-
-    // Save Name and Image URL to Firestore
-    await setDoc(doc(db, "users", auth.currentUser.uid), {
-      firstName: first,
-      lastName: last,
-      profilePic: imageUrl,
-      updatedAt: new Date()
-    });
-
-    alert("Profile saved successfully!");
-  } catch (error) {
-    console.error("Save Error:", error);
-    alert("Failed to save profile.");
-  }
 };
+if (loading) {
+    return (
+      <View style={[profileStyles.container, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="#007bff" />
+        <Text style={{ marginTop: 10 }}>Loading Profile...</Text>
+      </View>
+    );
+  }
   return (
     <View style={profileStyles.container}>
       <TouchableOpacity onPress={pickImage} style={ profileStyles.imagecontaine }>
         {picture ? (
           <Image 
-            source={{ uri: picture }} 
-            style={ profileStyles.profilePic } 
-          />
+        source={{ uri: picture || 'https://via.placeholder.com/150' }} 
+        style={profileStyles.profilePic}
+        onError={() => {
+          console.log("Invalid image, resetting...");
+          setPicture(null);
+        }}
+      />
         ) : (
           <View style={{ 
             width: 120, 
