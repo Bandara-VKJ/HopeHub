@@ -4,6 +4,7 @@ export default function SupportScreen() {
   return (
     <View>
       <Text>Support🤝</Text>
+      dd
     </View>
   );
 }
