@@ -3,6 +3,9 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+
+//Email - test@gmail.com
+//Password  - 123456
 const firebaseConfig = {
     apiKey: "AIzaSyDzO5XS8aYZ7P5Ujo3Bq3RQCS3aAbrsNHI",
     authDomain: "hopehubapp-b6b6b.firebaseapp.com",
