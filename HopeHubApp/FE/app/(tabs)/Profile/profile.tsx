@@ -68,7 +68,7 @@ export default function Profile()  {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 1,
+        quality: 0.3,
       });
 
       if (!result.canceled) {
@@ -76,50 +76,42 @@ export default function Profile()  {
         setPicture(result.assets[0].uri);
       }
   };
-  const handleSaveProfile = async () => {
-    if (!auth.currentUser) return alert("No user logged in!");
+const handleSaveProfile = async () => {
+  if (!auth.currentUser) return alert("No user logged in!");
+  setSaving(true);
 
-    try {
-      let imageUrl = picture; // Default to current URI
+  try {
+    let imageData = picture;
 
-      // Upload Image to Firebase Storage if it's a new local URI
-      if (picture && (picture.startsWith('file://') || picture.startsWith('blob:'))) {
-        const response = await fetch(picture);
-        const blob = await response.blob();
-
-        const storageRef = ref(storage, `profiles/${auth.currentUser.uid}`);
-
-        await uploadBytes(storageRef, blob);
-        const imageUrl = await getDownloadURL(storageRef);
-
-        setPicture(imageUrl);
-        console.log("Uploaded URL:", imageUrl);
-
-        // Save correct URL
-        await setDoc(doc(db, "users", auth.currentUser.uid), {
-          firstName: first,
-          lastName: last,
-          profilePic: imageUrl,
-          updatedAt: new Date()
-        }, { merge: true });
-
-        alert("Profile saved successfully!");
-        return;
-      }
-
-      // Save Name and Image URL to Firestore
-      await setDoc(doc(db, "users", auth.currentUser.uid), {
-        firstName: first,
-        lastName: last,
-        profilePic: imageUrl,
-        updatedAt: new Date()
-      },{ merge: true });
-
-      alert("Profile saved successfully!");
-    } catch (error) {
-      console.error("Save Error:", error);
-      alert("Failed to save profile.");
+    // Convert local image to base64
+    if (picture && (picture.startsWith('file://') || picture.startsWith('blob:')))  {
+      const response = await fetch(picture);
+      const blob = await response.blob();
+      
+     imageData = await new Promise<string | null>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
     }
+
+    // Save to Firestore (no Storage needed!)
+    await setDoc(doc(db, "users", auth.currentUser.uid), {
+      firstName: first,
+      lastName: last,
+      profilePic: imageData,
+      updatedAt: new Date()
+    }, { merge: true });
+
+    setPicture(imageData);
+    alert("Profile saved successfully!");
+
+  } catch (error) {
+    console.error("Save Error:", error);
+    alert("Failed to save profile.");
+  } finally {
+    setSaving(false);
+  }
 };
 if (loading) {
     return (
