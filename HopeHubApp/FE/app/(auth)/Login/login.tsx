@@ -10,6 +10,7 @@ export default function Login(){
 
     const [email,setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [showpassword,setshowpassword] = useState(false)
 
     const handleLogin = async () => {
         try {
@@ -22,7 +23,6 @@ export default function Login(){
     }
 
   return (
-
     <View style= {loginStyles.container}>
         <Text style={loginStyles.name}>HopeHub</Text>
         <View style= {loginStyles.innerContainer}>
@@ -30,14 +30,15 @@ export default function Login(){
          <Text style= {loginStyles.title}>Login</Text>
         <View style={loginStyles.inputWrapper}>
             <Ionicons name="mail-outline"  size={20}  color="gray" style={loginStyles.icon}/>
-            <TextInput placeholder="Enter Email" value={email} onChangeText={setEmail} style={loginStyles.input} />
+            <TextInput placeholder="Enter Email" value={email} onChangeText={setEmail} style={[loginStyles.input as any]} />
         </View>
         <View style={loginStyles.inputWrapper}>
             <Ionicons name='lock-closed-outline' size={20} color='gray' style={loginStyles.icon}/>
-            <TextInput placeholder='Enter Password' value={password} onChangeText={setPassword} style= {loginStyles.input}/>
+            <TextInput secureTextEntry={ !showpassword } placeholder='Enter Password' value={password} onChangeText={setPassword} style= {loginStyles.input as any}/>
+            <TouchableOpacity onPress={() => setshowpassword(!showpassword)}><Ionicons  name={showpassword ? "eye-off-outline" : "eye-outline" } size={20} color="gray"/></TouchableOpacity>
         </View>
          <TouchableOpacity onPress={handleLogin} style= {loginStyles.button}><Text style= {loginStyles.buttonText}>Login</Text></TouchableOpacity>
-         <Text style={loginStyles.last}>Don’t have an account ?<Text style={loginStyles.createAccount}>Create now</Text></Text>
+         <Text  style={loginStyles.last}>Don’t have an account ?<Text style={loginStyles.createAccount}>Create now</Text></Text>
         </View>
     </View>
     
