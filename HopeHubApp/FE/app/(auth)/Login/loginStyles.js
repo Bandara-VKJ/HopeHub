@@ -4,13 +4,10 @@ import { StyleSheet } from 'react-native';
 export const loginStyles = StyleSheet.create({
   name:{
     fontFamily:'Kavoon',
-    fontSize:64,
+    fontSize:40,
     color:'#2CA6A4',
     fontWeight: 'bold',
     alignSelf:'center',
-    marginBottom: 10,
-    marginTop:5
-
   },
   container:{
    flex: 1,
@@ -20,14 +17,13 @@ export const loginStyles = StyleSheet.create({
   logo: {
   width: 250,
   height: 250,
-  alignSelf: 'center',
-  marginBottom: 20,
+  alignSelf: 'center'
 },
   innerContainer: {
   width: '90%',
   alignSelf: 'center',
   justifyContent: 'center',
-  padding: 20,
+  padding: 10,
   backgroundColor: '#ffffff00', 
   borderRadius: 15,
 },
@@ -36,10 +32,11 @@ export const loginStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2CA6A4',
     textAlign: 'center',
-    marginBottom: 30,
-  },inputWrapper: {
+    marginBottom:10,
+  },
+  inputWrapper: {
   position: 'relative',
-  marginBottom: 15,
+  marginBottom: 10,
 },
 
 icon: {
@@ -51,12 +48,21 @@ icon: {
 },
 
 input: {
-  backgroundColor: '#fff',
-  padding: 15,
+  flex: 1,   
+  paddingVertical: 10,
   paddingLeft: 45,
-  borderRadius: 10,
+  padding: 15,
+  outlineStyle: 'none',
+  borderWidth: 0
+},
+inputWrapper: {
+  marginTop: 10,
+  flexDirection: 'row',
+  alignItems: 'center',
   borderWidth: 1,
-  borderColor: '#ddd',
+  borderColor: '#ccc',
+  borderRadius: 10,
+  paddingHorizontal: 10,
 },
   button: {
     backgroundColor: '#2CA6A4',
