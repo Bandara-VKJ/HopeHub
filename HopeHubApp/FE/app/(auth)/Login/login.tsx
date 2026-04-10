@@ -1,4 +1,4 @@
-import { Text, View, TextInput,TouchableOpacity, Alert,ImageBackground,Image } from 'react-native'
+import { Text, View, TextInput,TouchableOpacity,Image } from 'react-native'
 import { useState } from 'react'
 import { router } from 'expo-router'
 import { signInWithEmailAndPassword } from 'firebase/auth'
