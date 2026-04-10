@@ -17,6 +17,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [fontLoard] = useFonts({
     Kavoon: require('../assets/fonts/Kavoon-Regular.ttf'),
+    Koulen: require('../assets/fonts/Koulen-Regular.ttf')
   });
 
    const [user,setUser] = useState<User | null>(null);

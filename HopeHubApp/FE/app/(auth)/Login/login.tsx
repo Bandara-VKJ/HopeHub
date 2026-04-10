@@ -38,7 +38,7 @@ export default function Login(){
             <TouchableOpacity onPress={() => setshowpassword(!showpassword)}><Ionicons  name={showpassword ? "eye-off-outline" : "eye-outline" } size={20} color="gray"/></TouchableOpacity>
         </View>
          <TouchableOpacity onPress={handleLogin} style= {loginStyles.button}><Text style= {loginStyles.buttonText}>Login</Text></TouchableOpacity>
-         <Text  style={loginStyles.last}>Don’t have an account ?<Text style={loginStyles.createAccount}>Create now</Text></Text>
+         <Text  style={loginStyles.last}>Don’t have an account ?<Text style={loginStyles.createAccount} onPress={()=> router.push('/(auth)/CreateAccount/createAccount')}>Create now</Text></Text>
         </View>
     </View>
     

@@ -34,19 +34,13 @@ export const loginStyles = StyleSheet.create({
     textAlign: 'center',
     marginBottom:10,
   },
-  inputWrapper: {
-  position: 'relative',
-  marginBottom: 10,
-},
-
-icon: {
+  icon: {
   position: 'absolute',
   left: 15,
   top: '50%',
   transform: [{ translateY: -10 }],
   zIndex: 1,
 },
-
 input: {
   flex: 1,   
   paddingVertical: 10,
