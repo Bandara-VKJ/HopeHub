@@ -62,7 +62,7 @@ textContainer: {
 },
 riskContainer:{
   width: '90%',
-  height: '20%',
+  height: 'auto',
   marginTop: 15,
   alignSelf: 'center',
   borderRadius: 15,
@@ -124,6 +124,20 @@ taskContainer:{
   // Android shadow
   elevation: 1,
 },
+listContainer:{
+  width: '90%',
+  height: '20%',
+  marginTop: 15,
+  alignSelf: 'center',
+  borderRadius: 10,
+  backgroundColor: '#fff',
+  padding: 10,
+  borderWidth: 2,
+  borderColor: '#e1e1e1',
+
+  flexDirection: 'row',
+  alignItems: 'center',
+},
 quickActions:{
   width: '90%',
   height: '30%',
@@ -141,5 +155,10 @@ quickActions:{
 
   // Android shadow
   elevation: 1,
+},
+innerTaskContainer:{
+  flexDirection: 'row',
+  gap: 10,
+  justifyContent: 'space-between',
 }
 });
