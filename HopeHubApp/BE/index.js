@@ -1,27 +1,19 @@
-const express = require('express');
-const cors = require('cors');
+import express from "express";
+import dotenv from "dotenv";
+import connectDB from "./src/config/db.js";
+import cors from "cors";
+
+dotenv.config();
 
 const app = express();
 
-// Middleware
-app.use(cors());
 app.use(express.json());
 
-// Test route
-app.get('/', (req, res) => {
-  res.send('Backend is running 🚀');
-});
 
-// Example API (your streak)
-app.get('/api/streak', (req, res) => {
-  res.json({
-    days: 50,
-    message: 'Keep going 🔥'
-  });
-});
+app.use(cors());
 
-const PORT = 5000;
+connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(5000, () => {
+  console.log("Server running on port 5000");
 });
