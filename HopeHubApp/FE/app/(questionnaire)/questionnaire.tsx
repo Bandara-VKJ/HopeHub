@@ -2,11 +2,14 @@ import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { useState } from "react";
 import { questionnaireStyles } from './questionnaireStyles'
 import { router } from 'expo-router'
+import { getAuth } from "firebase/auth";
 
 export default function LifeScreen() {
 
+  const auth = getAuth();
+  const user = auth.currentUser;
   const questions = [
-    // Section 1
+
     "How often do you consume alcohol?",
     "How often do you use cannabis?",
     "How often do you use cocaine?",
@@ -14,31 +17,31 @@ export default function LifeScreen() {
     "How often do you use methamphetamine?",
     "How often do you use nicotine (smoking/vaping)?",
 
-    // Section 2 - Neuroticism
+  
     "How often do you feel anxious or stressed?",
     "Do you frequently feel emotionally unstable or worried?",
 
-    // Extraversion
+
     "Do you enjoy being in social gatherings frequently?",
     "Do you feel energized when interacting with others?",
 
-    // Openness
+
     "Do you enjoy trying new and unusual experiences?",
     "Are you open to taking risks or exploring new ideas?",
 
-    // Agreeableness
+
     "Do you consider yourself cooperative and empathetic?",
     "Do you often avoid conflicts with others?",
 
-    // Conscientiousness
+
     "Do you plan your tasks and follow routines?",
     "Do you consider yourself disciplined and responsible?",
 
-    // Impulsiveness
+
     "Do you often act without thinking about consequences?",
     "Do you make quick decisions without planning?",
 
-    // Sensation Seeking
+
     "Do you enjoy thrilling or risky activities?",
     "Do you seek excitement even if it involves danger?",
   ];
@@ -66,17 +69,37 @@ export default function LifeScreen() {
 
   const isLast = currentIndex === questions.length;
 
-  const handleSubmit = async() =>{
-    try {
-        console.log('Questionnaire completed..!')
-        router.replace('/Home/home')
-    } catch (error) {
-        console.log('Questionnaire not completed..!')
+ const handleSubmit = async () => {
+  try {
+    const user = getAuth().currentUser;
+
+    if (!user) {
+      alert("User not logged in");
+      return;
     }
+
+    await fetch("http://192.168.43.251:5000/api/questionnaire/submit", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userId: user.uid,
+        answers: answers
+      })
+    });
+
+    console.log("Saved to DB!");
+    router.replace("/Home/home");
+
+  } catch (error) {
+    console.log("Error:", error);
   }
-  const skipall = () =>{
+};
+ const skipall = () =>{
     setCurrentIndex(questions.length)
   }
+
 
   return (
     <View style={questionnaireStyles.container}>
