@@ -74,6 +74,9 @@ export default function LifeScreen() {
         console.log('Questionnaire not completed..!')
     }
   }
+  const skipall = () =>{
+    setCurrentIndex(questions.length)
+  }
 
   return (
     <View style={questionnaireStyles.container}>
@@ -117,6 +120,13 @@ export default function LifeScreen() {
               style={questionnaireStyles.navBtn}
             >
               <Text>Next</Text>
+            </TouchableOpacity>
+
+             <TouchableOpacity
+              onPress={skipall}
+              style={questionnaireStyles.navBtn}
+            >
+              <Text>Skip All</Text>
             </TouchableOpacity>
           </View>
         </>
