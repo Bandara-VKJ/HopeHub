@@ -22,6 +22,7 @@ export default function RootLayout() {
 
    const [user,setUser] = useState<User | null>(null);
    const [loading,setLoading] = useState(true);
+   const [completed,setCompleted] = useState(false)
 
   useEffect (()=>{
     const unsubscribe = onAuthStateChanged (auth,(user) => {
@@ -39,11 +40,14 @@ export default function RootLayout() {
       {
         router.replace('/(auth)/Login/login')
       }
+      else if(!completed){
+        router.replace('/(questionnaire)/questionnaire')
+      }
       else{
         router.replace('/(tabs)/Home/home')
       }
     }
-  }, [user,loading]);
+  }, [user,loading,completed]);
 
   if(!fontLoard || loading)
   {
