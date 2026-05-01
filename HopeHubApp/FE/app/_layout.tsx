@@ -23,6 +23,7 @@ export default function RootLayout() {
    const [user,setUser] = useState<User | null>(null);
    const [loading,setLoading] = useState(true);
    const [completed,setCompleted] = useState(false)
+   const [checkingStatus, setCheckingStatus] = useState(true);
 
   useEffect (()=>{
     const unsubscribe = onAuthStateChanged (auth,(user) => {
@@ -33,6 +34,32 @@ export default function RootLayout() {
     return unsubscribe;
   },[]);
 
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        if (user) {
+          const res = await fetch(
+            `http://192.168.43.251:5000/api/questionnaire/status/${user.uid}`
+          );
+
+          const data = await res.json();
+
+          setCompleted(data.completed);
+        }
+      } catch (error) {
+        console.log("Status error:", error);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+
+    if (user) {
+      checkStatus();
+    } else {
+      setCheckingStatus(false);
+    }
+  }, [user]);
+  
   useEffect (() =>{
     if(!loading)
     {

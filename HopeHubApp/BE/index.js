@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
 import cors from "cors";
-import questionnaireRoutes from "./src/controllers/Questionnaire.js"; 
+import questionnaireRoutes from "./src/routes/QuestionnaireRoutes.js";
 
 dotenv.config();
 
