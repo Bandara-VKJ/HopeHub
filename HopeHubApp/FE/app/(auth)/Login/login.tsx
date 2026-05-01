@@ -15,8 +15,23 @@ export default function Login(){
     const handleLogin = async () => {
         try {
             const userCrediatials = await signInWithEmailAndPassword(auth, email, password)
+            const user = userCrediatials.user;
+
+             const res = await fetch(
+            `http://192.168.43.251:5000/api/questionnaire/status/${user.uid}`
+            );
+
+            const data = await res.json();
+
+            if(data.completed)
+            {
+                router.replace('/(tabs)/Home/home')
+            }
+            else{
+                router.replace('/(questionnaire)/questionnaire')
+            }
+
             console.log('Login success..!')
-            router.replace('/Home/home')
         } catch (error) {
             console.log('Login failed..!')
         }

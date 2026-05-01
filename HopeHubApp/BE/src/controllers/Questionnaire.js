@@ -3,7 +3,7 @@ import Questionnaire from "../models/Questionnaire.js";
 
 const router = express.Router();
 
-router.post("/submit", async (req, res) => {
+export const submitQuestionnaire =  async (req, res) => {
   try {
     const { userId, answers } = req.body;
 
@@ -20,6 +20,18 @@ router.post("/submit", async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Error saving data" });
   }
-});
+};
 
-export default router;
+export const checkQuestionnaireStatus = async (req,res) =>{
+  try {
+    const { userId } = req.params;
+
+    const existing = await Questionnaire.findOne({userId});
+
+    res.status(200).json({
+      completed: !!existing
+    });
+  } catch (error) {
+     res.status(500).json({ message: "Error checking status" });
+  }
+};
