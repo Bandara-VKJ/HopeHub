@@ -78,7 +78,7 @@ export default function LifeScreen() {
       return;
     }
 
-    await fetch("http://192.168.43.251:5000/api/questionnaire/submit", {
+    await fetch("https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/submit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
