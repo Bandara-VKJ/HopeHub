@@ -8,6 +8,13 @@ export const accountCreateStyles = StyleSheet.create({
         alignItems: 'center', 
         paddingTop: 60,
     },
+    title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#2CA6A4',
+    textAlign: 'center',
+    marginBottom:10,
+  },
         headingOne:{
         fontFamily: 'Koulen',
         fontSize:20,
