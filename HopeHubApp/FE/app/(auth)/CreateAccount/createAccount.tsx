@@ -66,8 +66,14 @@ export default function CreateAccount() {
             createdAt: new Date()
             })
          console.log('Account created success..!');
-         //redirect to home after success full acc creation
-         router.replace('/(tabs)/Home/home')
+        if (logrole === 'counselor')
+        {
+            router.replace('/(counselor)/counselor')
+        }
+        else{
+            router.replace('/(tabs)/Home/home')
+        }
+
         } catch (error:any) {
             console.log(error)
 

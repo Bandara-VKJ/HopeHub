@@ -8,6 +8,9 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { View, ActivityIndicator } from 'react-native';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/app/FirebaceConfig/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/app/FirebaceConfig/firebaseConfig';
+import { useAuth } from './context/AuthContext'
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -24,22 +27,35 @@ export default function RootLayout() {
    const [loading,setLoading] = useState(true);
    const [completed,setCompleted] = useState(false)
    const [checkingStatus, setCheckingStatus] = useState(true);
+   const [role, setRole] = useState<'user' | 'counselor' | null>(null);
 
-  useEffect (()=>{
-    const unsubscribe = onAuthStateChanged (auth,(user) => {
-    setUser(user);
+ useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    setUser(firebaseUser);
+
+    if (firebaseUser) {
+      const docRef = doc(db, "users", firebaseUser.uid);
+      const snap = await getDoc(docRef);
+
+      if (snap.exists()) {
+        setRole(snap.data().role);
+      }
+    } else {
+      setRole(null);
+    }
+
     setLoading(false);
+  });
 
-    });
-    return unsubscribe;
-  },[]);
+  return unsubscribe;
+},[]);
 
   useEffect(() => {
     const checkStatus = async () => {
       try {
         if (user) {
           const res = await fetch(
-            `http://192.168.43.251:5000/api/questionnaire/status/${user.uid}`
+            `https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/status/${user.uid}`
           );
 
           const data = await res.json();
@@ -61,20 +77,26 @@ export default function RootLayout() {
   }, [user]);
   
   useEffect (() =>{
-    if(!loading)
-    {
-      if(!user)
-      {
-        router.replace('/(auth)/Login/login')
+      if (loading || role === null) return;
+
+      if (!user) {
+        router.replace('/(auth)/Login/login');
+        return;
       }
-      else if(!completed){
-        router.replace('/(questionnaire)/questionnaire')
+
+      if (role === 'counselor') {
+        router.replace('/counselor');
+        return;
       }
-      else{
-        router.replace('/(tabs)/Home/home')
+
+      if (!completed) {
+        router.replace('/(questionnaire)/questionnaire');
+        return;
       }
-    }
-  }, [user,loading,completed]);
+
+      router.replace('/(tabs)/Home/home');
+
+  }, [user, loading, completed, role]);
 
   if(!fontLoard || loading)
   {
