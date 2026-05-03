@@ -7,7 +7,6 @@ import { loginStyles } from './loginStyles'
 import { Ionicons } from '@expo/vector-icons'
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/app/FirebaceConfig/firebaseConfig";
-import * as Linking from 'expo-linking';
 
 export default function Login(){
 
@@ -45,8 +44,7 @@ export default function Login(){
             }
             if(role === 'counselor')
             {
-               setIsCounselorLogin(true);
-               Linking.openURL("https://connector-removed-stoneware.ngrok-free.dev");
+                router.replace('/(counselor)/counselor')
                 return;
             }
              const res = await fetch(
