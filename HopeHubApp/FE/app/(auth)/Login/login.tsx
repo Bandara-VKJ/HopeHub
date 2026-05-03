@@ -7,6 +7,7 @@ import { loginStyles } from './loginStyles'
 import { Ionicons } from '@expo/vector-icons'
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/app/FirebaceConfig/firebaseConfig";
+import * as Linking from 'expo-linking';
 
 export default function Login(){
 
@@ -14,6 +15,7 @@ export default function Login(){
     const [password, setPassword] = useState('')
     const [showpassword,setshowpassword] = useState(false)
     const [logrole,setLogrole] = useState< 'user' | 'counselor' >('user');
+    const [isCounselorLogin, setIsCounselorLogin] = useState(false);
 
     const handleLogin = async () => {
         try {
@@ -41,12 +43,17 @@ export default function Login(){
                 alert("Please use counselor login option");
                 return;
             }
+            if(role === 'counselor')
+            {
+               setIsCounselorLogin(true);
+               Linking.openURL("https://connector-removed-stoneware.ngrok-free.dev");
+                return;
+            }
              const res = await fetch(
             `http://192.168.43.251:5000/api/questionnaire/status/${user.uid}`
             );
 
             const data = await res.json();
-
             if(data.completed)
             {
                 router.replace('/(tabs)/Home/home')
