@@ -48,7 +48,7 @@ export default function Login(){
                 return;
             }
              const res = await fetch(
-            `http://192.168.43.251:5000/api/questionnaire/status/${user.uid}`
+            `https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/status/${user.uid}`
             );
 
             const data = await res.json();
