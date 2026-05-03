@@ -16,9 +16,11 @@ export default function CreateAccount() {
     const [email,setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confpassword,setconfPassword] = useState('')
+    const [mobile,setMobile] = useState('')
     const [showpassword,setshowpassword] = useState(false)
     const [showconfpassword,setconfShowpassword] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [logrole,setLogrole] = useState< 'user' | 'counselor' >('user');
 
     const handleCreateAccount = async () => {
 
@@ -43,6 +45,11 @@ export default function CreateAccount() {
             Alert.alert('Error', 'Password must be at least 6 characters')
             return
         }
+        if (logrole === "counselor" && !mobile) 
+        {
+            Alert.alert("Error", "Mobile number is required for counselors");
+            return;
+        }
         try {
             setLoading(true)
          const userCredentials = await createUserWithEmailAndPassword(
@@ -54,7 +61,9 @@ export default function CreateAccount() {
             firstName: first,
             lastName: last,
             email: email,
-            createdAt: new Date() 
+            role: logrole,
+            ...(logrole === 'counselor' ?  { mobile: mobile } : {}),
+            createdAt: new Date()
             })
          console.log('Account created success..!');
          //redirect to home after success full acc creation
@@ -77,6 +86,7 @@ export default function CreateAccount() {
             setLoading(false)
         }
     }
+    
 
   return (
         <View style= {accountCreateStyles.container}>
@@ -92,19 +102,31 @@ export default function CreateAccount() {
                     style={accountCreateStyles.logo}
                 />
             </View>
-
+            <Text style= {accountCreateStyles.title}>{logrole === 'counselor' ? 'Create account for counselor ' : 'Create account for user'}</Text>
+           
+           
            <View style={accountCreateStyles.inputWrapper}>
                <Ionicons name="person-outline"  size={20}  color="gray" style={accountCreateStyles.icon}/>
                <TextInput placeholder="Enter first name" value={first} onChangeText={setFirst} style={[accountCreateStyles.input as any]} />
            </View>
+
            <View style={accountCreateStyles.inputWrapper}>
                <Ionicons name="person-outline"  size={20}  color="gray" style={accountCreateStyles.icon}/>
                <TextInput placeholder="Enter last name" value={last} onChangeText={setLast} style={[accountCreateStyles.input as any]} />
            </View>
+
            <View style={accountCreateStyles.inputWrapper}>
                <Ionicons name="mail-outline"  size={20}  color="gray" style={accountCreateStyles.icon}/>
                <TextInput placeholder="Enter Email" value={email} onChangeText={setEmail} style={[accountCreateStyles.input as any]} />
            </View>
+           {logrole === 'counselor' && (
+                <View style={accountCreateStyles.inputWrapper}>
+                    <Ionicons name="call-outline" size={20} color="gray" style={accountCreateStyles.icon} />
+                    <TextInput placeholder="Enter mobile number" value={mobile} onChangeText={setMobile} style={[accountCreateStyles.input as any]}></TextInput>
+                </View>
+           )
+
+           }
           <View style={accountCreateStyles.inputWrapper}>
                       <Ionicons name='lock-closed-outline' size={20} color='gray' style={accountCreateStyles.icon}/>
                       <TextInput secureTextEntry={ !showpassword } placeholder='Enter Password' value={password} onChangeText={setPassword} style= {accountCreateStyles.input as any}/>
@@ -117,6 +139,17 @@ export default function CreateAccount() {
                    </View>
             <TouchableOpacity  onPress={handleCreateAccount} style= {accountCreateStyles.button}><Text style= {accountCreateStyles.buttonText} >{loading ? 'Creating...' : 'Create an account'}</Text></TouchableOpacity>
             <Text  style={accountCreateStyles.last}>Already have an account ?<Text style={accountCreateStyles.login} onPress={() => router.push('/(auth)/Login/login')}>Login</Text></Text>
+
+            <TouchableOpacity
+                onPress={() => setLogrole(logrole === 'user' ? 'counselor' : 'user')}
+                style={{ marginVertical: 10, alignItems: 'center' }}
+                >
+                <Text style={{ color: '#007AFF', fontWeight: '600' }}>
+                    {logrole === 'user'
+                    ? "Create Counselor Account?"
+                    : "Create User Account?"}
+                </Text>
+                </TouchableOpacity>
            </View>
     )
 }
