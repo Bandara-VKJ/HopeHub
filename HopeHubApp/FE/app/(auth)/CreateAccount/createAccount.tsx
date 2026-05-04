@@ -1,12 +1,9 @@
 import { accountCreateStyles } from "./createAccountStyles";
-import { Text, View, TextInput,TouchableOpacity, Alert,ImageBackground,Image } from 'react-native'
+import { Text, View, TextInput,TouchableOpacity, Alert,Image } from 'react-native'
 import { useState } from 'react'
 import { router } from 'expo-router'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { auth } from '@/app/FirebaceConfig/firebaseConfig'
 import { Ionicons } from '@expo/vector-icons'
-import { doc, setDoc } from 'firebase/firestore'
-import { db } from '@/app/FirebaceConfig/firebaseConfig'
+
 
 export default function CreateAccount() {
 
@@ -23,76 +20,70 @@ export default function CreateAccount() {
     const [logrole,setLogrole] = useState< 'user' | 'counselor' >('user');
 
     const handleCreateAccount = async () => {
+    console.log('Create acc Triggered')
+    if (loading) return
 
-        console.log('Create acc Triggered')
-        if(loading) return
+    if (!first || !last || !email || !password || !confpassword) {
+        Alert.alert('Error', 'Please fill all fields')
+        return
+    }
 
-        if(!first || !last || !email || !password || !confpassword)
-        {
-            console.log('Please fill all fields')
-            Alert.alert('Error', 'Please fill all fields')
-            return
-        }
-        if(password !== confpassword)
-        {
-            console.log('Passwords do not match')
-            Alert.alert('Error', 'Passwords do not match')
-            return
-        }
-        if(password.length < 6)
-        {
-            console.log('Password must be at least 6 characters')
-            Alert.alert('Error', 'Password must be at least 6 characters')
-            return
-        }
-        if (logrole === "counselor" && !mobile) 
-        {
-            Alert.alert("Error", "Mobile number is required for counselors");
-            return;
-        }
-        try {
-            setLoading(true)
-         const userCredentials = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-         )
-         await setDoc(doc(db, "users", userCredentials.user.uid), {
-            firstName: first,
-            lastName: last,
-            email: email,
-            role: logrole,
-            ...(logrole === 'counselor' ?  { mobile: mobile } : {}),
-            createdAt: new Date()
+    if (password !== confpassword) {
+        Alert.alert('Error', 'Passwords do not match')
+        return
+    }
+
+    if (password.length < 6) {
+        Alert.alert('Error', 'Password must be at least 6 characters')
+        return
+    }
+
+    if (logrole === "counselor" && !mobile) {
+        Alert.alert("Error", "Mobile number is required for counselors")
+        return
+    }
+
+    try {
+        setLoading(true)
+
+        const response = await fetch("https://connector-removed-stoneware.ngrok-free.dev/api/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                firstName: first,
+                lastName: last,
+                email: email,
+                password: password,
+                role: logrole,
+                mobile: logrole === 'counselor' ? mobile : null
             })
-         console.log('Account created success..!');
-        if (logrole === 'counselor')
-        {
-            router.replace('/(counselor)/counselor')
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+            Alert.alert("Error", data.message || "Something went wrong")
+            return
         }
-        else{
+
+        console.log("Account created:", data)
+
+        // Navigate based on role
+        if (logrole === 'counselor') {
+            router.replace('/(counselor)/counselor')
+        } else {
             router.replace('/(tabs)/Home/home')
         }
 
-        } catch (error:any) {
-            console.log(error)
-
-            //Handle firebase errors
-            if (error.code === 'auth/email-already-in-use') {
-            Alert.alert('Error', 'Email already in use')
-            console.log('Error', 'Email already in use')
-            } else if (error.code === 'auth/invalid-email') {
-            Alert.alert('Error', 'Invalid email')
-            console.log('Error', 'Invalid email')
-            } else {
-            Alert.alert('Error', 'Something went wrong')
-            console.log('Error', 'Something went wrong')
-            }
-        }finally {
-            setLoading(false)
-        }
+    } catch (error) {
+        console.log(error)
+        Alert.alert("Error", "Network error")
+    } finally {
+        setLoading(false)
     }
-    
+}
 
   return (
         <View style= {accountCreateStyles.container}>

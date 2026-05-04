@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
 import cors from "cors";
 import questionnaireRoutes from "./src/routes/QuestionnaireRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js"
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/questionnaire", questionnaireRoutes);
+app.use("/api/auth", authRoutes);
 
 app.listen(5000, "0.0.0.0", () => {
   console.log("Server running on port 5000");
