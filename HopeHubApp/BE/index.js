@@ -3,14 +3,24 @@ import dotenv from "dotenv";
 import connectDB from "./src/config/db.js";
 import cors from "cors";
 import questionnaireRoutes from "./src/routes/QuestionnaireRoutes.js";
-import authRoutes from "./src/routes/authRoutes.js"
+import authRoutes from "./src/routes/authRoutes.js";
+import profileRoutes from "./src/routes/profileRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
-app.use(express.json());
-app.use(cors());
+app.use(express.json({ limit: "10mb" }));
+
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "ngrok-skip-browser-warning",
+  ],
+}));
 
 connectDB();
 
@@ -20,6 +30,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/questionnaire", questionnaireRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
 
 app.listen(5000, "0.0.0.0", () => {
   console.log("Server running on port 5000");
