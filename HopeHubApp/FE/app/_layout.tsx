@@ -6,11 +6,7 @@ import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { View, ActivityIndicator } from 'react-native';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/app/FirebaceConfig/firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/app/FirebaceConfig/firebaseConfig';
-import { useAuth } from './context/AuthContext'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -23,43 +19,45 @@ export default function RootLayout() {
     Koulen: require('../assets/fonts/Koulen-Regular.ttf')
   });
 
-   const [user,setUser] = useState<User | null>(null);
-   const [loading,setLoading] = useState(true);
-   const [completed,setCompleted] = useState(false)
+   const [userId, setUserId] = useState<string | null>(null);
+   const [loading, setLoading] = useState(true);
+   const [completed, setCompleted] = useState(false);
    const [checkingStatus, setCheckingStatus] = useState(true);
    const [role, setRole] = useState<'user' | 'counselor' | null>(null);
 
- useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-    setUser(firebaseUser);
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem("userId");
+        const storedRole = await AsyncStorage.getItem("role");
 
-    if (firebaseUser) {
-      const docRef = doc(db, "users", firebaseUser.uid);
-      const snap = await getDoc(docRef);
-
-      if (snap.exists()) {
-        setRole(snap.data().role);
+        if (storedUserId) {
+          setUserId(storedUserId);
+          setRole(storedRole as 'user' | 'counselor');
+        } else {
+          setUserId(null);
+          setRole(null);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+      } finally {
+        setLoading(false);
       }
-    } else {
-      setRole(null);
-    }
+    };
 
-    setLoading(false);
-  });
-
-  return unsubscribe;
-},[]);
+    checkAuth();
+  }, []);
 
   useEffect(() => {
+    if (loading) return;
+
     const checkStatus = async () => {
       try {
-        if (user) {
+        if (userId && role === 'user') {
           const res = await fetch(
-            `https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/status/${user.uid}`
+            `https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/status/${userId}`
           );
-
           const data = await res.json();
-
           setCompleted(data.completed);
         }
       } catch (error) {
@@ -69,23 +67,23 @@ export default function RootLayout() {
       }
     };
 
-    if (user) {
+    if (userId) {
       checkStatus();
     } else {
       setCheckingStatus(false);
     }
-  }, [user]);
+  }, [userId, role, loading]);
   
-  useEffect (() =>{
-      if (loading || role === null) return;
+  useEffect(() => {
+      if (loading || checkingStatus) return;
 
-      if (!user) {
+      if (!userId) {
         router.replace('/(auth)/Login/login');
         return;
       }
 
       if (role === 'counselor') {
-        router.replace('/counselor');
+        router.replace('/(counselor)/counselor');
         return;
       }
 
@@ -96,9 +94,9 @@ export default function RootLayout() {
 
       router.replace('/(tabs)/Home/home');
 
-  }, [user, loading, completed, role]);
+  }, [userId, loading, checkingStatus, completed, role]);
 
-  if(!fontLoard || loading)
+  if(!fontLoard || loading || checkingStatus)
   {
     return(
       <View style={{ flex:1,justifyContent:'center',alignItems:'center'}}>
