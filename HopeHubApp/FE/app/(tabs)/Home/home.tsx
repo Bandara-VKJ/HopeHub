@@ -1,116 +1,162 @@
-import { Text, View } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
 import { homeStyles } from "./homeStyles";
-import { Ionicons } from '@expo/vector-icons'
-import { useState } from "react";
-import { TouchableOpacity } from "react-native";
-import { ScrollView } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const TASKS = [
+  { id: "1", label: "Morning meditation", done: true },
+  { id: "2", label: "Evening journal entry", done: false },
+  { id: "3", label: "Call support partner", done: false },
+  { id: "4", label: "10-minute walk", done: false },
+  { id: "5", label: "Drink 8 glasses of water", done: false },
+];
+
+const RISK_FACTORS = [
+  { label: "High Stress Levels", value: 70, color: "#e26d36" },
+  { label: "Social Triggers", value: 50, color: "#f09c00" },
+  { label: "Sleep Quality", value: 30, color: "#2CA6A4" },
+  { label: "Support Network", value: 80, color: "#17db1a" },
+];
+
+const ProgressBar = ({ value, color }: { value: number; color: string }) => (
+  <View style={homeStyles.progressTrack}>
+    <View style={[homeStyles.progressFill, { width: `${value}%`, backgroundColor: color }]} />
+  </View>
+);
 
 export default function HomeScreen() {
+  const [tasks, setTasks] = useState(TASKS);
 
-  const [isChecked,setIsChecked] = useState(false)
+  const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
-  const ProgressBar = ({ value, color }) => {
+  const [firstName, setFirstName] = useState('')
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadusername = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("userId");
+
+        if (!userId) return;
+
+        const res = await fetch(`${BASE_URL}/api/profile/${userId}`, {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.profile) {
+          setFirstName(data.profile.firstName || '');
+        }
+
+      } catch (error) {
+        console.log("Error loading name:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadusername();
+  }, []);
+
+  const getGreeting = () =>{
+    const hour = new Date().getHours();
+
+    if (hour < 12) return "Good morning 👋"
+    if (hour < 18) return "Good afternoon ☀️"
+    return "Good evening 🌙"
+  }
+
+  const toggle = (id: string) =>
+    setTasks((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+    );
+
+  const doneCount = tasks.filter((t) => t.done).length;
+
   return (
-    <View style={{
-      height: 8,
-      width: '100%',
-      backgroundColor: '#eee',
-      borderRadius: 5,
-      marginTop: 5,
-    }}>
-      <View style={{
-        width: `${value}%`,
-        height: '100%',
-        backgroundColor: color,
-        borderRadius: 5,
-      }} />
-    </View>
-  );
-};
+    <ScrollView style={homeStyles.container} showsVerticalScrollIndicator={false}>
+      {/* Header */}
+      <View style={homeStyles.header}>
+        <View style={homeStyles.headerCircleLarge} />
+        <View style={homeStyles.headerCircleSmall} />
+        <Text style={homeStyles.greeting}>{getGreeting()}</Text>
+        <Text style={homeStyles.name}>{loading ? "Welcome..." : `Welcome ,${firstName || "User"}`}</Text>
 
-  return (
-   <ScrollView style={homeStyles.container}>
-      <View style={homeStyles.top}>
-        <Text style={homeStyles.textOne}> Welcome Vimukthi !</Text>
-        <View style={homeStyles.streakBar}>
-          <View style={homeStyles.streakContent}>
-
-          <View style={homeStyles.achiveIcon}>
-            <Ionicons name="ribbon-outline" size={24} color="#2CA6A4" />
+        <View style={homeStyles.streakCard}>
+          <View style={homeStyles.streakIconWrap}>
+            <Ionicons name="ribbon" size={22} color="#fff" />
           </View>
-
-          <View style={homeStyles.textContainer}>
-            <Text style={homeStyles.streakTitle}>Sobriety Streak</Text>
-            <Text style={homeStyles.textTwo}>50 Days!</Text>
-          </View>
-        </View> 
-        </View>
-      </View>
-
-      
-      <View style={homeStyles.riskContainer}>
-        <View style={homeStyles.riskInnerContainer}>
-          <View style={homeStyles.iconContainer}>
-            <Ionicons name="warning-outline" size={30} color="#f09c00" />
-          </View>
-          <View style={homeStyles.riskTextContainer}>
-            <Text style={homeStyles.riskTitle}>Risk level</Text>
-            <Text style={homeStyles.riskPrediction}>moderate Risk</Text>
-            <Text style={homeStyles.statement}>Some areas need attention. Review risk factors below.</Text>
+          <View>
+            <Text style={homeStyles.streakLabel}>Sobriety Streak</Text>
+            <Text style={homeStyles.streakValue}>50 Days!</Text>
           </View>
         </View>
       </View>
 
-      <View style={homeStyles.taskContainer}>
-        <View style={homeStyles.innerTaskContainer}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Ionicons name="checkbox-outline" size={30} color="#17db1a"/>
-          <Text style={{ fontWeight: '500', fontSize: 20, marginLeft: 8 }}>
-            Daily tasks
-          </Text>
+      <View style={homeStyles.content}>
+        {/* Risk Banner */}
+        <View style={homeStyles.riskCard}>
+          <View style={homeStyles.riskIconWrap}>
+            <Ionicons name="warning" size={22} color="#c96a00" />
           </View>
-          <Text style={{  color: '#2CA6A4',}}>2/5 Complete</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={homeStyles.riskLevel}>RISK LEVEL</Text>
+            <Text style={homeStyles.riskValue}>Moderate Risk</Text>
+            <Text style={homeStyles.riskSub}>Some areas need attention below</Text>
+          </View>
         </View>
-        <View style={[homeStyles.listContainer,{ backgroundColor: isChecked ? '#2ca6a430' : '#fff' }]}>
-          <TouchableOpacity onPress={() => setIsChecked(!isChecked)}>
-            <Ionicons
-              name={isChecked ? "checkbox" : "square-outline"}
-              size={24}
-              color={isChecked ? "#2CA6A4" : "#999"}
-            />
-          </TouchableOpacity>
-          <Text style={{
-            marginLeft: 10,
-            textDecorationLine: isChecked ? "line-through" : "none",
-            color: isChecked ? "#888" : "#000"
-          }}>Morning meditation</Text>
-        </View>
-      </View>
-      <View style={homeStyles.quickActions}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10}}>
-          <Ionicons name="heart" size={30} color="#f60707"/>
-          <Text >Risk Factors Analysis</Text>
-        </View>
-      <View>
-          <View style={{ marginBottom: 10 }}>
-            <Text>High Stress Levels</Text>
-            <ProgressBar value={70} color="#e26d36" />
+
+        {/* Daily Tasks */}
+        <View style={homeStyles.card_task}>
+          <View style={homeStyles.cardHeader}>
+            <View style={homeStyles.cardTitle}>
+              <Ionicons name="checkbox" size={20} color="#17db1a" />
+              <Text style={homeStyles.cardTitleText}>Daily Tasks</Text>
+            </View>
+            <View style={homeStyles.badge}>
+              <Text style={homeStyles.badgeText}>{doneCount} / {tasks.length} Complete</Text>
+            </View>
           </View>
 
-          <View style={{ marginBottom: 10 }}>
-            <Text>Social Triggers</Text>
-            <ProgressBar value={50} color="#f09c00" />
+          {tasks.map((task) => (
+            <TouchableOpacity
+              key={task.id}
+              style={[homeStyles.taskItem, task.done && homeStyles.taskItemDone]}
+              onPress={() => toggle(task.id)}
+              activeOpacity={0.7}
+            >
+              <View style={[homeStyles.checkbox, task.done && homeStyles.checkboxDone]}>
+                {task.done && <Ionicons name="checkmark" size={14} color="#fff" />}
+              </View>
+              <Text style={[homeStyles.taskLabel, task.done && homeStyles.taskLabelDone]}>
+                {task.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Risk Factors */}
+        <View style={homeStyles.card}>
+          <View style={[homeStyles.cardHeader, { marginBottom: 16 }]}>
+            <View style={homeStyles.cardTitle}>
+              <Ionicons name="heart" size={20} color="#e26d36" />
+              <Text style={homeStyles.cardTitleText}>Risk Factor Analysis</Text>
+            </View>
           </View>
 
-          <View style={{ marginBottom: 10 }}>
-            <Text>Sleep Quality</Text>
-            <ProgressBar value={30} color="#2CA6A4" />
-          </View>
-
-          <View style={{ marginBottom: 10 }}>
-            <Text>Support Network</Text>
-            <ProgressBar value={80} color="#17db1a" />
-          </View>
+          {RISK_FACTORS.map((factor) => (
+            <View key={factor.label} style={homeStyles.progressRow}>
+              <View style={homeStyles.progressMeta}>
+                <Text style={homeStyles.progressLabel}>{factor.label}</Text>
+                <Text style={homeStyles.progressPct}>{factor.value}%</Text>
+              </View>
+              <ProgressBar value={factor.value} color={factor.color} />
+            </View>
+          ))}
         </View>
       </View>
     </ScrollView>

@@ -1,164 +1,146 @@
 import { StyleSheet } from 'react-native';
 
 export const homeStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+   container: { flex: 1, backgroundColor: "#f2f8f8" },
+
+  header: {
+    backgroundColor: "#2CA6A4",
+    paddingTop: 56,
+    paddingBottom: 28,
+    paddingHorizontal: 24,
+    overflow: "hidden",
   },
-  top:{
-    height:'30%',
-    width: 'auto',
-    backgroundColor:'#2CA6A4',
-    paddingTop: 50,
-    paddingLeft:40
+  headerCircleLarge: {
+    position: "absolute", top: -40, right: -40,
+    width: 160, height: 160,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 80,
   },
-  streakBar:{
-    paddingTop: 20,
-    paddingLeft: 10,
-    height: '50%',
-    width: '80%',
-    backgroundColor: '#ffffff28',
-    borderRadius: 10,
+  headerCircleSmall: {
+    position: "absolute", top: 24, right: 40,
+    width: 80, height: 80,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 40,
+  },
+  greeting: { color: "rgba(255,255,255,0.75)", fontSize: 13, marginBottom: 2 },
+  name: { color: "#fff", fontSize: 22, fontWeight: "700", marginBottom: 20 },
+
+  streakCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+    padding: 14,
+  },
+  streakIconWrap: {
+    width: 44, height: 44,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  streakLabel: { color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 0.5 },
+  streakValue: { color: "#fff", fontSize: 20, fontWeight: "700" },
+
+  // Layout
+  content: { padding: 16, gap: 14 },
+  card_task: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+    shadowColor: "#2CA6A4",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+    shadowColor: "#2CA6A4",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
+    marginBottom: 100
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  cardTitle: { flexDirection: "row", alignItems: "center", gap: 8 },
+  cardTitleText: { fontSize: 15, fontWeight: "600", color: "#1a2e2e" },
+  badge: {
+    backgroundColor: "#e1f5f4",
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  badgeText: { fontSize: 11, color: "#0f6e56", fontWeight: "600" },
+
+
+  riskCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: "#fffbf0",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#fde9a0",
+    padding: 16,
+  },
+  riskIconWrap: {
+    width: 44, height: 44,
+    backgroundColor: "#fff0cc",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  riskLevel: { color: "#9a7a40", fontSize: 10, letterSpacing: 0.8, fontWeight: "600" },
+  riskValue: { color: "#c96a00", fontSize: 17, fontWeight: "700" },
+  riskSub: { color: "#9a7a40", fontSize: 11, marginTop: 2 },
+
+  taskItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 11,
+    borderRadius: 12,
+    backgroundColor: "#f7fefe",
+    borderWidth: 1,
+    borderColor: "#d5eeec",
+    marginBottom: 8,
+  },
+  taskItemDone: { backgroundColor: "#f0faf9", borderColor: "#b8e4e1" },
+  checkbox: {
+    width: 22, height: 22,
+    borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#ffffff28',
-
+    borderColor: "#ccc",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  textOne:{
-    color: '#fff',
-    marginBottom:10,
+  checkboxDone: { backgroundColor: "#2CA6A4", borderColor: "#2CA6A4" },
+  taskLabel: { fontSize: 13, color: "#1a2e2e", flex: 1 },
+  taskLabelDone: { color: "#999", textDecorationLine: "line-through" },
+
+  progressRow: { marginBottom: 12 },
+  progressMeta: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
+  progressLabel: { fontSize: 12, color: "#4a5e5e", fontWeight: "500" },
+  progressPct: { fontSize: 11, color: "#888" },
+  progressTrack: {
+    height: 7, backgroundColor: "#e8f0f0", borderRadius: 10, overflow: "hidden",
   },
-  textTwo:{
-    color: '#fff',
-    fontSize: 25,
-    fontWeight: 'bold'
-  },
-  icon: {
-  position: 'absolute',
-  left: 15,
-  top: '50%',
-  transform: [{ translateY: -10 }],
-  zIndex: 1,
-},
-achiveIcon: {
-  height: 50,
-  width: 50,
-  backgroundColor: '#ffffff7d',
-  borderRadius: 10,
-  borderWidth: 2,
-  borderColor: '#2CA6A4',
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-streakTitle:{
-  color: '#fff'
-},
-streakContent: {
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-
-textContainer: {
-  marginLeft: 10,
-},
-riskContainer:{
-  width: '90%',
-  height: 'auto',
-  marginTop: 15,
-  alignSelf: 'center',
-  borderRadius: 15,
-  backgroundColor: '#eaeac160',
-  padding: 20,
-  borderWidth: 2,
-  borderColor: '#ffdd0060',
-  
-   // iOS shadow
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.2,
-  shadowRadius: 6,
-
-  // Android shadow
-  elevation: 1,
-},
-riskInnerContainer:{
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-iconContainer:{
-  height: 50,
-  width: 50,
-  backgroundColor: '#e7e79860',
-  borderRadius: 10,
-  justifyContent: 'center',
-  alignItems: 'center',
-},
-riskTextContainer:{
-  marginLeft: 10,
-},
-statement:{
- fontSize:8
-},
-riskTitle:{
-  fontSize:20
-},
-riskPrediction:{
-  fontSize:25,
-  fontWeight: 'bold',
-  color:'#e26d36'
-},
-taskContainer:{
-  width: '90%',
-  height: '30%',
-  marginTop: 15,
-  alignSelf: 'center',
-  borderRadius: 15,
-  backgroundColor: '#fff',
-  padding: 20,
-  
-   // iOS shadow
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.2,
-  shadowRadius: 6,
-
-  // Android shadow
-  elevation: 1,
-},
-listContainer:{
-  width: '90%',
-  height: '20%',
-  marginTop: 15,
-  alignSelf: 'center',
-  borderRadius: 10,
-  backgroundColor: '#fff',
-  padding: 10,
-  borderWidth: 2,
-  borderColor: '#e1e1e1',
-
-  flexDirection: 'row',
-  alignItems: 'center',
-},
-quickActions:{
-  width: '90%',
-  height: '30%',
-  marginTop: 15,
-  alignSelf: 'center',
-  borderRadius: 15,
-  backgroundColor: '#fff',
-  padding: 20,
-  
-   // iOS shadow
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.2,
-  shadowRadius: 6,
-
-  // Android shadow
-  elevation: 1,
-},
-innerTaskContainer:{
-  flexDirection: 'row',
-  gap: 10,
-  justifyContent: 'space-between',
-}
+  progressFill: { height: "100%", borderRadius: 10 },
 });
