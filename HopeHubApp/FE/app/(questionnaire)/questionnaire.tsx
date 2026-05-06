@@ -1,8 +1,12 @@
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity, TextInput } from "react-native";
 import { useState, useEffect } from "react";
-import { questionnaireStyles } from './questionnaireStyles'
-import { router } from 'expo-router'
+import { questionnaireStyles } from './questionnaireStyles';
+import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from "expo-speech-recognition";
 
 const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
@@ -15,6 +19,126 @@ const ngrokFetch = (url: string, options: RequestInit = {}) =>
     },
   });
 
+const TEXT_INPUT_INDICES = new Set([6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+
+// ── Voice Text Input Component ──────────────────────────────────────────────
+type VoiceTextInputProps = {
+  value: string;
+  onChange: (text: string) => void;
+};
+
+function VoiceTextInput({ value, onChange }: VoiceTextInputProps) {
+  const [isListening, setIsListening] = useState(false);
+
+  useSpeechRecognitionEvent("result", (event) => {
+    if (event.results?.[0]?.transcript) {
+      onChange(event.results[0].transcript);
+    }
+  });
+
+  useSpeechRecognitionEvent("start", () => setIsListening(true));
+  useSpeechRecognitionEvent("end", () => setIsListening(false));
+  useSpeechRecognitionEvent("error", (event) => {
+    console.log("Speech error:", event);
+    setIsListening(false);
+  });
+
+  const startListening = async () => {
+    const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+    if (!result.granted) {
+      alert("Microphone permission is required for voice input.");
+      return;
+    }
+    ExpoSpeechRecognitionModule.start({
+      lang: "en-US",
+      interimResults: true,
+      continuous: false,
+    });
+  };
+
+  const stopListening = () => {
+    ExpoSpeechRecognitionModule.stop();
+  };
+
+  return (
+    <View style={{ width: "100%", marginVertical: 20 }}>
+      {/* Text Input */}
+      <TextInput
+        style={{
+          borderWidth: 1.5,
+          borderColor: isListening ? "#6C63FF" : "#ccc",
+          borderRadius: 12,
+          padding: 14,
+          fontSize: 15,
+          minHeight: 110,
+          textAlignVertical: "top",
+          backgroundColor: isListening ? "#F3F2FF" : "#f9f9f9",
+          color: "#222",
+        }}
+        multiline
+        placeholder="Type your answer or tap the mic to speak..."
+        placeholderTextColor="#aaa"
+        value={value}
+        onChangeText={onChange}
+      />
+
+      {/* Listening indicator */}
+      {isListening && (
+        <View style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginTop: 8,
+          gap: 6,
+        }}>
+          <View style={{
+            width: 8,
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: "#6C63FF",
+          }} />
+          <Text style={{ color: "#6C63FF", fontSize: 13, fontWeight: "500" }}>
+            Listening... speak now
+          </Text>
+        </View>
+      )}
+
+      {/* Mic / Stop Button */}
+      <TouchableOpacity
+        onPress={isListening ? stopListening : startListening}
+        style={{
+          alignSelf: "flex-end",
+          marginTop: 10,
+          paddingHorizontal: 20,
+          paddingVertical: 11,
+          borderRadius: 25,
+          backgroundColor: isListening ? "#FF4444" : "#6C63FF",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          shadowColor: isListening ? "#FF4444" : "#6C63FF",
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.35,
+          shadowRadius: 6,
+          elevation: 4,
+        }}
+      >
+        <Text style={{ fontSize: 16 }}>
+          {isListening ? "🛑" : "🎤"}
+        </Text>
+        <Text style={{
+          color: "#fff",
+          fontWeight: "700",
+          fontSize: 14,
+          letterSpacing: 0.3,
+        }}>
+          {isListening ? "Stop" : "Speak"}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// ── Main Questionnaire Screen ───────────────────────────────────────────────
 export default function LifeScreen() {
 
   const [userId, setUserId] = useState<string | null>(null);
@@ -61,6 +185,7 @@ export default function LifeScreen() {
   const options = ["Never", "Rarely", "Sometimes", "Often", "Very Often"];
 
   const isLast = currentIndex === questions.length;
+  const isTextInput = TEXT_INPUT_INDICES.has(currentIndex);
 
   const handleAnswer = (option: string) => {
     setAnswers({ ...answers, [currentIndex]: option });
@@ -116,29 +241,40 @@ export default function LifeScreen() {
 
       {!isLast ? (
         <>
+          {/* Progress */}
           <Text style={questionnaireStyles.progress}>
             Question {currentIndex + 1} / {questions.length}
           </Text>
 
+          {/* Question */}
           <Text style={questionnaireStyles.question}>
             {questions[currentIndex]}
           </Text>
 
-          <View style={questionnaireStyles.optionsContainer}>
-            {options.map((opt) => (
-              <TouchableOpacity
-                key={opt}
-                style={[
-                  questionnaireStyles.optionBtn,
-                  answers[currentIndex] === opt && questionnaireStyles.selected,
-                ]}
-                onPress={() => handleAnswer(opt)}
-              >
-                <Text>{opt}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {/* Answer Input — voice text input OR option buttons */}
+          {isTextInput ? (
+            <VoiceTextInput
+              value={answers[currentIndex] || ""}
+              onChange={(text) => handleAnswer(text)}
+            />
+          ) : (
+            <View style={questionnaireStyles.optionsContainer}>
+              {options.map((opt) => (
+                <TouchableOpacity
+                  key={opt}
+                  style={[
+                    questionnaireStyles.optionBtn,
+                    answers[currentIndex] === opt && questionnaireStyles.selected,
+                  ]}
+                  onPress={() => handleAnswer(opt)}
+                >
+                  <Text>{opt}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
+          {/* Navigation */}
           <View style={questionnaireStyles.navigation}>
             <TouchableOpacity
               onPress={prevQuestion}
