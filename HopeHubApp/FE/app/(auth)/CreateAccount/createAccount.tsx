@@ -70,12 +70,9 @@ export default function CreateAccount() {
 
         console.log("Account created:", data)
 
-        // Navigate based on role
-        if (logrole === 'counselor') {
-            router.replace('/(counselor)/counselor')
-        } else {
-            router.replace('/(tabs)/Home/home')
-        }
+        // Redirect to login
+        Alert.alert("Success", "Account created successfully. Please login.");
+        router.replace('/(auth)/Login/login')
 
     } catch (error) {
         console.log(error)
