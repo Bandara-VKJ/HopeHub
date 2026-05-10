@@ -55,7 +55,12 @@ export default function RootLayout() {
       try {
         if (userId && role === 'user') {
           const res = await fetch(
-            `https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/status/${userId}`
+            `https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/status/${userId}`,
+            {
+              headers: {
+                "ngrok-skip-browser-warning": "true",
+              },
+            }
           );
           const data = await res.json();
           setCompleted(data.completed);

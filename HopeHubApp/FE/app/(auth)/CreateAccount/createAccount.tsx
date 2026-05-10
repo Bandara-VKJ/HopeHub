@@ -87,12 +87,9 @@ export default function CreateAccount() {
           }),
         });
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          Alert.alert("Error", data.message || "Counselor registration failed");
-          return;
-        }
+        // Redirect to login
+        Alert.alert("Success", "Account created successfully. Please login.");
+        router.replace('/(auth)/Login/login')
 
         await AsyncStorage.setItem("role", "counselor");
         await AsyncStorage.setItem("counselorId", data.counselor._id);
