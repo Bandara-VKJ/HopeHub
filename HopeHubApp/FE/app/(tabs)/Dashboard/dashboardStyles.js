@@ -1,76 +1,363 @@
 import { StyleSheet } from 'react-native';
 
-export const dashStyles = StyleSheet.create({
-  container: {
+export const chartStyles = StyleSheet.create({
+  wrapper: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEF0F3',
+  },
+  heading: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1D23',
+    letterSpacing: 0.2,
+  },
+  sub: {
+    fontSize: 12,
+    color: '#9EA5B0',
+    marginTop: 2,
+    marginBottom: 14,
+  },
+  bars: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 90,
+    marginBottom: 14,
+  },
+  barGroup: {
     flex: 1,
-    backgroundColor: '#eef6f6',
+    alignItems: 'center',
+    height: '100%',
+    justifyContent: 'flex-end',
   },
-  header: {
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  subtitle: {
-    color: 'gray',
-  },
-  card: {
-    backgroundColor: '#fff',
-    margin: 10,
-    padding: 15,
-    borderRadius: 12,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  riskText: {
+  barValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: 'red',
+    fontWeight: '700',
+    color: '#1A1D23',
+    marginBottom: 4,
+  },
+  barTrack: {
+    width: 36,
+    height: 48,
+    backgroundColor: '#F3F5F7',
+    borderRadius: 8,
+    overflow: 'hidden',
+    justifyContent: 'flex-end',
+  },
+  barFill: {
+    width: '100%',
+    borderRadius: 8,
+    minHeight: 4,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  barLabel: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  divider: {
+    width: 1,
+    height: 60,
+    backgroundColor: '#EEF0F3',
+    marginHorizontal: 8,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  track: {
+    flexDirection: 'row',
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+    backgroundColor: '#F3F5F7',
+  },
+  trackFill: {
+    height: '100%',
+  },
+  trackLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  trackLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+});
+
+export const cardStyles = StyleSheet.create({
+  wrapper: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 16,
+    marginVertical: 6,
+    borderRadius: 14,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   row: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  moodDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  meta: {
+    flex: 1,
+    gap: 4,
+  },
+  date: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1A1D23',
+  },
+  pill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 20,
+  },
+  pillText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  content: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#4B5563',
+    lineHeight: 21,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F5F7',
+    paddingTop: 12,
+  },
+});
+
+export const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  sheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 36,
+  },
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#DDE1E7',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginVertical: 5,
+    marginBottom: 14,
   },
-  buttonRow: {
+  title: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1D23',
+  },
+  dateRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 10,
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F3F5F7',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 14,
   },
-  metricBtn: {
-    padding: 10,
-    backgroundColor: '#ddd',
+  dateText: {
+    fontSize: 13,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  moodRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 14,
+  },
+  moodBtn: {
+    flex: 1,
+    paddingVertical: 10,
     borderRadius: 10,
-  },
-  activeBtn: {
-    backgroundColor: 'teal',
-  },
-  btnText: {
-    color: '#000',
-  },
-  chart: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    height: 200,
-    alignItems: 'flex-end',
-    margin: 10,
-  },
-  barContainer: {
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
     alignItems: 'center',
   },
-  bar: {
-    width: 20,
-    backgroundColor: 'teal',
+  moodBtnActiveGood: {
+    borderColor: '#3DB87C',
+    backgroundColor: '#EBF8F2',
   },
-  nav: {
+  moodBtnActiveBad: {
+    borderColor: '#E5624A',
+    backgroundColor: '#FEF0ED',
+  },
+  moodBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#9EA5B0',
+  },
+  textArea: {
+    height: 160,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 14,
+    color: '#1A1D23',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  actions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 15,
-    backgroundColor: '#fff',
+    gap: 10,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+  },
+  cancelText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
+  saveBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: '#3B82C4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnDisabled: {
+    backgroundColor: '#B0C4D8',
+  },
+  saveText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+});
+
+export const screenStyles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#F4F6F9',
+  },
+  sticky: {
+    backgroundColor: '#FFFFFF',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 52,
+    paddingBottom: 14,
+  },
+  appName: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.4,
+    color: '#3B82C4',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  pageTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1A1D23',
+    letterSpacing: -0.3,
+  },
+  streak: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FEF0ED',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  streakText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#B03D2A',
+  },
+  list: {
+    paddingTop: 10,
+    paddingBottom: 100,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#9EA5B0',
+    textTransform: 'uppercase',
+    marginHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  empty: {
+    alignItems: 'center',
+    paddingTop: 60,
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#9EA5B0',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 32,
+    alignSelf: 'center',
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#2CA6A4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#3B82C4',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });
