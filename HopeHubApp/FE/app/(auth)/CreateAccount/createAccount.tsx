@@ -1,14 +1,5 @@
 import { accountCreateStyles as styles } from "./createAccountStyles";
-import {
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Image,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { Text, View, TextInput, TouchableOpacity, Alert, Image, ScrollView, ActivityIndicator } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,7 +17,7 @@ const ngrokFetch = (url: string, options: RequestInit = {}) =>
   });
 
 export default function CreateAccount() {
-  const [logrole, setLogrole] = useState<"user" | "counselor">("counselor");
+  const [logrole, setLogrole] = useState<"user" | "counselor">("user");
 
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
