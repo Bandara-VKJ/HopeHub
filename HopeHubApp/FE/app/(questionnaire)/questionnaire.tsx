@@ -19,6 +19,7 @@ import {
   ExpoSpeechRecognitionModule,
   useSpeechRecognitionEvent,
 } from "expo-speech-recognition";
+import LottieView from 'lottie-react-native';
 
 const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
@@ -578,7 +579,15 @@ export default function LifeScreen() {
         </>
       ) : (
         <View style={styles.finalContainer}>
-          <View style={styles.finalIconWrap}>
+          <View style={styles.finalIconWrap}><LottieView
+              source={require("../../assets/animations/Fireworks.json")}
+              autoPlay
+              loop
+              style={{
+                width: 220,
+                height: 220,
+              }}
+            />
             <Ionicons name="rocket-outline" size={42} color="#4CAF50" />
           </View>
 
