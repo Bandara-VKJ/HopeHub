@@ -297,3 +297,4 @@ export const questionnaireStyles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 });
+export default {};

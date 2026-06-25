@@ -81,6 +81,7 @@ export default function CreateAccount() {
         // Redirect to login
         Alert.alert("Success", "Account created successfully. Please login.");
         router.replace('/(auth)/Login/login')
+        const data = await response.json();
 
         await AsyncStorage.setItem("role", "counselor");
         await AsyncStorage.setItem("counselorId", data.counselor._id);
@@ -104,9 +105,10 @@ export default function CreateAccount() {
         }),
       });
 
-      const data = await response.json();
+     
 
       if (!response.ok) {
+        const data = await response.json();
         Alert.alert("Error", data.message || "User registration failed");
         return;
       }

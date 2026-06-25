@@ -317,3 +317,4 @@ statusButtonText: {
   fontWeight: "900",
 },
 });
+export default {};
