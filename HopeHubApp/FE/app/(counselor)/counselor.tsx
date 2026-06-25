@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { CounselorStyles as styles } from "./counselorStyles";
+import { CounselorStyles as styles } from "../(counselor)/counselorStyles";
 import {
   Ionicons,
   MaterialCommunityIcons,

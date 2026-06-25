@@ -79,3 +79,4 @@ inputWrapper: {
     cursor:'pointer'
   }
 });
+export default {};

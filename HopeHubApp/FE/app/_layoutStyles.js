@@ -10,3 +10,4 @@ export const tabStyles = StyleSheet.create({
     shadowColor: 'transparent',
   },
 });
+export default {};

@@ -15,10 +15,6 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from "expo-speech-recognition";
 import LottieView from 'lottie-react-native';
 
 const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
@@ -144,18 +140,7 @@ function VoiceTextInput({
   const [isFocused, setIsFocused] = useState(false);
   const pulse = useRef(new Animated.Value(1)).current;
 
-  useSpeechRecognitionEvent("result", (event) => {
-    if (event.results?.[0]?.transcript) {
-      onChange(event.results[0].transcript);
-    }
-  });
 
-  useSpeechRecognitionEvent("start", () => setIsListening(true));
-  useSpeechRecognitionEvent("end", () => setIsListening(false));
-  useSpeechRecognitionEvent("error", (event) => {
-    console.log("Speech error:", event);
-    setIsListening(false);
-  });
 
   // Soft pulsing ring behind the mic button while it is actively listening.
   useEffect(() => {
@@ -179,24 +164,6 @@ function VoiceTextInput({
     return () => loop?.stop();
   }, [isListening]);
 
-  const startListening = async () => {
-    const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-
-    if (!result.granted) {
-      alert("Microphone permission is required for voice input.");
-      return;
-    }
-
-    ExpoSpeechRecognitionModule.start({
-      lang: "en-US",
-      interimResults: true,
-      continuous: false,
-    });
-  };
-
-  const stopListening = () => {
-    ExpoSpeechRecognitionModule.stop();
-  };
 
   return (
     <View style={styles.inputCard}>
@@ -252,18 +219,6 @@ function VoiceTextInput({
               ]}
             />
           )}
-
-          <TouchableOpacity
-            onPress={isListening ? stopListening : startListening}
-            activeOpacity={0.85}
-            style={[
-              styles.micBtn,
-              { backgroundColor: isListening ? "#FF4757" : accentColor },
-            ]}
-          >
-            <Ionicons name={isListening ? "stop" : "mic"} size={16} color="#fff" />
-            <Text style={styles.micBtnText}>{isListening ? "Stop" : "Speak"}</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </View>

@@ -166,3 +166,4 @@ export const accountCreateStyles = StyleSheet.create({
     fontWeight: "800",
   },
 });
+export default {};
