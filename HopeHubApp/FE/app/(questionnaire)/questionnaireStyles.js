@@ -11,7 +11,7 @@ export const questionnaireStyles = StyleSheet.create({
     backgroundColor: "#F8F8FC",
   },
 
-  // ---------- HEADER ----------
+  // HEADER
   header: {
     marginBottom: 22,
   },
@@ -67,7 +67,7 @@ export const questionnaireStyles = StyleSheet.create({
     marginBottom: 18,
   },
 
-  // ---------- EXPLANATION ----------
+  //  EXPLANATION
   explainBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -97,7 +97,7 @@ export const questionnaireStyles = StyleSheet.create({
     fontSize: 13.5,
   },
 
-  // ---------- OPTIONS ----------
+  // OPTIONS
   optionsContainer: {
     gap: 10,
   },
@@ -130,7 +130,7 @@ export const questionnaireStyles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  // ---------- TEXT / VOICE INPUT CARD ----------
+  // TEXT / VOICE INPUT CARD
   inputCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
@@ -207,7 +207,19 @@ export const questionnaireStyles = StyleSheet.create({
     fontSize: 13,
   },
 
-  // ---------- NAVIGATION ----------
+  // NAVIGATION
+  backgroundAnimation: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+},
+
+content: {
+  flex: 1,
+  zIndex: 1,
+},
   navigation: {
     flexDirection: "row",
     alignItems: "center",
@@ -250,20 +262,11 @@ export const questionnaireStyles = StyleSheet.create({
     fontSize: 15,
   },
 
-  // ---------- FINAL SCREEN ----------
+  // FINAL SCREEN
   finalContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  finalIconWrap: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    backgroundColor: "#E9F8EC",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 18,
   },
   finalTitle: {
     fontSize: 24,
@@ -280,7 +283,7 @@ export const questionnaireStyles = StyleSheet.create({
   finalBtn: {
     width: "100%",
     paddingVertical: 18,
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#2CA6A4",
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
