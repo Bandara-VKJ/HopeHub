@@ -112,11 +112,12 @@ const SECTIONS: {
   title: string;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
+  animation: any
 }[] = [
-  { range: [0, 5], title: "Lifestyle & Habits", icon: "leaf-outline", color: "#6C63FF" },
-  { range: [6, 7], title: "Mental Wellbeing", icon: "heart-outline", color: "#FF6B81" },
-  { range: [8, 11], title: "Social Energy", icon: "people-outline", color: "#3AB0FF" },
-  { range: [12, 19], title: "Personality Traits", icon: "sparkles-outline", color: "#33C481" },
+  { range: [0, 5], title: "Lifestyle & Habits", icon: "leaf-outline", animation:require('../../assets/animations/Medical App.json') ,color: "#6C63FF" },
+  { range: [6, 7], title: "Mental Wellbeing", icon: "heart-outline", animation:require('../../assets/animations/Mental Health.json'),color: "#FF6B81" },
+  { range: [8, 11], title: "Social Energy", icon: "people-outline",animation:require('../../assets/animations/Dance Party.json'), color: "#3AB0FF" },
+  { range: [12, 19], title: "Personality Traits", icon: "sparkles-outline", animation:require('../../assets/animations/personlity.json'),color: "#33C481" },
 ];
 
 function getSection(index: number) {
@@ -452,11 +453,26 @@ export default function LifeScreen() {
               Question {currentIndex + 1} of {questions.length}
             </Text>
           </View>
-
           {/* QUESTION */}
           <Animated.View
             style={{ flex: 1, opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
           >
+          {section.animation && (
+              <LottieView
+                source={section.animation}
+                autoPlay
+                loop
+                style={{
+                  position: "absolute",
+                  width: 450,        
+                  height: 450,    
+                  top: 0,
+                  alignSelf: "center",
+                  opacity: 0.30,
+                }}
+              />
+            )}
+
             <Text style={styles.question}>{questions[currentIndex]}</Text>
 
             {isTextInput ? (
@@ -534,7 +550,7 @@ export default function LifeScreen() {
         </>
       ) : (
         <View style={styles.finalContainer}>
-          <View style={styles.finalIconWrap}><LottieView
+            <LottieView
               source={require("../../assets/animations/Fireworks.json")}
               autoPlay
               loop
@@ -543,8 +559,6 @@ export default function LifeScreen() {
                 height: 220,
               }}
             />
-            <Ionicons name="rocket-outline" size={42} color="#4CAF50" />
-          </View>
 
           <Text style={styles.finalTitle}>All set!</Text>
           <Text style={styles.finalSubtitle}>
