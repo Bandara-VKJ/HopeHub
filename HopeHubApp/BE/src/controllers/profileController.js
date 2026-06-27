@@ -29,7 +29,14 @@ export const getProfile = async (req, res) => {
 // UPDATE PROFILE — saves directly into users collection
 export const updateProfile = async (req, res) => {
   try {
-    const { userId, firstName, lastName, profilePic } = req.body;
+    const { userId, firstName, lastName } = req.body;
+
+    let profilePic  = null;
+
+    if(req.file)
+    {
+      profilePic = `//uploads/${req.file.filename}`;
+    }
 
     if (!userId) {
       return res.status(400).json({ message: "userId is required" });
