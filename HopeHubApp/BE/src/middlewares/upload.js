@@ -1,39 +1,28 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { profile } from "console";
 
-const uploadDir = path.join(process.cwd(), "uploads", "counselors");
+const uploadDir = "uploads"
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+//Create upload folder
+if(!fs.existsSync(uploadDir))
+{
+  fs.existsSync(uploadDir);
 }
 
+//Configuring Multer Storage
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
+  destination(req, file, cb){
+    cb(null, uploadDir)
   },
-  filename: function (req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
+  filename(req, file, cb){
+    const ext = path.extname(file.originalname)
+    const userId = req.body.userId || Date.now();
+    cb(null, `profile_${userId}${ext}`);
+  } 
+})
 
-    cb(null, uniqueName);
-  },
-});
+const upload = multer({storage})
 
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage,
-  fileFilter,
-});
-
-export default upload;
+export default upload

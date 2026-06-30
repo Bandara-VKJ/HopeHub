@@ -95,31 +95,24 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     try {
       setSaving(true);
+      
+      const formData = new FormData
 
-      let imageData = picture;
+      formData.append("userId", userId!);
+      formData.append("firstName", first);
+      formData.append("lastName", last);
 
-      // Convert local image to base64
-      if (picture && picture.startsWith('file://')) {
-        const response = await fetch(picture);
-        const blob = await response.blob();
-        imageData = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(blob);
-        });
+      if (picture && picture.startsWith("file://")) {
+        formData.append("profilePic", {
+          uri: picture,
+          name: "profile.jpg",
+          type: "image/jpeg",
+        } as any);
       }
 
       const res = await ngrokFetch(`${BASE_URL}/api/profile/save`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          firstName: first,
-          lastName: last,
-          profilePic: imageData,
-        }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -127,6 +120,11 @@ export default function Profile() {
       if (!res.ok) {
         alert(data.message || "Save failed");
         return;
+      }
+
+      // Update the picture state with the server path
+      if (data.profile?.profilePic) {
+        setPicture(data.profile.profilePic);
       }
 
       alert("Profile saved!");
@@ -137,15 +135,15 @@ export default function Profile() {
     } finally {
       setSaving(false);
     }
-  };
+    };
 
-  if (loading) {
-    return (
-      <View style={[profileStyles.container, { justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color="#2CA6A4" />
-        <Text style={{ marginTop: 10 }}>Loading Profile...</Text>
-      </View>
-    );
+    if (loading) {
+      return (
+        <View style={[profileStyles.container, { justifyContent: 'center' }]}>
+          <ActivityIndicator size="large" color="#2CA6A4" />
+          <Text style={{ marginTop: 10 }}>Loading Profile...</Text>
+        </View>
+      );
   }
 
   return (
@@ -154,7 +152,10 @@ export default function Profile() {
       <TouchableOpacity onPress={pickImage} style={profileStyles.imagecontaine}>
         {picture ? (
           <Image
-            source={{ uri: picture }}
+            source={{ uri: picture?.startsWith("file://")
+              ? picture
+              :`${BASE_URL}${picture}`,
+             }}
             style={profileStyles.profilePic}
           />
         ) : (
