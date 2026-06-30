@@ -34,4 +34,3 @@ export const navStyles = StyleSheet.create({
     borderColor: "rgba(44, 166, 164, 0.35)",
   },
 })
-export default {};

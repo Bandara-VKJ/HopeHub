@@ -6,4 +6,3 @@ export const suppoertStyleSheet = StyleSheet.create({
     backgroundColor: '#fff',
     }
 })
-export default {};
