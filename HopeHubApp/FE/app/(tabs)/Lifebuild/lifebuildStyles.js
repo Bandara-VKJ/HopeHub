@@ -6,4 +6,3 @@ export const lifeRebuildStyles = StyleSheet.create({
     backgroundColor: '#fff',
   },
 });
-export default {};

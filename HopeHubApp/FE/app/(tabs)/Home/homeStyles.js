@@ -144,4 +144,3 @@ export const homeStyles = StyleSheet.create({
   },
   progressFill: { height: "100%", borderRadius: 10 },
 });
-export default {};

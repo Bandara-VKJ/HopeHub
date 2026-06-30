@@ -51,4 +51,3 @@ export const profileStyles = StyleSheet.create({
     backgroundColor: '#fff'
     }
 })
-export default {};
