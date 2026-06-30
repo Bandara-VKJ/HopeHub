@@ -95,7 +95,7 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     try {
       setSaving(true);
-
+      
       const formData = new FormData
 
       formData.append("userId", userId!);

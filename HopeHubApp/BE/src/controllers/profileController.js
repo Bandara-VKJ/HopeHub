@@ -29,36 +29,38 @@ export const getProfile = async (req, res) => {
 // UPDATE PROFILE
 export const updateProfile = async(req, res) =>{
 try {
-  const { userId, firstName, lastName } = req.body;
-  console.log("Body:", req.body);
-  if (!userId){
-    return res.status(400).json({message:"userId is required" })
-  }
+    const { userId, firstName, lastName } = req.body;
+    if (!userId){
+      return res.status(400).json({message:"userId is required" })
+    }
 
-  let profilePic = undefined;
+    let profilePic = undefined;
 
-  if(req.file){
-    profilePic = `/uploads/$(req.file.filename)`
-  }
+    if(req.file){
+      profilePic = `/uploads/${req.file.filename}`
+    }
 
-  const  updatedata = {firstName, lastName }
+    const  updatedata = {firstName, lastName }
 
-  if(profilePic)
-  {
-    updatedata.profilePic = profilePic
-  }
-  const user = await User.findByIdAndUpdate(
-    userId,
-   updatedata,
-   {new : true}
-  );
+    if(profilePic)
+    {
+      updatedata.profilePic = profilePic
+    }
+    const user = await User.findByIdAndUpdate(
+      userId,
+    updatedata,
+    {new : true}
+    );
 
-  if(!user)
-  {
-    return res.status(400).json({message: "User not found"});
-  }
-  console.log("File:", req.file);
-  res.status(200).json({message: "Profile saved successfully", profile:{firstName: user.firstName, LastName: user.lastName, ProfilePic: user.profilePic},});
+    if(!user)
+    {
+      return res.status(400).json({message: "User not found"});
+    }
+      res.status(200).json({message: "Profile saved successfully",profile: {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      profilePic: user.profilePic,
+    }});
 } catch (error) {
    console.log("updateProfile error:", error);
     res.status(500).json({ message: "Error saving profile" });
