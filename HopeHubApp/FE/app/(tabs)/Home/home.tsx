@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { homeStyles } from "./homeStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import LottieView from "lottie-react-native";
 
 const TASKS = [
   { id: "1", label: "Morning meditation", done: true },
@@ -79,9 +80,17 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={homeStyles.container} showsVerticalScrollIndicator={false}>
+      
       {/* Header */}
       <View style={homeStyles.header}>
-        <View style={homeStyles.headerCircleLarge} />
+        <LottieView
+          source={require("../../../assets/animations/mascot.json")}
+          autoPlay
+          loop
+          resizeMode="cover"
+          style={homeStyles.headerLottie}
+        />
+         <View style={homeStyles.headerCircleLarge} />
         <View style={homeStyles.headerCircleSmall} />
         <Text style={homeStyles.greeting}>{getGreeting()}</Text>
         <Text style={homeStyles.name}>{loading ? "Welcome..." : `Welcome ,${firstName || "User"}`}</Text>
