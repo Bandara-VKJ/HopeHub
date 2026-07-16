@@ -3,13 +3,22 @@ import { StyleSheet } from 'react-native';
 export const homeStyles = StyleSheet.create({
    container: { flex: 1, backgroundColor: "#f2f8f8" },
 
-  header: {
-    backgroundColor: "#2CA6A4",
-    paddingTop: 56,
-    paddingBottom: 28,
-    paddingHorizontal: 24,
-    overflow: "hidden",
-  },
+ header: {
+  position: "relative",
+  minHeight: 220,             
+  backgroundColor: "#2CA6A4",
+  paddingTop: 56,
+  paddingBottom: 28,
+  paddingHorizontal: 24,
+  overflow: "hidden",
+},
+
+headerLottie: {
+  ...StyleSheet.absoluteFillObject,
+  width: "100%",
+  height: "100%",
+  pointerEvents: "none",
+},
   headerCircleLarge: {
     position: "absolute", top: -40, right: -40,
     width: 160, height: 160,
