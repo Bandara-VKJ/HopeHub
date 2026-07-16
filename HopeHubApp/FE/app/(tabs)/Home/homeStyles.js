@@ -4,8 +4,8 @@ export const homeStyles = StyleSheet.create({
    container: { flex: 1, backgroundColor: "#f2f8f8" },
 
  header: {
-  position: "relative",       // explicit, so absolute children anchor correctly
-  minHeight: 220,             // fixed floor so Lottie can't stretch it
+  position: "relative",
+  minHeight: 220,             
   backgroundColor: "#2CA6A4",
   paddingTop: 56,
   paddingBottom: 28,
