@@ -120,6 +120,67 @@ headerLottie: {
   riskValue: { color: "#c96a00", fontSize: 17, fontWeight: "700" },
   riskSub: { color: "#9a7a40", fontSize: 11, marginTop: 2 },
 
+  mailCard: {
+  backgroundColor: "#f7fefe",
+  borderRadius: 12,
+  padding: 16,
+  borderWidth: 1,
+  borderColor: "#d5eeec",
+},
+
+inviteRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+},
+
+inviteBtn: {
+  backgroundColor: "#2a9f9f",
+  borderRadius: 20,
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+},
+
+inviteBtnText: {
+  color: "#fff",
+  fontWeight: "600",
+},
+input: {
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: "#222",
+    backgroundColor: "#fafafa",
+  },
+  actionsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 16,
+    gap: 10,
+  },
+  cancelBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: "#f0f0f0",
+  },
+  cancelBtnText: {
+    color: "#555",
+    fontWeight: "600",
+  },
+  submitBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: "#17db1a",
+  },
+  submitBtnText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
   taskItem: {
     flexDirection: "row",
     alignItems: "center",

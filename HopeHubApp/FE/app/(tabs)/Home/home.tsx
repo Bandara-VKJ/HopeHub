@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { homeStyles } from "./homeStyles";
@@ -33,6 +33,17 @@ export default function HomeScreen() {
 
   const [firstName, setFirstName] = useState('')
   const [loading, setLoading] = useState(true);
+  const [inviteFormOpen, setInviteFormOpen] = useState(false)
+  const [familyName, setFamilyName] = useState('')
+  const [familyEmail, setFamilyEmail] = useState('')
+  const [familyPhone, setFamilyPhone] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const resetInviteForm = () => {
+    setFamilyName("");
+    setFamilyEmail("");
+    setFamilyPhone("");
+    setInviteFormOpen(false);
+  }
 
   useEffect(() => {
     const loadusername = async () => {
@@ -78,6 +89,11 @@ export default function HomeScreen() {
 
   const doneCount = tasks.filter((t) => t.done).length;
 
+  const  handleSendInvite = async () => {
+      console.log("Sended !");
+      return
+  }
+
   return (
     <ScrollView style={homeStyles.container} showsVerticalScrollIndicator={false}>
       
@@ -118,7 +134,64 @@ export default function HomeScreen() {
             <Text style={homeStyles.riskSub}>Some areas need attention below</Text>
           </View>
         </View>
+        <View style={homeStyles.mailCard}>
+          {/* Invite Banner */}
+          <View style={homeStyles.inviteRow}>
+            <Text style={homeStyles.cardTitleText}>{!inviteFormOpen ? "Invite Family Member" : "Invite mail"}</Text>
 
+            {!inviteFormOpen && (
+            <TouchableOpacity style={homeStyles.inviteBtn}>
+              <Text style={homeStyles.inviteBtnText} onPress={() => setInviteFormOpen(true)}>Send</Text>
+            </TouchableOpacity>
+            )}
+          </View>
+            {inviteFormOpen && (
+              <View>
+                <Text>Full Name</Text>
+                <TextInput
+                  style={homeStyles.input}
+                  placeholder="e.g. mother "
+                  value= {familyName}
+                  onChangeText={setFamilyName}
+                />
+                <Text>Email</Text>
+                <TextInput
+                  style={homeStyles.input}
+                  placeholder="e.g. kamala@gmail.com"
+                  value= {familyEmail}
+                  onChangeText={setFamilyEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <Text>Phone</Text>
+                <TextInput
+                  style={homeStyles.input}
+                  placeholder="e.g. 07x xxxxxxx"
+                  value= {familyPhone}
+                  onChangeText={setFamilyEmail}
+                  keyboardType="phone-pad"
+                />
+                <View style={homeStyles.actionsRow}>
+                  <TouchableOpacity 
+                     style={homeStyles.cancelBtn}
+                     onPress={resetInviteForm}
+                     disabled={submitting}
+                    >
+                      <Text style={homeStyles.cancelBtnText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[homeStyles.submitBtn, submitting && { opacity: 0.6 }]}
+                    onPress={handleSendInvite}
+                    disabled={submitting}
+                  >
+                    <Text>
+                      {submitting ? "Sending..." : "Send invite"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+        </View>
         {/* Daily Tasks */}
         <View style={homeStyles.card_task}>
           <View style={homeStyles.cardHeader}>
