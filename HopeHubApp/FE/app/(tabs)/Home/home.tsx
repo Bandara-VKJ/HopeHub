@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, TouchableOpacity, TextInput } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { homeStyles } from "./homeStyles";
@@ -90,9 +90,58 @@ export default function HomeScreen() {
   const doneCount = tasks.filter((t) => t.done).length;
 
   const  handleSendInvite = async () => {
-      console.log("Sended !");
+
+    if(!familyName.trim())
+    {
+      Alert.alert("Missing name", "Please enter the family member's role.")
       return
-  }
+    }
+    if(!familyEmail.trim())
+    {
+      Alert.alert("Invalid email", "Please enter a valid email address.")
+      return
+    }
+    if(!familyPhone.trim())
+    {
+      Alert.alert("Missing contact number", "Please enter a contact number.")
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const userId = await AsyncStorage.getItem('userId')
+      
+      const res = await fetch(`${BASE_URL}/api/family/invite`,{
+        method : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body :JSON.stringify({
+          userId,
+          name: familyEmail.trim(),
+          email:familyEmail.trim(),
+          phone:familyPhone.trim()
+        }),
+      })
+
+      const data = await res.json();
+
+      if(res.ok)
+      {
+        Alert.alert("Invite sent", `An invite was sent to ${familyEmail}.`)
+        resetInviteForm();
+      }
+      else{
+        Alert.alert("Error", data.error || "Could not send invite. Try again.")
+      }
+    } catch (error) {
+       console.log("Error sending invite:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <ScrollView style={homeStyles.container} showsVerticalScrollIndicator={false}>
@@ -168,7 +217,7 @@ export default function HomeScreen() {
                   style={homeStyles.input}
                   placeholder="e.g. 07x xxxxxxx"
                   value= {familyPhone}
-                  onChangeText={setFamilyEmail}
+                  onChangeText={setFamilyPhone}
                   keyboardType="phone-pad"
                 />
                 <View style={homeStyles.actionsRow}>
