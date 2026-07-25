@@ -2,8 +2,9 @@ import crypto from "crypto";
 import FamilyMember from "../models/FamilyMember.js";
 import User from "../models/User.js";
 import sendInviteEmail from "../utils/sendInviteEmail.js";
+import bcrypt from "bcrypt" 
 
-const sendInvite = async (req, res) =>{
+export const sendInvite = async (req, res) =>{
     try {
         const { userId, name, email, phone } = req.body
         if (!userId || !name || !email || !phone)
@@ -39,7 +40,7 @@ const sendInvite = async (req, res) =>{
         });
     }
 
-    const link = `${process.env.APP_WEB_URL}/family/accept?token=${rawToken}&id=${familyMember._id}`;
+    const link = `${process.env.APP_WEB_URL}/api/family/accept?token=${rawToken}&id=${familyMember._id}`;
 
     await sendInviteEmail({
       to: email,
@@ -55,4 +56,71 @@ const sendInvite = async (req, res) =>{
   }
 };
 
-export default sendInvite;
+export const acceptInvite = async (req, res) =>{
+  try {
+    const {token, id } = req.query
+
+    const hashedToken = crypto.createHash("sha256").update(token || "").digest("hex");
+
+    const familyMember = await FamilyMember.findOne({
+      _id :id,
+      inviteToken : hashedToken,
+      inviteTokenExpires : {$gt : Date.now()}
+    });
+
+    if(!familyMember)
+    {
+      return res.send(`<h2>This invite link is invalid or has expired.</h2>`)
+    }
+
+     res.send(`
+      <html>
+        <body style="font-family: sans-serif; padding: 24px;">
+          <h2>Welcome, ${familyMember.name}</h2>
+          <p>You've been invited to view accountability updates on HopeHub.</p>
+          <form method="POST" action="/api/family/accept">
+            <input type="hidden" name="id" value="${id}" />
+            <input type="hidden" name="token" value="${token}" />
+            <label>Set a password:</label><br/>
+            <input type="password" name="password" required /><br/><br/>
+            <button type="submit">Accept & Continue</button>
+          </form>
+        </body>
+      </html>
+  `);
+  } catch (err) {
+    console.error("Invite accept error :", err);
+    res.status(500).json({ error: "Failed to accept invite" });
+  }
+}
+
+export const familyMemberReg = async (req, res) => {
+  try {
+    const {id, token, password } = req.body
+
+    const hashedToken = crypto.createHash("sha256").update(token || '').digest("hex")
+
+    const familyMember = await FamilyMember.findOne({
+      _id : id,
+      inviteToken : hashedToken,
+      inviteTokenExpires : {$gt : Date.now()} 
+    })
+
+    if(!familyMember)
+    {
+      return res.send(`<h2>This invite link is invalid or has expired.</h2>`)
+    }
+    
+    familyMember.passwordHash = await bcrypt.hash(password, 10)
+    familyMember.status = "active",
+    familyMember.inviteToken = undefined;
+    familyMember.inviteTokenExpires = undefined;
+    await familyMember.save();
+
+    res.send (`<h2>You're all set, ${familyMember.name}!</h2><p>You can close this page.</p>`)
+  } catch (err) {
+    console.error("Password set error :", err);
+    res.status(500).json({ error: "Failed to set password" });
+  }
+}
+
