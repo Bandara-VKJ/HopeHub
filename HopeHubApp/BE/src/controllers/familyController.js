@@ -3,6 +3,8 @@ import FamilyMember from "../models/FamilyMember.js";
 import User from "../models/User.js";
 import sendInviteEmail from "../utils/sendInviteEmail.js";
 import bcrypt from "bcrypt" 
+import jwt from "jsonwebtoken";
+import { error } from "console";
 
 export const sendInvite = async (req, res) =>{
     try {
@@ -123,4 +125,50 @@ export const familyMemberReg = async (req, res) => {
     res.status(500).json({ error: "Failed to set password" });
   }
 }
+export const familyMemberLogin = async (req, res) => {
+  try {
+    const {email, password } = req.body
 
+    if (!email || !password )
+    {
+      return res.status(400).json({error : "Email and password are required."});
+    }
+    const familyMember = await FamilyMember.findOne({email, status : 'active'});
+    
+    if(!familyMember || !familyMember.passwordHash)
+    {
+      return res.status(401).json({error : 'Invalid email or password'})
+    }
+
+    const isMatch  = await bcrypt.compare( password, familyMember.passwordHash )
+
+    if(!isMatch)
+    {
+       return res.status(401).json({error : 'Invalid email or password'})
+    }
+
+    const  token  = jwt.sign({
+      familyMemberId : familyMember._id,
+      ownerId : familyMember.ownerId,
+      role : 'family_member'
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d"}
+  );
+
+  res.json({ success: true, token, name: familyMember.name });
+
+  } catch (error) {
+     console.error("Family login error:", error);
+    res.status(500).json({ error: "Login failed" });
+  }
+} 
+
+export const getMyFamilyProfile = async (req, res) => {
+  try {
+    const familyMember = await FamilyMember.findById(req.familyMember.familyMemberId).select("-passwordHash -inviteToken");
+    res.json({ familyMember });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to load profile" });
+  }
+};
