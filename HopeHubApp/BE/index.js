@@ -9,6 +9,7 @@ import authRoutes from "./src/routes/authRoutes.js";
 import profileRoutes from "./src/routes/profileRoutes.js";
 import counselorRoutes from "./src/routes/CounselorRoutes.js";
 import familyRoutes from "./src/routes/familyRouter.js"
+import taskRouter from './src/routes/taskRoutes.js'
 
 const app = express();
 
@@ -39,7 +40,8 @@ app.use("/api/questionnaire", questionnaireRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/counselors", counselorRoutes);
-app.use("/api/family", familyRoutes)
+app.use("/api/family", familyRoutes);
+app.use("/api/taks", taskRouter);
 
 const PORT = process.env.PORT || 5000;
 
