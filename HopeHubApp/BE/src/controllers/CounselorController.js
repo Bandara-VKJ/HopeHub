@@ -1,5 +1,6 @@
 import Counselor from "../models/Counselor.js";
 import bcrypt from "bcryptjs";
+import User from "../models/User.js";
 
 const safeCounselor = (counselor) => ({
   _id: counselor._id,
@@ -213,3 +214,14 @@ export const updateCounselorAvailability = async (req, res) => {
     });
   }
 };
+
+export const getAllPatients = async (req, res) => {
+  try {
+    const patients = await User.find({ role: "user" });
+
+    res.status(200).json({ success: true, count : patients.length, patients})
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+}
