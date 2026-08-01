@@ -79,37 +79,31 @@ export default function Patients() {
 
             renderItem={({item})=>(
 
-                <TouchableOpacity style={patientsStyles.patientCard}>
+               <TouchableOpacity style={patientsStyles.patientCard}>
 
-                item.profilePic ? (
-                <Image
-                source={{
-                    uri: item.profilePic
-                }}
-                style={patientsStyles.avatar}
-                />
-            ) : (
-                <View style={patientsStyles.avatarPlaceholder}>
-                <Text style={patientsStyles.avatarText}>
-                    {item.firstName.charAt(0)}
-                </Text>
-                </View>
-            )
-
-
+                {item.profilePic ? (
+                    <Image
+                    source={{ uri: item.profilePic }}
+                    style={patientsStyles.avatar}
+                    />
+                ) : (
+                    <View style={patientsStyles.avatarPlaceholder}>
+                    <Text style={patientsStyles.avatarText}>
+                        {item.firstName.charAt(0)}
+                    </Text>
+                    </View>
+                )}
 
                 <View>
-
                     <Text style={patientsStyles.patientName}>
                     {item.firstName} {item.lastName}
                     </Text>
 
-
                     <Text style={patientsStyles.patientEmail}>
                     {item.email}
                     </Text>
-
                 </View>
+
                 </TouchableOpacity>
             )}
 
