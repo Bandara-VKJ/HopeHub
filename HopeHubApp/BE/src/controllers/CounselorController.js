@@ -225,3 +225,25 @@ export const getAllPatients = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 }
+
+export const getPatientById  = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    if(!patientId)
+    {
+      return res.status(404).json({error: "Patient ID is required"})
+    }
+
+    const patient = await User.findById(patientId)
+
+    if (!patient) {
+      return res.status(404).json({error: "Patient not found",});
+    }
+
+    res.status(200).json({success: true, patient});
+  } catch (error) {
+     console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+}

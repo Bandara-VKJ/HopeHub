@@ -5,7 +5,8 @@ import {
   getCounselors,
   getCounselorById,
   updateCounselorAvailability,
-  getAllPatients
+  getAllPatients,
+  getPatientById
 } from "../controllers/CounselorController.js";
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.post("/login", loginCounselor);
 router.patch("/:id/availability", updateCounselorAvailability);
 
 router.get("/all-patients", getAllPatients);
+router.get("/patient/:patientId", getPatientById);
 
 router.get("/", getCounselors);
 router.get("/:id", getCounselorById);
