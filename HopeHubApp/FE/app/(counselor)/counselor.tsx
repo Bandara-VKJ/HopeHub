@@ -363,7 +363,7 @@ export default function CounselorScreen() {
               <Text style={styles.actionText}>Reports</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionCard}>
+            <TouchableOpacity style={styles.actionCard} onPress={() => router.push("/(patients)/patients")}>
               <View style={[styles.actionIcon, { backgroundColor: "#E91E63" }]}>
                 <FontAwesome5 name="users" size={22} color="#fff" />
               </View>
