@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useEffect, useState } from "react";
 import { patientsStyles } from "./patientsStyles";
+import { router } from "expo-router";
 
 const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
@@ -79,7 +80,16 @@ export default function Patients() {
 
             renderItem={({item})=>(
 
-               <TouchableOpacity style={patientsStyles.patientCard}>
+               <TouchableOpacity style={patientsStyles.patientCard}
+                onPress={() =>
+                    router.push({
+                    pathname: "/(patients)/patientProfile",
+                    params: {
+                        patientId: item._id,
+                    },
+                    })
+                }
+               >
 
                 {item.profilePic ? (
                     <Image
