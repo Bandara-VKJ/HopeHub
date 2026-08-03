@@ -7,21 +7,37 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Platform,
 } from "react-native";
 import { taskStyles } from "./taskStyles";
 import { useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 type TaskDraft = {
   id: string;
   title: string;
   description: string;
 };
-type DaysDraft = {
-    id : string;
-    date : string;
-}
+
+type DayDraft = {
+  id: string;
+  date: Date | null;
+  tasks: TaskDraft[];
+};
+
+const makeEmptyTask = (): TaskDraft => ({
+  id: Date.now().toString() + Math.random(),
+  title: "",
+  description: "",
+});
+
+const makeEmptyDay = (): DayDraft => ({
+  id: Date.now().toString() + Math.random(),
+  date: null,
+  tasks: [makeEmptyTask()],
+});
 
 export default function Tasks() {
   const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
@@ -29,9 +45,8 @@ export default function Tasks() {
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [taskDrafts, setTaskDrafts] = useState<TaskDraft[]>([{ id: "1", title: "", description: "" },]);
-  const [taskDaysDrafts, setTaskDaysDrafts] = useState<DaysDraft[]>([{id: '1', date : ''},]);
+  const [dayDrafts, setDayDrafts] = useState<DayDraft[]>([makeEmptyDay()]);
+  const [pickerOpenForDayId, setPickerOpenForDayId] = useState<string | null>(null);
 
   const ngrokFetch = (url: string, options: RequestInit = {}) =>
     fetch(url, {
@@ -42,47 +57,81 @@ export default function Tasks() {
       },
     });
 
-  const addNewDay = () => {
-    setTaskDaysDrafts = ((prev) => [
-        ...prev,
-        {id : Date.now().toString(), date: ""},
-    ]);
-  };
-  const removeNewDay = (id : string) => {
-    setTaskDaysDrafts = ((prev) => prev.filter((t) => t.id !== id));
-  };
-  const addTaskRow = () => {
-    setTaskDrafts((prev) => [
-      ...prev,
-      { id: Date.now().toString(), title: "", description: "" },
-    ]);
+  // --- Day-level actions ---
+  const addDay = () => {
+    setDayDrafts((prev) => [...prev, makeEmptyDay()]);
   };
 
-  const removeTaskRow = (id: string) => {
-    setTaskDrafts((prev) => prev.filter((t) => t.id !== id));
+  const removeDay = (dayId: string) => {
+    setDayDrafts((prev) => prev.filter((d) => d.id !== dayId));
   };
 
-  const updateTaskRow = (id: string, field: "title" | "description", value: string) => {
-    setTaskDrafts((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, [field]: value } : t))
+  const setDayDate = (dayId: string, date: Date) => {
+    setDayDrafts((prev) =>
+      prev.map((d) => (d.id === dayId ? { ...d, date } : d))
     );
   };
 
-  const isValidDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
+  // --- Task-level actions (scoped to a specific day) ---
+  const addTaskToDay = (dayId: string) => {
+    setDayDrafts((prev) =>
+      prev.map((d) =>
+        d.id === dayId ? { ...d, tasks: [...d.tasks, makeEmptyTask()] } : d
+      )
+    );
+  };
+
+  const removeTaskFromDay = (dayId: string, taskId: string) => {
+    setDayDrafts((prev) =>
+      prev.map((d) =>
+        d.id === dayId
+          ? { ...d, tasks: d.tasks.filter((t) => t.id !== taskId) }
+          : d
+      )
+    );
+  };
+
+  const updateTaskInDay = (
+    dayId: string,
+    taskId: string,
+    field: "title" | "description",
+    value: string
+  ) => {
+    setDayDrafts((prev) =>
+      prev.map((d) =>
+        d.id === dayId
+          ? {
+              ...d,
+              tasks: d.tasks.map((t) =>
+                t.id === taskId ? { ...t, [field]: value } : t
+              ),
+            }
+          : d
+      )
+    );
+  };
+
+  const formatDate = (date: Date) => {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   const addTasks = async () => {
-    const validTasks = taskDrafts
-      .map((t) => ({ title: t.title.trim(), description: t.description.trim() }))
-      .filter((t) => t.title.length > 0);
+    // Validate every day has a date and at least one titled task
+    for (const day of dayDrafts) {
+      if (!day.date) {
+        Alert.alert("Missing date", "Please pick a date for every day added.");
+        return;
+      }
+      const hasTitledTask = day.tasks.some((t) => t.title.trim().length > 0);
+      if (!hasTitledTask) {
+        Alert.alert("Missing tasks", `Add at least one task for ${formatDate(day.date)}.`);
+        return;
+      }
+    }
 
-    if (validTasks.length === 0) {
-      Alert.alert("No tasks", "Add at least one task title.");
-      return;
-    }
-    if (!isValidDate(startDate)) {
-      Alert.alert("Invalid date", "Enter the week start date as YYYY-MM-DD.");
-      return;
-    }
     if (!patientId) {
       Alert.alert("Missing patient", "No patient selected for this task list.");
       return;
@@ -92,23 +141,29 @@ export default function Tasks() {
     try {
       const counselorId = await AsyncStorage.getItem("userId"); // counselor's own id
 
-      const response = await ngrokFetch(`${BASE_URL}/api/tasks/weekly`, {
+      // Build a flat payload: one entry per day, each with its own date + tasks
+      const days = dayDrafts.map((d) => ({
+        date: formatDate(d.date as Date),
+        tasks: d.tasks
+          .map((t) => ({ title: t.title.trim(), description: t.description.trim() }))
+          .filter((t) => t.title.length > 0),
+      }));
+
+      const response = await ngrokFetch(`${BASE_URL}/api/taks/add-tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: patientId,
           counselorId,
-          startDate,
-          tasks: validTasks,
+          days,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert("Success", `${data.tasks?.length || 0} task entries created for the week.`);
-        setTaskDrafts([{ id: "1", title: "", description: "" }]);
-        setStartDate("");
+        Alert.alert("Success", `${data.tasks?.length || 0} task entries created.`);
+        setDayDrafts([makeEmptyDay()]);
       } else {
         Alert.alert("Error", data.error || "Could not create tasks.");
       }
@@ -132,79 +187,159 @@ export default function Tasks() {
   return (
     <ScrollView style={{ flex: 1, padding: 16 }}>
       <Text style={{ fontSize: 18, fontWeight: "700", marginBottom: 12 }}>
-        Assign Weekly Tasks
+        Assign Tasks
       </Text>
 
-    {taskDaysDrafts.map((date) => (
-        <Text style={{ fontSize: 13, fontWeight: "600", marginBottom: 4 }}>
-        Week Start Date (YYYY-MM-DD)
-      </Text>
-      <TextInput
-        placeholder="2026-08-03"
-        placeholderTextColor="#999"
-        value={startDate}
-        onChangeText={setStartDate}
-        style={{
-          borderWidth: 1,
-          borderColor: "#e0e0e0",
-          borderRadius: 10,
-          padding: 10,
-          marginBottom: 16,
-        }}
-      />
-
-      {taskDrafts.map((task, index) => (
+      {dayDrafts.map((day, dayIndex) => (
         <View
-          key={task.id}
+          key={day.id}
           style={{
             borderWidth: 1,
-            borderColor: "#eee",
-            borderRadius: 10,
+            borderColor: "#ddd",
+            borderRadius: 12,
             padding: 12,
-            marginBottom: 12,
+            marginBottom: 20,
+            backgroundColor: "#fafafa",
           }}
         >
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ fontWeight: "600" }}>Task {index + 1}</Text>
-            {taskDrafts.length > 1 && (
-              <TouchableOpacity onPress={() => removeTaskRow(task.id)}>
-                <Ionicons name="close-circle" size={20} color="#c00" />
+          {/* Day header */}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 10,
+            }}
+          >
+            <Text style={{ fontWeight: "700", fontSize: 15 }}>Day {dayIndex + 1}</Text>
+            {dayDrafts.length > 1 && (
+              <TouchableOpacity onPress={() => removeDay(day.id)}>
+                <Ionicons name="trash" size={18} color="#c00" />
               </TouchableOpacity>
             )}
           </View>
 
-          <TextInput
-            placeholder="Task title (e.g. Morning meditation)"
-            placeholderTextColor="#999"
-            value={task.title}
-            onChangeText={(v) => updateTaskRow(task.id, "title", v)}
+          {/* Date picker trigger */}
+          <TouchableOpacity
+            onPress={() => setPickerOpenForDayId(day.id)}
             style={{
+              flexDirection: "row",
+              alignItems: "center",
               borderWidth: 1,
               borderColor: "#e0e0e0",
               borderRadius: 8,
-              padding: 8,
-              marginTop: 8,
+              padding: 10,
+              marginBottom: 12,
+              backgroundColor: "#fff",
             }}
-          />
-          <TextInput
-            placeholder="Description (optional)"
-            placeholderTextColor="#999"
-            value={task.description}
-            onChangeText={(v) => updateTaskRow(task.id, "description", v)}
-            style={{
-              borderWidth: 1,
-              borderColor: "#e0e0e0",
-              borderRadius: 8,
-              padding: 8,
-              marginTop: 8,
-            }}
-          />
+          >
+            <Ionicons name="calendar" size={18} color="#2CA6A4" style={{ marginRight: 8 }} />
+            <Text style={{ color: day.date ? "#222" : "#999" }}>
+              {day.date ? formatDate(day.date) : "Select date"}
+            </Text>
+          </TouchableOpacity>
+
+          {pickerOpenForDayId === day.id && (
+            Platform.OS === "web" ? (
+                <input
+                type="date"
+                value={day.date ? formatDate(day.date) : ""}
+                onChange={(e) => {
+                    const selected = new Date(e.target.value);
+                    setDayDate(day.id, selected);
+                    setPickerOpenForDayId(null);
+                }}
+                style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: 8,
+                    padding: 8,
+                    marginBottom: 12,
+                    fontSize: 14,
+                }}
+                />
+            ) : (
+                <DateTimePicker
+                value={day.date || new Date()}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "default"}
+                onChange={(event, selectedDate) => {
+                    setPickerOpenForDayId(null);
+                    if (event.type === "set" && selectedDate) {
+                    setDayDate(day.id, selectedDate);
+                    }
+                }}
+                />
+            )
+            )}
+          {/* Tasks for this day */}
+          {day.tasks.map((task, taskIndex) => (
+            <View
+              key={task.id}
+              style={{
+                borderWidth: 1,
+                borderColor: "#eee",
+                borderRadius: 10,
+                padding: 10,
+                marginBottom: 10,
+                backgroundColor: "#fff",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontWeight: "600", fontSize: 13 }}>
+                  Task {taskIndex + 1}
+                </Text>
+                {day.tasks.length > 1 && (
+                  <TouchableOpacity onPress={() => removeTaskFromDay(day.id, task.id)}>
+                    <Ionicons name="close-circle" size={18} color="#c00" />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <TextInput
+                placeholder="Task title (e.g. Morning meditation)"
+                placeholderTextColor="#999"
+                value={task.title}
+                onChangeText={(v) => updateTaskInDay(day.id, task.id, "title", v)}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#e0e0e0",
+                  borderRadius: 8,
+                  padding: 8,
+                  marginTop: 8,
+                }}
+              />
+              <TextInput
+                placeholder="Description (optional)"
+                placeholderTextColor="#999"
+                value={task.description}
+                onChangeText={(v) => updateTaskInDay(day.id, task.id, "description", v)}
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#e0e0e0",
+                  borderRadius: 8,
+                  padding: 8,
+                  marginTop: 8,
+                }}
+              />
+            </View>
+          ))}
+
+          <TouchableOpacity onPress={() => addTaskToDay(day.id)}>
+            <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>
+              + Add another task for this day
+            </Text>
+          </TouchableOpacity>
         </View>
       ))}
 
-    ))}
-      <TouchableOpacity onPress={addTaskRow} style={{ marginBottom: 20 }}>
-        <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>+ Add another task</Text>
+      <TouchableOpacity onPress={addDay} style={{ marginBottom: 20 }}>
+        <Text style={{ color: "#0a7d9c", fontWeight: "700" }}>+ Add another day</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
