@@ -1,5 +1,5 @@
 import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { patientProfileStyles } from './patientProfile.Styles'
 
@@ -26,7 +26,7 @@ export default function PatientProfile() {
   fetch(url, {
     ...options,
     headers: {
-      ...(options.headers || {}),
+      ...(options.headers || { }),
       "ngrok-skip-browser-warning": "true",
     },
   });
@@ -96,7 +96,10 @@ export default function PatientProfile() {
 
 
 
-            <TouchableOpacity style={patientProfileStyles.taskButton}>
+            <TouchableOpacity 
+            style={patientProfileStyles.taskButton}
+            onPress={() => router.push('/(task)/task')}
+            >
                 <Text style={patientProfileStyles.taskButtonText}>
                 Add Tasks
                 </Text>
