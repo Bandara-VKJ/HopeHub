@@ -2,11 +2,16 @@ import Task from '../models/Task.js'
 
 export const createWeeklyTasks = async (req, res) => {
     try {
-            const { userId, tasks, startDate } = req.body;
+            const { userId, counselorId, tasks, startDate } = req.body;
 
-            if (!userId || !Array.isArray(tasks) || tasks.length === 0 || !startDate) {
-      return res.status(400).json({ error: "userId, tasks[], and startDate are required" });
-    }
+    if(!counselorId)
+        {
+            return res.status(401).json({ error: "counselor Id is required" });
+        }    
+    if (!userId || !Array.isArray(tasks) || tasks.length === 0 || !startDate) 
+        {
+        return res.status(400).json({ error: "userId, tasks[], and startDate are required" });
+        }
 
     const start = new Date(startDate);
 
