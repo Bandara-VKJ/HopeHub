@@ -2,49 +2,45 @@ import Task from '../models/Task.js'
 
 export const createWeeklyTasks = async (req, res) => {
     try {
-            const { userId, counselorId, tasks, startDate } = req.body;
+            const { userId, counselorId, days } = req.body;
 
     if(!counselorId)
         {
             return res.status(401).json({ error: "counselor Id is required" });
         }    
-    if (!userId || !Array.isArray(tasks) || tasks.length === 0 || !startDate) 
+    if (!userId || !Array.isArray(days) || days.length === 0) 
         {
-        return res.status(400).json({ error: "userId, tasks[], and startDate are required" });
+        return res.status(400).json({ error: "userId, days[] are required" });
         }
-
-    const start = new Date(startDate);
-
-    if(isNaN(start.getTime()))
-    {
-        return res.status(400).json({ error: "Invalid startDate" });
-    }
 
     const docsToInsert = [];
 
-        for(const task of tasks)
+        for(const day of days)
         {
-            const taskDate = new Date(start)
-            if(!task.title) continue;
+            if(!day.date ||!Array.isArray(day.tasks)) continue;
+            for(const task of day.tasks)
+                {
+                    if(!task.title) continue;
+                    
+                    docsToInsert.push({
+                        userId,
+                        counselorId,
+                        title: task.title,
+                        description: task.description || "",
+                        date : day.date,
+                        status: "pending",
+                    });
 
-            const offset = typeof task.dayOffset === 'number' ? task.dayOffset : 0;
-            taskDate.setDate(taskDate.getDate() + offset);
-            taskDate.setHours(0, 0, 0, 0);
-            
-            docsToInsert.push({
-                userId,
-                title: task.title,
-                description: task.description || "",
-                date : taskDate,
-                status: "pending",
-            });
+                }   
+        }
+            if (docsToInsert.length === 0) {
+                return res.status(400).json({ error: "No valid tasks to create" });
+            }
 
-    }
            const created = await Task.insertMany(docsToInsert);
             res.status(201).json({ tasks: created });
 
     } catch (error) {
-        console.error("Create weekly tasks error:", error);
         res.status(500).json({ error: "Failed to create weekly tasks" });
     }
 }
