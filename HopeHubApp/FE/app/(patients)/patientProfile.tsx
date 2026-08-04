@@ -98,7 +98,12 @@ export default function PatientProfile() {
 
             <TouchableOpacity 
             style={patientProfileStyles.taskButton}
-            onPress={() => router.push('/(task)/task')}
+            onPress={() => 
+                router.push({
+                    pathname : '/(task)/task',
+                    params :  { patientId: patient?._id }
+                })
+            }
             >
                 <Text style={patientProfileStyles.taskButtonText}>
                 Add Tasks

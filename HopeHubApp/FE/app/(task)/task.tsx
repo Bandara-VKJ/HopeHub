@@ -120,35 +120,34 @@ export default function Tasks() {
 
   const addTasks = async () => {
     // Validate every day has a date and at least one titled task
-    for (const day of dayDrafts) {
-      if (!day.date) {
-        Alert.alert("Missing date", "Please pick a date for every day added.");
-        return;
-      }
-      const hasTitledTask = day.tasks.some((t) => t.title.trim().length > 0);
-      if (!hasTitledTask) {
-        Alert.alert("Missing tasks", `Add at least one task for ${formatDate(day.date)}.`);
-        return;
-      }
-    }
-
-    if (!patientId) {
-      Alert.alert("Missing patient", "No patient selected for this task list.");
+  for (const day of dayDrafts) {
+    if (!day.date) {
+      Alert.alert("Missing date", "Please pick a date for every day added.");
       return;
     }
+    const hasTitledTask = day.tasks.some((t) => t.title.trim().length > 0);
+    if (!hasTitledTask) {
+      Alert.alert("Missing tasks", `Add at least one task for ${formatDate(day.date)}.`);
+      return;
+    }
+  }
+
+  if (!patientId) {
+    Alert.alert("Missing patient", "No patient selected for this task list.");
+    return;
+  }
 
     setSubmitting(true);
     try {
-      const counselorId = await AsyncStorage.getItem("userId"); // counselor's own id
+      const counselorId = await AsyncStorage.getItem("counselorId");
 
-      // Build a flat payload: one entry per day, each with its own date + tasks
       const days = dayDrafts.map((d) => ({
         date: formatDate(d.date as Date),
         tasks: d.tasks
           .map((t) => ({ title: t.title.trim(), description: t.description.trim() }))
           .filter((t) => t.title.length > 0),
       }));
-
+   
       const response = await ngrokFetch(`${BASE_URL}/api/taks/add-tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
