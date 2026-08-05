@@ -47,8 +47,8 @@ export const createWeeklyTasks = async (req, res) => {
 
 export const getTasks = async (req, res) => {
     try {
-        const { counselorId, userId } = req.body;
-
+       const { userId, counselorId } = req.query;
+       
         if(!userId || !counselorId)
         {
             return res.status(401).json({ error: "userId and counselorId are required" });
