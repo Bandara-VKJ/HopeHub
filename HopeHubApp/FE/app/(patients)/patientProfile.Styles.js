@@ -79,5 +79,60 @@ export const patientProfileStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+tasksContainer: {
+  flex: 1,
+  marginTop: 20,
+  paddingHorizontal: 20,
+},
 
+tasksScroll: {
+  maxHeight: 320,
+},
+
+tasksTitle: {
+  fontSize: 22,
+  fontWeight: "bold",
+  marginBottom: 12,
+},
+
+taskCard: {
+  backgroundColor: "#fff",
+  padding: 16,
+  borderRadius: 12,
+  marginBottom: 12,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  elevation: 2,
+},
+
+taskTitle: {
+  fontSize: 18,
+  fontWeight: "600",
+},
+
+taskDescription: {
+  marginTop: 8,
+  color: "#555",
+  fontSize: 15,
+},
+
+statusContainer: {
+  marginTop: 10,
+},
+
+statusText: {
+  color: "#2563EB",
+  fontWeight: "600",
+},
+
+dueDate: {
+  marginTop: 8,
+  color: "#777",
+},
+
+emptyText: {
+  textAlign: "center",
+  color: "#888",
+  marginTop: 20,
+},
 });

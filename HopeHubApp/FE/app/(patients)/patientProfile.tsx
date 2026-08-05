@@ -1,7 +1,8 @@
-import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { patientProfileStyles } from './patientProfile.Styles'
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
    type Patient = {
@@ -13,6 +14,14 @@ import { patientProfileStyles } from './patientProfile.Styles'
     profilePic?: string;
   }
 
+  type Task = {
+  _id: string;
+  title: string;
+  description: string;
+  status: string;
+  date?: string;
+};
+
 export default function PatientProfile() {
 
   const { patientId } = useLocalSearchParams();
@@ -21,6 +30,8 @@ export default function PatientProfile() {
 
   const [patient, setPatient] = useState<Patient | null>(null)
   const [loading, setLaoding] = useState(true)
+  const [tasks, setTasks] = useState<Task[]>([]);
+
 
   const ngrokFetch = (url: string, options: RequestInit = {}) =>
   fetch(url, {
@@ -32,10 +43,23 @@ export default function PatientProfile() {
   });
 
   useEffect ( ()=>{
-    getPatientById()
+    getPatientById(),
+    getTasks()
   },[])
 
-  const getPatientById = async () =>{
+  const getTasks = async () => {
+    try {
+        const counselorId = await AsyncStorage.getItem("counselorId")
+        const response = await ngrokFetch(`${BASE_URL}/api/taks/tasks?userId=${patientId}&counselorId=${counselorId}`);
+
+        const data = await response.json();
+        setTasks(data.response);
+
+    } catch (error) {
+         console.log("Get tasks error:", error);
+    }
+  }
+  const getPatientById = async () => {
     try {
         const response = await ngrokFetch(`${BASE_URL}/api/counselors/patient/${patientId}`);
 
@@ -61,7 +85,8 @@ export default function PatientProfile() {
       }
 
     return (
-    <View style={patientProfileStyles.container}>
+    <View>
+         <View style={patientProfileStyles.container}>
 
         <Text style={patientProfileStyles.title}>
         Patient Profile
@@ -114,5 +139,47 @@ export default function PatientProfile() {
         }
 
     </View>
+    <View style={patientProfileStyles.tasksContainer}>
+    <Text style={patientProfileStyles.tasksTitle}>
+        Patient's Tasks
+    </Text>
+
+    <ScrollView
+        style={patientProfileStyles.tasksScroll}
+        showsVerticalScrollIndicator={false}
+    >
+        {tasks.length === 0 ? (
+        <Text style={patientProfileStyles.emptyText}>
+            No tasks assigned yet.
+        </Text>
+        ) : (
+        tasks.map((task) => (
+            <View key={task._id} style={patientProfileStyles.taskCard}>
+            <Text style={patientProfileStyles.taskTitle}>
+                {task.title}
+            </Text>
+
+            <Text style={patientProfileStyles.taskDescription}>
+                {task.description}
+            </Text>
+
+            <View style={patientProfileStyles.statusContainer}>
+                <Text style={patientProfileStyles.statusText}>
+                Status: {task.status}
+                </Text>
+            </View>
+
+            {task.date && (
+                <Text style={patientProfileStyles.dueDate}>
+                Due: {new Date(task.date).toLocaleDateString()}
+                </Text>
+            )}
+            </View>
+        ))
+        )}
+    </ScrollView>
+    </View>
+    </View>    
+   
     );
 }
