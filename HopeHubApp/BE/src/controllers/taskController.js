@@ -44,3 +44,19 @@ export const createWeeklyTasks = async (req, res) => {
         res.status(500).json({ error: "Failed to create weekly tasks" });
     }
 }
+
+export const getTasks = async (req, res) => {
+    try {
+        const { counselorId, userId } = req.body;
+
+        if(!userId || !counselorId)
+        {
+            return res.status(401).json({ error: "userId and counselorId are required" });
+        }
+        const response = await Task.find({userId,counselorId});
+
+        res.status(200).json({success: true, response})
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get tasks" });
+    }
+}

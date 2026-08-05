@@ -1,8 +1,9 @@
 import express from "express";
-import {createWeeklyTasks} from "../controllers/taskController.js"
+import {createWeeklyTasks, getTasks} from "../controllers/taskController.js"
 
 const router = express.Router();
 
-router.post('/add-tasks', createWeeklyTasks)
+router.post('/add-tasks', createWeeklyTasks);
+router.get('/tasks', getTasks);
 
 export default router;
