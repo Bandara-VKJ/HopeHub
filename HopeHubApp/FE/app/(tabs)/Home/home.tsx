@@ -19,6 +19,13 @@ const RISK_FACTORS = [
   { label: "Sleep Quality", value: 30, color: "#2CA6A4" },
   { label: "Support Network", value: 80, color: "#17db1a" },
 ];
+type Task = {
+  _id: string;
+  title: string;
+  description: string;
+  status: string;
+  date: string;
+};
 
 const ProgressBar = ({ value, color }: { value: number; color: string }) => (
   <View style={homeStyles.progressTrack}>
@@ -27,10 +34,10 @@ const ProgressBar = ({ value, color }: { value: number; color: string }) => (
 );
 
 export default function HomeScreen() {
-  const [tasks, setTasks] = useState(TASKS);
 
   const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [firstName, setFirstName] = useState('')
   const [loading, setLoading] = useState(true);
   const [inviteFormOpen, setInviteFormOpen] = useState(false)
@@ -46,34 +53,43 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    const loadusername = async () => {
+    const loadData = async () => {
       try {
+
         const userId = await AsyncStorage.getItem("userId");
 
         if (!userId) return;
 
-        const res = await fetch(`${BASE_URL}/api/profile/${userId}`, {
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-          },
-        });
+
+        // Get profile
+        const res = await fetch(
+          `${BASE_URL}/api/profile/${userId}`,
+          {
+            headers:{
+              "ngrok-skip-browser-warning":"true",
+            },
+          }
+        );
 
         const data = await res.json();
 
-        if (res.ok && data.profile) {
-          setFirstName(data.profile.firstName || '');
+        if(res.ok && data.profile){
+          setFirstName(data.profile.firstName || "");
         }
 
-      } catch (error) {
-        console.log("Error loading name:", error);
-      } finally {
+        await getTasks();
+
+      } catch(error){
+        console.log("Loading error:", error);
+      }
+      finally{
         setLoading(false);
       }
     };
 
-    loadusername();
-  }, []);
+    loadData();
 
+  }, []);
   const getGreeting = () =>{
     const hour = new Date().getHours();
 
@@ -82,13 +98,52 @@ export default function HomeScreen() {
     return "Good evening 🌙"
   }
 
-  const toggle = (id: string) =>
-    setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+ const toggle = (id: string) =>
+  setTasks((prev) =>
+    prev.map((task) =>
+      task._id === id
+        ? {
+            ...task,
+            status: task.status === "completed"
+              ? "pending"
+              : "completed"
+          }
+        : task
+    )
+  );
+
+  const doneCount = tasks.filter(
+    (task) => task.status === "completed"
+  ).length;
+
+  const getTasks = async () => {
+  try {
+    const userId = await AsyncStorage.getItem("userId");
+
+    if (!userId) return;
+
+    const response = await fetch(
+      `${BASE_URL}/api/taks/user-tasks?userId=${userId}`,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
     );
 
-  const doneCount = tasks.filter((t) => t.done).length;
+    const data = await response.json();
 
+    console.log("Tasks response:", data);
+
+    if (response.ok) {
+      setTasks(data.tasks  || []);
+    }
+
+  } catch (error) {
+    console.log("Get tasks error:", error);
+    setTasks([]);
+  }
+};
   const  handleSendInvite = async () => {
 
     if(!familyName.trim())
@@ -243,32 +298,72 @@ export default function HomeScreen() {
         </View>
         {/* Daily Tasks */}
         <View style={homeStyles.card_task}>
-          <View style={homeStyles.cardHeader}>
-            <View style={homeStyles.cardTitle}>
-              <Ionicons name="checkbox" size={20} color="#17db1a" />
-              <Text style={homeStyles.cardTitleText}>Daily Tasks</Text>
-            </View>
-            <View style={homeStyles.badge}>
-              <Text style={homeStyles.badgeText}>{doneCount} / {tasks.length} Complete</Text>
-            </View>
+        <View style={homeStyles.cardHeader}>
+          <View style={homeStyles.cardTitle}>
+            <Ionicons name="checkbox" size={20} color="#17db1a" />
+            <Text style={homeStyles.cardTitleText}>
+              Daily Tasks
+            </Text>
           </View>
-
-          {tasks.map((task) => (
-            <TouchableOpacity
-              key={task.id}
-              style={[homeStyles.taskItem, task.done && homeStyles.taskItemDone]}
-              onPress={() => toggle(task.id)}
-              activeOpacity={0.7}
-            >
-              <View style={[homeStyles.checkbox, task.done && homeStyles.checkboxDone]}>
-                {task.done && <Ionicons name="checkmark" size={14} color="#fff" />}
-              </View>
-              <Text style={[homeStyles.taskLabel, task.done && homeStyles.taskLabelDone]}>
-                {task.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          <View style={homeStyles.badge}>
+            <Text style={homeStyles.badgeText}>
+              {tasks.filter(t => t.status === "completed").length} / {tasks.length} Complete
+            </Text>
+          </View>
         </View>
+        {tasks.length === 0 ? (
+
+          <Text>
+            No tasks assigned for today
+          </Text>
+
+        ) : (
+
+          tasks.map((task)=>(
+            <View
+              key={task._id}
+              style={homeStyles.taskItem}
+            >
+
+              <View 
+                style={[
+                  homeStyles.checkbox,
+                  task.status === "completed" && homeStyles.checkboxDone
+                ]}
+              >
+                {
+                  task.status === "completed" &&
+                  <Ionicons 
+                    name="checkmark"
+                    size={14}
+                    color="#fff"
+                  />
+                }
+              </View>
+              <View>
+                <Text
+                  style={[
+                    homeStyles.taskLabel,
+                    task.status === "completed" &&
+                    homeStyles.taskLabelDone
+                  ]}
+                >
+                  {task.title}
+                </Text>
+
+                <Text>
+                  {task.description}
+                </Text>
+
+              </View>
+
+
+            </View>
+          ))
+
+        )}
+
+      </View>
 
         {/* Risk Factors */}
         <View style={homeStyles.card}>

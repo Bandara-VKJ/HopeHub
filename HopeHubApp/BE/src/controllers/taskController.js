@@ -60,3 +60,22 @@ export const getTasks = async (req, res) => {
         res.status(500).json({ error: "Failed to get tasks" });
     }
 }
+
+export const getTasksById = async (req, res) => {
+    try {
+       const { userId } = req.query;
+
+        if(!userId)
+        {
+            return res.status(401).json({ error: "userId is required" });
+        }
+
+        const today = new Date().toISOString().split("T")[0];
+       
+        const tasks = await Task.find({userId, date:today});
+
+        res.status(200).json({success: true, tasks})
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get tasks" });
+    }
+}
