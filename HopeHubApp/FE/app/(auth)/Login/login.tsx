@@ -30,11 +30,9 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showpassword, setshowpassword] = useState(false);
-  const [logrole, setLogrole] = useState<"user" | "counselor">("user");
+  const [logrole, setLogrole] = useState<"user" | "counselor" | "family">("user");
   const [loading, setLoading] = useState(false);
 
-  // ✅ Fixed: useFocusEffect ensures role is re-read every time
-  // this screen comes into focus (including after logout redirect)
   useFocusEffect(
     useCallback(() => {
       const applyRole = async () => {
@@ -47,12 +45,19 @@ export default function Login() {
           setLogrole("user");
           return;
         }
+        if (params.role === "family"){
+          setLogrole("family")
+          return;
+        }
 
-        // Priority 2: fallback to stored loginRole
         const stored = await AsyncStorage.getItem("loginRole");
         if (stored === "counselor") {
           setLogrole("counselor");
-        } else {
+        }
+        else if(stored === "family") {
+          setLogrole("family")
+        }
+        else {
           setLogrole("user");
         }
       };
@@ -67,6 +72,8 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
+
+      console.log("Inside hadler");
       if (!email || !password) {
         Alert.alert("Error", "Please enter email and password");
         return;
@@ -74,6 +81,32 @@ export default function Login() {
 
       setLoading(true);
 
+      if(logrole === "family") {
+
+        console.log("Inside family")
+        const response = await ngrokFetch(`${BASE_URL}/api/family/login` , {
+          method:"POST",
+          headers: { "Content-Type": "application/json" },
+          body : JSON.stringify({
+            email: email.trim().toLowerCase(),
+            password
+          }),
+        });
+
+        const data = await response.json();
+
+        if(!response.ok){
+           Alert.alert("Error", data.error || "Login failed");
+          return;
+        }
+
+        await AsyncStorage.setItem("role", "family")
+        await AsyncStorage.setItem("familyToken",data.token)
+        await AsyncStorage.setItem("familyName", data.name || "");
+
+        router.replace("/(family)/dashboard");
+        return;
+      }
       const loginUrl =
         logrole === "counselor"
           ? `${BASE_URL}/api/counselors/login`
@@ -131,7 +164,7 @@ export default function Login() {
   };
 
   const toggleLoginRole = async () => {
-    const nextRole = logrole === "user" ? "counselor" : "user";
+    const nextRole = logrole === "user" ? "counselor" : logrole === "counselor" ? "family" : "user";
     setLogrole(nextRole);
     await AsyncStorage.setItem("loginRole", nextRole);
   };
@@ -148,7 +181,7 @@ export default function Login() {
         />
 
         <Text style={loginStyles.title}>
-          {logrole === "counselor" ? "Counselor Login" : "User Login"}
+          {logrole === "counselor" ? "Counselor Login" : logrole === "family" ? "Family Member Login" : "User Login"}
         </Text>
 
         <View style={loginStyles.inputWrapper}>
@@ -222,7 +255,7 @@ export default function Login() {
 
       <TouchableOpacity onPress={toggleLoginRole}>
         <Text style={{ color: "#007AFF", marginBottom: 10 }}>
-          {logrole === "user" ? "Login as Counselor?" : "Login as User?"}
+          {logrole === "user" ? "Login as Counselor?" : logrole === "counselor" ? "Login as Family Member?" : "Login as User?"}
         </Text>
       </TouchableOpacity>
     </View>
