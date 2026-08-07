@@ -72,7 +72,7 @@ export const getTasksById = async (req, res) => {
 
         const today = new Date().toISOString().split("T")[0];
        
-        const tasks = await Task.find({userId, today});
+        const tasks = await Task.find({userId, date:today});
 
         res.status(200).json({success: true, tasks})
     } catch (error) {
