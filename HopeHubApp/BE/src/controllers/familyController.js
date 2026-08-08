@@ -156,7 +156,7 @@ export const familyMemberLogin = async (req, res) => {
     { expiresIn: "7d"}
   );
 
-  res.json({ success: true, token, name: familyMember.name });
+  res.json({ success: true, token, name: familyMember.name, ownerId: familyMember.ownerId });
 
   } catch (error) {
      console.error("Family login error:", error);
