@@ -103,6 +103,7 @@ export default function Login() {
         await AsyncStorage.setItem("role", "family")
         await AsyncStorage.setItem("familyToken",data.token)
         await AsyncStorage.setItem("familyName", data.name || "");
+        await AsyncStorage.setItem("userId", data.ownerId.toString())
 
         router.replace("/(family)/dashboard");
         return;
