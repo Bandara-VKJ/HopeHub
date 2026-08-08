@@ -73,7 +73,6 @@ export default function Login() {
   const handleLogin = async () => {
     try {
 
-      console.log("Inside hadler");
       if (!email || !password) {
         Alert.alert("Error", "Please enter email and password");
         return;
@@ -82,8 +81,6 @@ export default function Login() {
       setLoading(true);
 
       if(logrole === "family") {
-
-        console.log("Inside family")
         const response = await ngrokFetch(`${BASE_URL}/api/family/login` , {
           method:"POST",
           headers: { "Content-Type": "application/json" },
@@ -105,7 +102,7 @@ export default function Login() {
         await AsyncStorage.setItem("familyName", data.name || "");
         await AsyncStorage.setItem("userId", data.ownerId.toString())
 
-        router.replace("/(family)/dashboard");
+        router.replace("/(family)/familyDash")
         return;
       }
       const loginUrl =
