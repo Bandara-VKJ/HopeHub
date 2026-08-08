@@ -199,8 +199,7 @@ export default function Profile() {
      <TouchableOpacity
         style={profileStyles.logout}
         onPress={async () => {
-          await AsyncStorage.removeItem("userId");
-          await AsyncStorage.removeItem("role");
+          await AsyncStorage.clear();
           router.replace('/(auth)/Login/login');
         }}
       >

@@ -373,8 +373,7 @@ export default function CounselorScreen() {
         </View>
 
         <TouchableOpacity style={styles.logoutButton}onPress={async () => {
-          await AsyncStorage.removeItem("userId");
-          await AsyncStorage.removeItem("role");
+          await AsyncStorage.clear();
           router.replace('/(auth)/Login/login');
         }}>
           <Ionicons name="log-out-outline" size={22} color="#E05C5C" />
