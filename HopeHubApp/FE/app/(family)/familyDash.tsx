@@ -1,10 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Text,
-  View
+  TouchableOpacity,
+  View,
+  
 } from "react-native";
-
+import {
+  Ionicons
+} from "@expo/vector-icons";
+import {familyDashStyles} from './familyDashStyles'
 
 const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
@@ -60,9 +66,21 @@ export default function FamilyLogin() {
         setTasks([]);
     }
 };
+
+ const logoutHandler = async () => {
+    await AsyncStorage.clear()
+    router.replace('/(auth)/Login/login')
+ }
     return(
         <View>
             <Text>Family dashboard</Text>
+            <TouchableOpacity 
+            style = {familyDashStyles.logoutButton}
+            onPress={logoutHandler}
+            >
+                <Ionicons name="log-out-outline" size={22} color="#E05C5C" />
+                <Text style={familyDashStyles.loadingText} >Logout</Text>
+            </TouchableOpacity>
         </View>
     )
 }
