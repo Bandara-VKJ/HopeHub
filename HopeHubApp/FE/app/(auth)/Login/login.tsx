@@ -5,13 +5,14 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ScrollView,
+  ActivityIndicator,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { loginStyles } from "./loginStyles";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback } from "react";
 
 const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
@@ -24,19 +25,32 @@ const ngrokFetch = (url: string, options: RequestInit = {}) =>
     },
   });
 
+type LoginRole = "user" | "counselor" | "family";
+
+const ROLE_SUBTITLES: Record<LoginRole, string> = {
+  user: "Log in to continue your recovery journey",
+  counselor: "Log in to your professional counselor account",
+  family: "Log in to support and track your loved one",
+};
+
+const ROLE_TITLES: Record<LoginRole, string> = {
+  user: "User Login",
+  counselor: "Counselor Login",
+  family: "Family Member Login",
+};
+
 export default function Login() {
   const params = useLocalSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showpassword, setshowpassword] = useState(false);
-  const [logrole, setLogrole] = useState<"user" | "counselor" | "family">("user");
+  const [logrole, setLogrole] = useState<LoginRole>("user");
   const [loading, setLoading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       const applyRole = async () => {
-        // Priority 1: role passed via navigation params
         if (params.role === "counselor") {
           setLogrole("counselor");
           return;
@@ -45,34 +59,37 @@ export default function Login() {
           setLogrole("user");
           return;
         }
-        if (params.role === "family"){
-          setLogrole("family")
+        if (params.role === "family") {
+          setLogrole("family");
           return;
         }
 
         const stored = await AsyncStorage.getItem("loginRole");
         if (stored === "counselor") {
           setLogrole("counselor");
-        }
-        else if(stored === "family") {
-          setLogrole("family")
-        }
-        else {
+        } else if (stored === "family") {
+          setLogrole("family");
+        } else {
           setLogrole("user");
         }
       };
 
       applyRole();
 
-      // Reset fields on every focus for clean state
       setEmail("");
       setPassword("");
     }, [params.role])
   );
 
-  const handleLogin = async () => {
-    try {
+  const selectRole = async (role: LoginRole) => {
+    setLogrole(role);
+    await AsyncStorage.setItem("loginRole", role);
+  };
 
+  const handleLogin = async () => {
+    if (loading) return;
+
+    try {
       if (!email || !password) {
         Alert.alert("Error", "Please enter email and password");
         return;
@@ -80,31 +97,32 @@ export default function Login() {
 
       setLoading(true);
 
-      if(logrole === "family") {
-        const response = await ngrokFetch(`${BASE_URL}/api/family/login` , {
-          method:"POST",
+      if (logrole === "family") {
+        const response = await ngrokFetch(`${BASE_URL}/api/family/login`, {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
-          body : JSON.stringify({
+          body: JSON.stringify({
             email: email.trim().toLowerCase(),
-            password
+            password,
           }),
         });
 
         const data = await response.json();
 
-        if(!response.ok){
-           Alert.alert("Error", data.error || "Login failed");
+        if (!response.ok) {
+          Alert.alert("Error", data.error || "Login failed");
           return;
         }
 
-        await AsyncStorage.setItem("role", "family")
-        await AsyncStorage.setItem("familyToken",data.token)
+        await AsyncStorage.setItem("role", "family");
+        await AsyncStorage.setItem("familyToken", data.token);
         await AsyncStorage.setItem("familyName", data.name || "");
-        await AsyncStorage.setItem("userId", data.ownerId.toString())
+        await AsyncStorage.setItem("userId", data.ownerId.toString());
 
-        router.replace("/(family)/familyDash")
+        router.replace("/(family)/familyDash");
         return;
       }
+
       const loginUrl =
         logrole === "counselor"
           ? `${BASE_URL}/api/counselors/login`
@@ -161,37 +179,61 @@ export default function Login() {
     }
   };
 
-  const toggleLoginRole = async () => {
-    const nextRole = logrole === "user" ? "counselor" : logrole === "counselor" ? "family" : "user";
-    setLogrole(nextRole);
-    await AsyncStorage.setItem("loginRole", nextRole);
-  };
-
   return (
-    <View style={loginStyles.container}>
-      <Text style={loginStyles.name}>HopeHub</Text>
+    <ScrollView style={loginStyles.page} showsVerticalScrollIndicator={false}>
+      <View style={loginStyles.header}>
+        <View>
+          <Text style={loginStyles.smallTitle}>Welcome back to</Text>
+          <Text style={loginStyles.brand}>HopeHub</Text>
+          <Text style={loginStyles.subtitle}>{ROLE_SUBTITLES[logrole]}</Text>
+        </View>
 
-      <View style={loginStyles.innerContainer}>
         <Image
           source={require("../../../assets/images/logo.png")}
           style={loginStyles.logo}
-          resizeMode="contain"
         />
+      </View>
 
-        <Text style={loginStyles.title}>
-          {logrole === "counselor" ? "Counselor Login" : logrole === "family" ? "Family Member Login" : "User Login"}
-        </Text>
+      <View style={loginStyles.roleSwitch}>
+        <TouchableOpacity
+          style={[loginStyles.roleBtn, logrole === "user" && loginStyles.roleBtnActive]}
+          onPress={() => selectRole("user")}
+        >
+          <Text style={[loginStyles.roleText, logrole === "user" && loginStyles.roleTextActive]}>
+            User
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[loginStyles.roleBtn, logrole === "counselor" && loginStyles.roleBtnActive]}
+          onPress={() => selectRole("counselor")}
+        >
+          <Text
+            style={[loginStyles.roleText, logrole === "counselor" && loginStyles.roleTextActive]}
+          >
+            Counselor
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[loginStyles.roleBtn, logrole === "family" && loginStyles.roleBtnActive]}
+          onPress={() => selectRole("family")}
+        >
+          <Text
+            style={[loginStyles.roleText, logrole === "family" && loginStyles.roleTextActive]}
+          >
+            Family
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={loginStyles.card}>
+        <Text style={loginStyles.cardTitle}>{ROLE_TITLES[logrole]}</Text>
 
         <View style={loginStyles.inputWrapper}>
-          <Ionicons
-            name="mail-outline"
-            size={20}
-            color="gray"
-            style={loginStyles.icon}
-          />
-
+          <Ionicons name="mail-outline" size={20} color="#7A9A9A" />
           <TextInput
-            placeholder="Enter Email"
+            placeholder="Email address"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -201,61 +243,52 @@ export default function Login() {
         </View>
 
         <View style={loginStyles.inputWrapper}>
-          <Ionicons
-            name="lock-closed-outline"
-            size={20}
-            color="gray"
-            style={loginStyles.icon}
-          />
-
+          <Ionicons name="lock-closed-outline" size={20} color="#7A9A9A" />
           <TextInput
-            secureTextEntry={!showpassword}
-            placeholder="Enter Password"
+            placeholder="Password"
             value={password}
             onChangeText={setPassword}
+            secureTextEntry={!showpassword}
             style={loginStyles.input as any}
           />
-
           <TouchableOpacity onPress={() => setshowpassword(!showpassword)}>
             <Ionicons
               name={showpassword ? "eye-off-outline" : "eye-outline"}
               size={20}
-              color="gray"
+              color="#7A9A9A"
             />
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity
+          style={[loginStyles.button, loading && { opacity: 0.6 }]}
           onPress={handleLogin}
           disabled={loading}
-          style={loginStyles.button}
         >
-          <Text style={loginStyles.buttonText}>
-            {loading ? "Logging in..." : "Login"}
-          </Text>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={loginStyles.buttonText}>Login</Text>
+          )}
         </TouchableOpacity>
 
-        <Text style={loginStyles.last}>
-          Don't have an account?{" "}
-          <Text
-            style={loginStyles.createAccount}
-            onPress={() =>
-              router.push({
-                pathname: "/(auth)/CreateAccount/createAccount",
-                params: { role: logrole },
-              })
-            }
-          >
-            Create now
+        {logrole !== "family" && (
+          <Text style={loginStyles.bottomText}>
+            Don't have an account?{" "}
+            <Text
+              style={loginStyles.loginText}
+              onPress={() =>
+                router.push({
+                  pathname: "/(auth)/CreateAccount/createAccount",
+                  params: { role: logrole },
+                })
+              }
+            >
+              Create now
+            </Text>
           </Text>
-        </Text>
+        )}
       </View>
-
-      <TouchableOpacity onPress={toggleLoginRole}>
-        <Text style={{ color: "#007AFF", marginBottom: 10 }}>
-          {logrole === "user" ? "Login as Counselor?" : logrole === "counselor" ? "Login as Family Member?" : "Login as User?"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
