@@ -33,10 +33,12 @@ type Task = {
 
 const statusColor = (status: string) => {
   switch (status) {
-    case "confirmed":
+    case "completed":
       return "#4CAF50";
     case "rejected":
       return "#E05C5C";
+    case "pending_confirmation":
+      return "#3C9EE0";
     default:
       return "#E0A93C";
   }
