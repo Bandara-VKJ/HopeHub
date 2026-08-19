@@ -10,6 +10,7 @@ import profileRoutes from "./src/routes/profileRoutes.js";
 import counselorRoutes from "./src/routes/CounselorRoutes.js";
 import familyRoutes from "./src/routes/familyRouter.js"
 import taskRouter from './src/routes/taskRoutes.js'
+import diaryRouter from "./src/routes/diaryRouter.js"
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/counselors", counselorRoutes);
 app.use("/api/family", familyRoutes);
 app.use("/api/taks", taskRouter);
+app.use("/api/diary", diaryRouter);
 
 const PORT = process.env.PORT || 5000;
 
