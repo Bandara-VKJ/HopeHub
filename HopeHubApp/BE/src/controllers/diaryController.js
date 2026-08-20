@@ -77,3 +77,46 @@ export const getDiaries = async (req, res) => {
         });
     }
 }
+export const editDiary = async (req, res) => {
+    try {
+        const { userId, diaryId } = req.params;
+        const { mood, content } = req.body;
+
+
+        const today = new Date().toISOString().split("T")[0];
+
+        const diary = await Diary.findOne({
+            _id: diaryId,
+            userId: userId
+        });
+
+        if (!diary) {
+            return res.status(404).json({
+                message: "Diary not found"
+            });
+        }
+
+        if (diary.date !== today) {
+            return res.status(403).json({
+                message: "You can only edit today's diary"
+            });
+        }
+
+        diary.mood = mood;
+        diary.content = content;
+
+        await diary.save();
+
+        res.status(200).json({
+            message: "Diary updated successfully",
+            diary
+        });
+
+    } catch (error) {
+        console.log("error:", error);
+
+        res.status(500).json({
+            message: "Failed to update diary"
+        });
+    }
+};
