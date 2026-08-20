@@ -57,7 +57,6 @@ export default function Tasks() {
       },
     });
 
-  // --- Day-level actions ---
   const addDay = () => {
     setDayDrafts((prev) => [...prev, makeEmptyDay()]);
   };
@@ -72,7 +71,6 @@ export default function Tasks() {
     );
   };
 
-  // --- Task-level actions (scoped to a specific day) ---
   const addTaskToDay = (dayId: string) => {
     setDayDrafts((prev) =>
       prev.map((d) =>
@@ -119,7 +117,7 @@ export default function Tasks() {
   };
 
   const addTasks = async () => {
-    // Validate every day has a date and at least one titled task
+
   for (const day of dayDrafts) {
     if (!day.date) {
       Alert.alert("Missing date", "Please pick a date for every day added.");
@@ -201,7 +199,7 @@ export default function Tasks() {
             backgroundColor: "#fafafa",
           }}
         >
-          {/* Day header */}
+ 
           <View
             style={{
               flexDirection: "row",

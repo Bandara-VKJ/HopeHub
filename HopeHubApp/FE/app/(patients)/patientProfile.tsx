@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
   title: string;
   description: string;
   status: string;
+  family_status: string;
   date?: string;
 };
 
@@ -163,12 +164,14 @@ export default function PatientProfile() {
                 {task.description}
             </Text>
 
-            <View style={patientProfileStyles.statusContainer}>
-                <Text style={patientProfileStyles.statusText}>
+           <View style={patientProfileStyles.statusContainer}>
+            <Text style={patientProfileStyles.statusText}>
                 Status: {task.status}
-                </Text>
-            </View>
-
+            </Text>
+            <Text style={patientProfileStyles.statusText}>
+                Family member status: {task.family_status}
+            </Text>
+        </View>
             {task.date && (
                 <Text style={patientProfileStyles.dueDate}>
                 Due: {new Date(task.date).toLocaleDateString()}

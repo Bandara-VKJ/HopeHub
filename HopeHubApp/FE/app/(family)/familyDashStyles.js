@@ -97,4 +97,40 @@ export const familyDashStyles = StyleSheet.create({
     color: "#999",
     fontSize: 14,
   },
+  familyStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+    gap: 6,
+  },
+  familyStatusLabel: {
+    fontSize: 12,
+    color: "#666",
+  },
+  actionRow: {
+    flexDirection: "row",
+    marginTop: 12,
+    gap: 10,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    gap: 6,
+    flex: 1,
+  },
+  confirmButton: {
+    backgroundColor: "#4CAF50",
+  },
+  rejectButton: {
+    backgroundColor: "#E05C5C",
+  },
+  actionButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 13,
+  },
 })

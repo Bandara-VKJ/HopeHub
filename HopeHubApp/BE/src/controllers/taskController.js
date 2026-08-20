@@ -29,6 +29,7 @@ export const createWeeklyTasks = async (req, res) => {
                         description: task.description || "",
                         date : day.date,
                         status: "pending",
+                        family_status: "pending_confirmation",
                     });
 
                 }   
@@ -72,10 +73,52 @@ export const getTasksById = async (req, res) => {
 
         const today = new Date().toISOString().split("T")[0];
        
-        const tasks = await Task.find({userId, date:today}, "title description status date");
+        const tasks = await Task.find({userId, date:today}, "title description status date family_status");
 
         res.status(200).json({success: true, tasks})
     } catch (error) {
         res.status(500).json({ error: "Failed to get tasks" });
+    }
+}
+
+
+export const updateFamilyStatus = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const { family_status } = req.body;
+
+        if (!taskId) {
+            return res.status(400).json({ error: "taskId is required" });
+        }
+
+        const allowedStatuses = ["confirmed", "rejected"];
+
+        if (!allowedStatuses.includes(family_status)) {
+            return res.status(400).json({ error: "family_status must be 'confirmed' or 'rejected'" });
+        }
+
+          const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ error: "Task not found" });
+        }
+
+        
+
+        if (task.family_status !== "pending_confirmation") {
+            return res.status(400).json({
+                error: `Task is not pending confirmation (current family_status: ${task.family_status})`
+            });
+        }
+
+        task.family_status = family_status; 
+
+        await task.save();
+
+         res.status(200).json({ success: true, task });
+
+    } catch (error) {
+        console.error("Update family status error:", error);
+        res.status(500).json({ error: "Failed to update family status" });
     }
 }
