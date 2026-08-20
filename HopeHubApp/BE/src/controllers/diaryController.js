@@ -38,4 +38,42 @@ export const addDiary = async (req, res)=>{
     }
 }
 
+export const getDiaries = async (req, res) => {
+    try {
+        const userId = req.params.userId;
 
+        if (!userId)
+        {
+            return res.status(400).json({
+            message: "User ID was not identified"
+            });
+        }
+
+        const today = new Date();
+        
+        const lastWeek = new Date();
+        lastWeek.setDate(today.getDate() - 7);
+
+         const todayString = today.toISOString().split("T")[0];
+         const lastWeekString = lastWeek.toISOString().split("T")[0];
+
+        const  diaries = await Diary.find({
+            userId,
+            date: {
+                $gte: lastWeekString,
+                $lte: todayString
+            }
+        });
+
+        res.status(200).json({
+            message: "Diaries retrieved successfully",
+            diaries
+        });
+
+    } catch (error) {
+         console.log("error:", error);
+        res.status(500).json({
+        message: "User diary fail to retrieve ",
+        });
+    }
+}
