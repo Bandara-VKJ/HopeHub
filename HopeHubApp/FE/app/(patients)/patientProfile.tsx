@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
     email: string;
     mobile: string;
     profilePic?: string;
+    level: string;
   }
 
   type Task = {
@@ -23,6 +24,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
   date?: string;
 };
 
+const LEVELS = ["Low", "Mid", "High"];
+
 export default function PatientProfile() {
 
   const { patientId } = useLocalSearchParams();
@@ -32,6 +35,7 @@ export default function PatientProfile() {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [loading, setLaoding] = useState(true)
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [updatingLevel, setUpdatingLevel] = useState(false);
 
 
   const ngrokFetch = (url: string, options: RequestInit = {}) =>
@@ -76,6 +80,37 @@ export default function PatientProfile() {
         setLaoding(false)
     }
   }
+
+  const updateLevel = async (newLevel: string) => {
+    if (!patient || newLevel === patient.level || updatingLevel) return;
+
+    const previousLevel = patient.level;
+
+    setPatient({ ...patient, level: newLevel });
+    setUpdatingLevel(true);
+
+    try {
+        const counselorId = await AsyncStorage.getItem("counselorId");
+        const response = await ngrokFetch(
+            `${BASE_URL}/api/risk/level/${patient._id}/${counselorId}`,
+            {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ level: newLevel }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Failed with status ${response.status}`);
+        }
+    } catch (error) {
+        console.log("Update level error:", error);
+        setPatient((prev) => prev ? { ...prev, level: previousLevel } : prev);
+    } finally {
+        setUpdatingLevel(false);
+    }
+  }
+
    if(loading)
       {
           return(
@@ -120,7 +155,40 @@ export default function PatientProfile() {
                 Phone: {patient.mobile}
             </Text>
 
+            <Text style={patientProfileStyles.infoText}>
+                Addiction level:
+            </Text>
 
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 6, marginBottom: 10 }}>
+                {LEVELS.map((lvl) => {
+                    const isSelected = patient.level === lvl;
+                    return (
+                        <TouchableOpacity
+                            key={lvl}
+                            disabled={updatingLevel}
+                            onPress={() => updateLevel(lvl)}
+                            style={{
+                                paddingVertical: 6,
+                                paddingHorizontal: 14,
+                                borderRadius: 20,
+                                borderWidth: 1,
+                                borderColor: isSelected ? "#4CAF50" : "#ccc",
+                                backgroundColor: isSelected ? "#4CAF50" : "transparent",
+                                opacity: updatingLevel ? 0.6 : 1,
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: isSelected ? "#fff" : "#555",
+                                    fontWeight: isSelected ? "600" : "400",
+                                }}
+                            >
+                                {lvl}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
+            </View>
 
             <TouchableOpacity 
             style={patientProfileStyles.taskButton}
