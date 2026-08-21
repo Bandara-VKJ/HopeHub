@@ -17,6 +17,7 @@ export const getProfile = async (req, res) => {
         firstName:  user.firstName  || '',
         lastName:   user.lastName   || '',
         profilePic: user.profilePic || null,
+        level: user.level
       },
     });
 
