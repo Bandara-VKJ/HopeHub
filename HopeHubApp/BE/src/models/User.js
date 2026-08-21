@@ -42,6 +42,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    level: {
+      type: String,
+      enum: ["Low", "Mid", "High", "Contact with counselor"],
+      default: "Contact with counselor",
+    },
   },
   {
     timestamps: true,
