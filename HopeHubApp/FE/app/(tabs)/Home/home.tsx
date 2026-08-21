@@ -1,17 +1,10 @@
-import { Text, View, ScrollView, TouchableOpacity, TextInput, Alert } from "react-native";
+import { Text, View, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { homeStyles } from "./homeStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from "lottie-react-native";
 
-const TASKS = [
-  { id: "1", label: "Morning meditation", done: true },
-  { id: "2", label: "Evening journal entry", done: false },
-  { id: "3", label: "Call support partner", done: false },
-  { id: "4", label: "10-minute walk", done: false },
-  { id: "5", label: "Drink 8 glasses of water", done: false },
-];
 
 const RISK_FACTORS = [
   { label: "High Stress Levels", value: 70, color: "#e26d36" },
@@ -24,6 +17,7 @@ type Task = {
   title: string;
   description: string;
   status: string;
+  family_status: string;
   date: string;
 };
 
@@ -45,6 +39,7 @@ export default function HomeScreen() {
   const [familyEmail, setFamilyEmail] = useState('')
   const [familyPhone, setFamilyPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const resetInviteForm = () => {
     setFamilyName("");
     setFamilyEmail("");
@@ -198,6 +193,81 @@ export default function HomeScreen() {
     }
   };
 
+    const markComplete = async (taskId: string) => {
+    try {
+      setUpdatingId(taskId);
+
+      const response = await fetch(`${BASE_URL}/api/taks/${taskId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({ status: "completed" }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.error || "Failed to update task");
+        return;
+      }
+
+      setTasks((prev) =>
+        prev.map((task) =>
+          task._id === taskId
+            ? { ...task, status: "completed", family_status: "pending_confirmation" }
+            : task
+        )
+      );
+    } catch (error) {
+      console.log("Mark complete error:", error);
+      Alert.alert("Error", "Failed to update task");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const toggleTaskStatus = async (taskId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "completed" ? "pending" : "completed";
+
+    try {
+      setUpdatingId(taskId);
+
+      const response = await fetch(`${BASE_URL}/api/taks/${taskId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.error || "Failed to update task");
+        return;
+      }
+
+      setTasks((prev) =>
+        prev.map((task) =>
+          task._id === taskId
+            ? {
+                ...task,
+                status: newStatus,
+                family_status: newStatus === "completed" ? "pending_confirmation" : task.family_status,
+              }
+            : task
+        )
+      );
+    } catch (error) {
+      console.log("Toggle task status error:", error);
+      Alert.alert("Error", "Failed to update task");
+    } finally {
+      setUpdatingId(null);
+    }
+};
   return (
     <ScrollView style={homeStyles.container} showsVerticalScrollIndicator={false}>
       
@@ -320,45 +390,43 @@ export default function HomeScreen() {
         ) : (
 
           tasks.map((task)=>(
-            <View
-              key={task._id}
-              style={homeStyles.taskItem}
-            >
+    <View key={task._id} style={homeStyles.taskItem}>
+      <TouchableOpacity
+        onPress={() => toggleTaskStatus(task._id, task.status)}
+        disabled={updatingId === task._id}
+        style={[
+          homeStyles.checkbox,
+          task.status === "completed" && homeStyles.checkboxDone,
+        ]}
+      >
+        {updatingId === task._id ? (
+          <ActivityIndicator size="small" color="#17db1a" />
+        ) : (
+          task.status === "completed" && (
+            <Ionicons name="checkmark" size={14} color="#fff" />
+          )
+        )}
+      </TouchableOpacity>
 
-              <View 
-                style={[
-                  homeStyles.checkbox,
-                  task.status === "completed" && homeStyles.checkboxDone
-                ]}
-              >
-                {
-                  task.status === "completed" &&
-                  <Ionicons 
-                    name="checkmark"
-                    size={14}
-                    color="#fff"
-                  />
-                }
-              </View>
-              <View>
-                <Text
-                  style={[
-                    homeStyles.taskLabel,
-                    task.status === "completed" &&
-                    homeStyles.taskLabelDone
-                  ]}
-                >
-                  {task.title}
-                </Text>
+      <View>
+        <Text
+          style={[
+            homeStyles.taskLabel,
+            task.status === "completed" && homeStyles.taskLabelDone,
+          ]}
+        >
+          {task.title}
+        </Text>
 
-                <Text>
-                  {task.description}
-                </Text>
+        <Text>{task.description}</Text>
 
-              </View>
-
-
-            </View>
+        {task.status === "completed" && (
+          <Text style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
+            Family review: {task.family_status}
+          </Text>
+        )}
+      </View>
+    </View>
           ))
 
         )}

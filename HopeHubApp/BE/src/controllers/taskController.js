@@ -122,3 +122,39 @@ export const updateFamilyStatus = async (req, res) => {
         res.status(500).json({ error: "Failed to update family status" });
     }
 }
+export const updatePatientStatus = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const { status } = req.body;
+
+        if (!taskId) {
+            return res.status(400).json({ error: "taskId is required" });
+        }
+
+        const allowedStatuses = ["completed", "pending"];
+
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({ error: "status must be 'completed' or 'pending'" });
+        }
+
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).json({ error: "Task not found" });
+        }
+
+        task.status = status;
+
+        if (status === "completed") {
+            task.completedAt = new Date();
+            task.family_status = "pending_confirmation";
+        }
+
+        await task.save();
+
+        res.status(200).json({ success: true, task });
+    } catch (error) {
+        console.error("Update status error:", error);
+        res.status(500).json({ error: "Failed to update status" });
+    }
+}
