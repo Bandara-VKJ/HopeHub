@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,38 +8,43 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { chartStyles, cardStyles, modalStyles, screenStyles } from './dashboardStyles';
 
+const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+
+const ngrokFetch = (url: string, options: RequestInit = {}) =>
+  fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      "ngrok-skip-browser-warning": "true",
+    },
+  });
 
 interface DiaryEntry {
   id: string;
   date: string;
-  isoDate: string;
   mood: 'good' | 'bad';
   content: string;
 }
 
-const formatDate = (d: Date) =>
-  d.toLocaleDateString('en-GB', {
+const todayDateString = () => new Date().toISOString().split("T")[0];
+
+const formatDisplayDate = (dateStr: string) => {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-GB', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   });
-
-const todayLabel = () => formatDate(new Date());
-const todayISO = () => new Date().toISOString();
-
-const seed: DiaryEntry[] = [
-  { id: '1', date: 'Mon, 5 May 2026', isoDate: '2026-05-05T09:00:00.000Z', mood: 'good', content: 'Felt really motivated today. Completed all my tasks and went for a walk in the evening. Small victories matter.' },
-  { id: '2', date: 'Tue, 6 May 2026', isoDate: '2026-05-06T09:00:00.000Z', mood: 'bad', content: 'Struggled with cravings in the afternoon. Called my sponsor and it helped a bit, but it was a tough day overall.' },
-  { id: '3', date: 'Wed, 7 May 2026', isoDate: '2026-05-07T09:00:00.000Z', mood: 'good', content: 'Group session was uplifting. Shared my progress and received warm encouragement. Grateful for the support network.' },
-  { id: '4', date: 'Thu, 8 May 2026', isoDate: '2026-05-08T09:00:00.000Z', mood: 'bad', content: "Didn't sleep well. Anxiety crept in around 3 AM. Journaling helped me process the feelings before the morning." },
-  { id: '5', date: 'Fri, 9 May 2026', isoDate: '2026-05-09T09:00:00.000Z', mood: 'good', content: 'Cooked a healthy meal and called mum. Stress was low. Proud that I stuck to my routine even on a Friday night.' },
-  { id: '6', date: 'Sat, 10 May 2026', isoDate: '2026-05-10T09:00:00.000Z', mood: 'good', content: 'Morning meditation + a long walk. Nature recharges me. Feeling hopeful about next week.' },
-];
+};
 
 
 function MoodChart({ entries }: { entries: DiaryEntry[] }) {
@@ -91,9 +96,18 @@ function MoodChart({ entries }: { entries: DiaryEntry[] }) {
 }
 
 
-function EntryCard({ entry }: { entry: DiaryEntry }) {
+function EntryCard({
+  entry,
+  onEdit,
+  onDelete,
+}: {
+  entry: DiaryEntry;
+  onEdit: (entry: DiaryEntry) => void;
+  onDelete: (entry: DiaryEntry) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
   const isGood = entry.mood === 'good';
+  const isToday = entry.date === todayDateString();
 
   return (
     <TouchableOpacity
@@ -104,13 +118,37 @@ function EntryCard({ entry }: { entry: DiaryEntry }) {
       <View style={cardStyles.row}>
         <View style={[cardStyles.moodDot, { backgroundColor: isGood ? '#3DB87C' : '#E5624A' }]} />
         <View style={cardStyles.meta}>
-          <Text style={cardStyles.date}>{entry.date}</Text>
+          <Text style={cardStyles.date}>{formatDisplayDate(entry.date)}</Text>
           <View style={[cardStyles.pill, { backgroundColor: isGood ? '#EBF8F2' : '#FEF0ED' }]}>
             <Text style={[cardStyles.pillText, { color: isGood ? '#1B7A50' : '#B03D2A' }]}>
               {isGood ? 'Good day' : 'Tough day'}
             </Text>
           </View>
         </View>
+
+        {isToday && (
+          <View style={{ flexDirection: 'row', gap: 12, marginRight: 8 }}>
+            <TouchableOpacity
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPress={(e) => {
+                e.stopPropagation();
+                onEdit(entry);
+              }}
+            >
+              <Ionicons name="pencil-outline" size={18} color="#6B7280" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              onPress={(e) => {
+                e.stopPropagation();
+                onDelete(entry);
+              }}
+            >
+              <Ionicons name="trash-outline" size={18} color="#E05C5C" />
+            </TouchableOpacity>
+          </View>
+        )}
+
         <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="#9EA5B0" />
       </View>
 
@@ -122,25 +160,36 @@ function EntryCard({ entry }: { entry: DiaryEntry }) {
 }
 
 
-function NewEntryModal({
+function EntryModal({
   visible,
   onClose,
   onSave,
+  initialMood,
+  initialContent,
+  mode,
 }: {
   visible: boolean;
   onClose: () => void;
-  onSave: (entry: Omit<DiaryEntry, 'id'>) => void;
+  onSave: (mood: 'good' | 'bad', content: string) => void;
+  initialMood?: 'good' | 'bad';
+  initialContent?: string;
+  mode: 'add' | 'edit';
 }) {
-  const [mood, setMood] = useState<'good' | 'bad'>('good');
-  const [content, setContent] = useState('');
-  const dateLabel = todayLabel();
+  const [mood, setMood] = useState<'good' | 'bad'>(initialMood || 'good');
+  const [content, setContent] = useState(initialContent || '');
+
+  useEffect(() => {
+    if (visible) {
+      setMood(initialMood || 'good');
+      setContent(initialContent || '');
+    }
+  }, [visible, initialMood, initialContent]);
+
+  const dateLabel = formatDisplayDate(todayDateString());
 
   const handleSave = () => {
     if (!content.trim()) return;
-    onSave({ date: dateLabel, isoDate: todayISO(), mood, content: content.trim() });
-    setContent('');
-    setMood('good');
-    onClose();
+    onSave(mood, content.trim());
   };
 
   return (
@@ -155,7 +204,7 @@ function NewEntryModal({
           <View style={modalStyles.handle} />
 
           <View style={modalStyles.header}>
-            <Text style={modalStyles.title}>New Entry</Text>
+            <Text style={modalStyles.title}>{mode === 'add' ? 'New Entry' : 'Edit Entry'}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close" size={22} color="#6B7280" />
             </TouchableOpacity>
@@ -205,7 +254,7 @@ function NewEntryModal({
               disabled={!content.trim()}
             >
               <Ionicons name="checkmark" size={16} color="#FFF" style={{ marginRight: 6 }} />
-              <Text style={modalStyles.saveText}>Save Entry</Text>
+              <Text style={modalStyles.saveText}>{mode === 'add' ? 'Save Entry' : 'Update Entry'}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -216,20 +265,176 @@ function NewEntryModal({
 
 
 export default function DiaryScreen() {
-  const [entries, setEntries] = useState<DiaryEntry[]>(seed);
+  const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<DiaryEntry | null>(null);
+
+  const fetchDiaries = useCallback(async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) {
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      const response = await ngrokFetch(`${BASE_URL}/api/diary/diaries/${userId}`);
+      const data = await response.json();
+
+      if (response.ok) {
+        const mapped: DiaryEntry[] = (data.diaries || []).map((d: any) => ({
+          id: d._id,
+          date: d.date,
+          mood: d.mood,
+          content: d.content,
+        }));
+        setEntries(mapped);
+      } else {
+        Alert.alert("Error", data.message || "Failed to load diaries");
+      }
+    } catch (error) {
+      console.log("Fetch diaries error:", error);
+      Alert.alert("Error", "Failed to load diaries");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDiaries();
+  }, [fetchDiaries]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchDiaries();
+  };
 
   const sorted = [...entries].sort(
-    (a, b) => new Date(b.isoDate).getTime() - new Date(a.isoDate).getTime()
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  const handleSave = (entry: Omit<DiaryEntry, 'id'>) => {
-    setEntries(prev => [{ id: Date.now().toString(), ...entry }, ...prev]);
+  const openAddModal = () => {
+    setEditingEntry(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (entry: DiaryEntry) => {
+    setEditingEntry(entry);
+    setModalOpen(true);
+  };
+
+  const handleModalSave = async (mood: 'good' | 'bad', content: string) => {
+    if (editingEntry) {
+      await handleEdit(editingEntry.id, mood, content);
+    } else {
+      await handleAdd(mood, content);
+    }
+    setModalOpen(false);
+    setEditingEntry(null);
+  };
+
+  const handleAdd = async (mood: 'good' | 'bad', content: string) => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+
+      const response = await ngrokFetch(`${BASE_URL}/api/diary/diary-add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          date: todayDateString(),
+          mood,
+          content,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Failed to save entry");
+        return;
+      }
+
+      fetchDiaries();
+    } catch (error) {
+      console.log("Add diary error:", error);
+      Alert.alert("Error", "Failed to save entry");
+    }
+  };
+
+  const handleEdit = async (diaryId: string, mood: 'good' | 'bad', content: string) => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+
+      const response = await ngrokFetch(
+        `${BASE_URL}/api/diary/diaries/${userId}/${diaryId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mood, content }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert("Error", data.message || "Failed to update entry");
+        return;
+      }
+
+      setEntries((prev) =>
+        prev.map((e) => (e.id === diaryId ? { ...e, mood, content } : e))
+      );
+    } catch (error) {
+      console.log("Edit diary error:", error);
+      Alert.alert("Error", "Failed to update entry");
+    }
+  };
+
+  const handleDelete = (entry: DiaryEntry) => {
+    Alert.alert(
+      "Delete entry",
+      "Are you sure you want to delete this entry?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const userId = await AsyncStorage.getItem("userId");
+              if (!userId) return;
+
+              const response = await ngrokFetch(
+                `${BASE_URL}/api/diary/diaries/${userId}/${entry.id}`,
+                { method: "DELETE" }
+              );
+
+              const data = await response.json();
+
+              if (!response.ok) {
+                Alert.alert("Error", data.message || "Failed to delete entry");
+                return;
+              }
+
+              setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+            } catch (error) {
+              console.log("Delete diary error:", error);
+              Alert.alert("Error", "Failed to delete entry");
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
     <View style={screenStyles.root}>
-      {/* Sticky header + chart */}
       <View style={screenStyles.sticky}>
         <View style={screenStyles.header}>
           <View>
@@ -239,35 +444,49 @@ export default function DiaryScreen() {
         <MoodChart entries={entries} />
       </View>
 
-      {/* Entry list */}
-      <FlatList
-        data={sorted}
-        keyExtractor={e => e.id}
-        renderItem={({ item }) => <EntryCard entry={item} />}
-        contentContainerStyle={screenStyles.list}
-        ListHeaderComponent={<Text style={screenStyles.sectionLabel}>All Entries</Text>}
-        ListEmptyComponent={
-          <View style={screenStyles.empty}>
-            <Ionicons name="book-outline" size={40} color="#D1D5DB" />
-            <Text style={screenStyles.emptyText}>No entries yet.{'\n'}Tap + to write your first.</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#3DB87C" />
+        </View>
+      ) : (
+        <FlatList
+          data={sorted}
+          keyExtractor={e => e.id}
+          renderItem={({ item }) => (
+            <EntryCard entry={item} onEdit={openEditModal} onDelete={handleDelete} />
+          )}
+          contentContainerStyle={screenStyles.list}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListHeaderComponent={<Text style={screenStyles.sectionLabel}>All Entries</Text>}
+          ListEmptyComponent={
+            <View style={screenStyles.empty}>
+              <Ionicons name="book-outline" size={40} color="#D1D5DB" />
+              <Text style={screenStyles.emptyText}>No entries yet.{'\n'}Tap + to write your first.</Text>
+            </View>
+          }
+        />
+      )}
 
-      {/* FAB */}
       <TouchableOpacity
         style={screenStyles.fab}
-        onPress={() => setModalOpen(true)}
+        onPress={openAddModal}
         activeOpacity={0.88}
       >
         <Ionicons name="add" size={28} color="#FFFFFF" />
       </TouchableOpacity>
 
-      {/* Modal */}
-      <NewEntryModal
+      <EntryModal
         visible={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleSave}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingEntry(null);
+        }}
+        onSave={handleModalSave}
+        initialMood={editingEntry?.mood}
+        initialContent={editingEntry?.content}
+        mode={editingEntry ? 'edit' : 'add'}
       />
     </View>
   );
