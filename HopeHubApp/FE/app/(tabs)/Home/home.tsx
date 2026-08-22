@@ -12,6 +12,18 @@ const RISK_FACTORS = [
   { label: "Sleep Quality", value: 30, color: "#2CA6A4" },
   { label: "Support Network", value: 80, color: "#17db1a" },
 ];
+
+const LEVEL_INFO: Record<string, { description: string; color: string }> = {
+  Low: { description: "You're doing well. Keep up with your daily tasks and check-ins.", color: "#17db1a" },
+  Mid: { description: "Stay alert to your triggers. Do not forget to contact your counselor every week.", color: "#f09c00" },
+  High: { description: "Stay connect with your counselor & connect your family member to help.", color: "#e0362e" },
+};
+const RISK_COLORS: Record<string, string> = {
+  Low: "#17db1a",
+  Mid: "#c96a00",
+  High: "#e0362e",
+};
+
 type Task = {
   _id: string;
   title: string;
@@ -40,6 +52,8 @@ export default function HomeScreen() {
   const [familyPhone, setFamilyPhone] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [level, setLevel] = useState('')
+
   const resetInviteForm = () => {
     setFamilyName("");
     setFamilyEmail("");
@@ -70,6 +84,7 @@ export default function HomeScreen() {
 
         if(res.ok && data.profile){
           setFirstName(data.profile.firstName || "");
+          setLevel(data.profile.level || "");
         }
 
         await getTasks();
@@ -297,15 +312,23 @@ export default function HomeScreen() {
       </View>
 
       <View style={homeStyles.content}>
+        
         {/* Risk Banner */}
-        <View style={homeStyles.riskCard}>
-          <View style={homeStyles.riskIconWrap}>
-            <Ionicons name="warning" size={22} color="#c96a00" />
+        <View
+          style={[
+            homeStyles.riskCard,
+            { backgroundColor: `${RISK_COLORS[level] ?? "#c96a00"}20`, borderLeftWidth: 4, borderLeftColor: RISK_COLORS[level] ?? "#c96a00" },
+          ]}
+        >
+          <View style={[homeStyles.riskIconWrap, { backgroundColor: `${RISK_COLORS[level] ?? "#c96a00"}30` }]}>
+            <Ionicons name="warning" size={22} color={RISK_COLORS[level] ?? "#c96a00"} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={homeStyles.riskLevel}>RISK LEVEL</Text>
-            <Text style={homeStyles.riskValue}>Moderate Risk</Text>
-            <Text style={homeStyles.riskSub}>Some areas need attention below</Text>
+            <Text style={[homeStyles.riskValue, { color: RISK_COLORS[level] ?? "#c96a00" }]}>{level || "Not set"}</Text>
+            <Text style={homeStyles.riskSub}>
+              {LEVEL_INFO[level]?.description ?? "Level not set yet. contact counselor to see your risk analysis."}
+            </Text>
           </View>
         </View>
         <View style={homeStyles.mailCard}>
