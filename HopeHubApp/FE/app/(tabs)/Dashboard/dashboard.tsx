@@ -32,6 +32,12 @@ interface DiaryEntry {
   date: string;
   mood: 'good' | 'bad';
   content: string;
+  emotionAnalysis?: {
+    label: string;
+    positivePercentage: number;
+    negativePercentage: number;
+    confidence: number;
+  };
 }
 
 const todayDateString = () => new Date().toISOString().split("T")[0];
@@ -95,6 +101,32 @@ function MoodChart({ entries }: { entries: DiaryEntry[] }) {
   );
 }
 
+ function MiniEmotionBar({ analysis }: { analysis: DiaryEntry['emotionAnalysis'] }) {
+  if (!analysis) return null;
+  const { positivePercentage, negativePercentage } = analysis;
+
+  return (
+    <View style={{ marginLeft: 8, flex: 1, maxWidth: 60 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          height: 5,
+          borderRadius: 3,
+          overflow: 'hidden',
+          backgroundColor: '#EEE',
+        }}
+      >
+        <View style={{ flex: positivePercentage || 0.01, backgroundColor: '#3DB87C' }} />
+        <View style={{ flex: negativePercentage || 0.01, backgroundColor: '#E5624A' }} />
+      </View>
+      <Text style={{ fontSize: 9, color: '#9EA5B0', marginTop: 2 }}>
+        {Math.round(positivePercentage)}% good
+      </Text>
+    </View>
+  );
+}
+
+
 
 function EntryCard({
   entry,
@@ -118,7 +150,10 @@ function EntryCard({
       <View style={cardStyles.row}>
         <View style={[cardStyles.moodDot, { backgroundColor: isGood ? '#3DB87C' : '#E5624A' }]} />
         <View style={cardStyles.meta}>
-          <Text style={cardStyles.date}>{formatDisplayDate(entry.date)}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={cardStyles.date}>{formatDisplayDate(entry.date)}</Text>
+            <MiniEmotionBar analysis={entry.emotionAnalysis} />
+          </View>
           <View style={[cardStyles.pill, { backgroundColor: isGood ? '#EBF8F2' : '#FEF0ED' }]}>
             <Text style={[cardStyles.pillText, { color: isGood ? '#1B7A50' : '#B03D2A' }]}>
               {isGood ? 'Good day' : 'Tough day'}
@@ -289,6 +324,7 @@ export default function DiaryScreen() {
           date: d.date,
           mood: d.mood,
           content: d.content,
+          emotionAnalysis: d.emotionAnalysis,
         }));
         setEntries(mapped);
       } else {
