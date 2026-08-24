@@ -1,42 +1,65 @@
 import Diary from '../models/Diary.js';
+import axios from "axios";
 
-export const addDiary = async (req, res)=>{
+export const addDiary = async (req, res) => {
     try {
-        const  {userId, date, mood, content} = req.body 
 
-        if(!userId)
-        {
+        const { userId, date, mood, content } = req.body;
+
+        if (!userId) {
             return res.status(400).json({
-            message: "User ID was not identified"
+                message: "User ID was not identified"
             });
         }
-        if(!date || !mood  || !content)
-        {
+
+        if (!date || !mood || !content) {
             return res.status(400).json({
-                 message: "Please fill & select all fields"
-            })
+                message: "Please fill & select all fields"
+            });
         }
+
+        const mlResponse = await axios.post(
+            "http://127.0.0.1:8000/predict",
+            {
+                text: content
+            }
+        );
+
+        const prediction = mlResponse.data;
+
+        console.log("ML Result:", prediction);
 
         const diary = new Diary({
             userId,
             date,
             mood,
-            content
-        })
+            content,
 
-        const saveDiary = await diary.save();
+            emotionAnalysis: {
+                label: prediction.label,
+                positivePercentage: prediction.positive_percentage,
+                negativePercentage: prediction.negative_percentage,
+                confidence: prediction.confidence
+            }
+        });
 
-         return res.status(201).json({
+        await diary.save();
+
+        return res.status(201).json({
             message: "Diary saved successfully",
+            diary
         });
 
     } catch (error) {
+
         console.log("error:", error);
-        res.status(500).json({
-        message: "user diary fail to save",
+
+        return res.status(500).json({
+            message: "User diary failed to save",
+            error: error.message
         });
     }
-}
+};
 
 export const getDiaries = async (req, res) => {
     try {
@@ -77,13 +100,16 @@ export const getDiaries = async (req, res) => {
         });
     }
 }
+
 export const editDiary = async (req, res) => {
     try {
+
         const { userId, diaryId } = req.params;
         const { mood, content } = req.body;
 
-
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date()
+            .toISOString()
+            .split("T")[0];
 
         const diary = await Diary.findOne({
             _id: diaryId,
@@ -102,8 +128,32 @@ export const editDiary = async (req, res) => {
             });
         }
 
+        if (!mood || !content) {
+            return res.status(400).json({
+                message: "Mood and content are required"
+            });
+        }
+
+        const mlResponse = await axios.post(
+            "http://127.0.0.1:8000/predict",
+            {
+                text: content
+            }
+        );
+
+        const prediction = mlResponse.data;
+
+        console.log("Updated ML Result:", prediction);
+
         diary.mood = mood;
         diary.content = content;
+
+        diary.emotionAnalysis = {
+            label: prediction.label,
+            positivePercentage: prediction.positive_percentage,
+            negativePercentage: prediction.negative_percentage,
+            confidence: prediction.confidence
+        };
 
         await diary.save();
 
@@ -113,13 +163,16 @@ export const editDiary = async (req, res) => {
         });
 
     } catch (error) {
+
         console.log("error:", error);
 
         res.status(500).json({
-            message: "Failed to update diary"
+            message: "Failed to update diary",
+            error: error.message
         });
     }
 };
+
 export const deleteDiary = async (req, res) => {
     try {
         const { userId, diaryId } = req.params;
