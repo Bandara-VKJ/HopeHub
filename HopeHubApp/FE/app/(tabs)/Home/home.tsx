@@ -41,7 +41,7 @@ const ProgressBar = ({ value, color }: { value: number; color: string }) => (
 
 export default function HomeScreen() {
 
-  const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [firstName, setFirstName] = useState('')
@@ -53,6 +53,7 @@ export default function HomeScreen() {
   const [submitting, setSubmitting] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [level, setLevel] = useState('')
+  const [levelSource, setLevelSource] = useState('')
 
   const resetInviteForm = () => {
     setFamilyName("");
@@ -82,10 +83,11 @@ export default function HomeScreen() {
 
         const data = await res.json();
 
-        if(res.ok && data.profile){
-          setFirstName(data.profile.firstName || "");
-          setLevel(data.profile.level || "");
-        }
+       if(res.ok && data.profile){
+        setFirstName(data.profile.firstName || "");
+        setLevel(data.profile.level || "");
+        setLevelSource(data.profile.levelSource || "");
+      }
 
         await getTasks();
 
@@ -326,6 +328,12 @@ export default function HomeScreen() {
           <View style={{ flex: 1 }}>
             <Text style={homeStyles.riskLevel}>RISK LEVEL</Text>
             <Text style={[homeStyles.riskValue, { color: RISK_COLORS[level] ?? "#c96a00" }]}>{level || "Not set"}</Text>
+              {levelSource === "counselor" && (
+                <Text style={{ fontSize: 11, color: "#888" }}>Set by your counselor</Text>
+              )}
+              <Text style={homeStyles.riskSub}>
+                {LEVEL_INFO[level]?.description ?? "Level not set yet. contact counselor to see your risk analysis."}
+              </Text>
             <Text style={homeStyles.riskSub}>
               {LEVEL_INFO[level]?.description ?? "Level not set yet. contact counselor to see your risk analysis."}
             </Text>

@@ -4,7 +4,6 @@ import User from "../models/User.js";
 export const getProfile = async (req, res) => {
   try {
     const { userId } = req.params;
-
     const user = await User.findById(userId);
 
     if (!user) {
@@ -14,13 +13,15 @@ export const getProfile = async (req, res) => {
     res.status(200).json({
       exists: true,
       profile: {
-        firstName:  user.firstName  || '',
-        lastName:   user.lastName   || '',
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
         profilePic: user.profilePic || null,
-        level: user.level
+        level: user.counselorLevel ?? user.predictedLevel,
+        levelSource: user.counselorLevel ? "counselor" : "model",
+        predictedLevel: user.predictedLevel,
+        counselorLevel: user.counselorLevel,
       },
     });
-
   } catch (error) {
     console.log("getProfile error:", error);
     res.status(500).json({ message: "Error fetching profile" });
