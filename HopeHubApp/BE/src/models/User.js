@@ -10,13 +10,11 @@ const userSchema = new mongoose.Schema(
     mobile: { type: String, default: "" },
     profilePic: { type: String, default: null },
 
-    // Raw output from the ML model — stores whatever label_encoder.classes_ produces
     predictedLevel: { type: String, default: null },
 
-    // Counselor override, using your existing app-facing categories
     counselorLevel: {
       type: String,
-      enum: ["Low", "Mid", "High", "Contact with counselor"],
+      enum: ["No risk", "Very Low", "Low", "Moderate", "High", "Very High", "Severe Addiction", "Contact with counselor"],
       default: null,
     },
     counselorLevelBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
@@ -29,7 +27,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Effective level shown to the app: counselor override wins, else the mapped prediction
 userSchema.virtual("level").get(function () {
   if (this.counselorLevel) return this.counselorLevel;
   return mapPredictedToAppLevel(this.predictedLevel);
@@ -37,7 +34,6 @@ userSchema.virtual("level").get(function () {
 
 function mapPredictedToAppLevel(predicted) {
   if (!predicted) return "Contact with counselor";
-  // TODO: replace with your model's actual label_encoder.classes_ values
   const mapping = {
     "Level 1 No Risk": "Low",
     "Level 2": "Low",

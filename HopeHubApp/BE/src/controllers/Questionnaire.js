@@ -1,5 +1,6 @@
 import express from "express";
 import Questionnaire from "../models/Questionnaire.js";
+import User from "../models/User.js";
 import axios from "axios";
 
 const router = express.Router();
@@ -37,6 +38,14 @@ export const submitQuestionnaire = async (req, res) => {
 
     await newEntry.save();
 
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { predictedLevel: prediction.addiction_level },
+      { new: true }
+    );
+
+    console.log("Updated user predictedLevel:", updatedUser?.predictedLevel);
+
     res.status(200).json({
       message: "Saved successfully",
       prediction: {
@@ -50,16 +59,16 @@ export const submitQuestionnaire = async (req, res) => {
   }
 };
 
-export const checkQuestionnaireStatus = async (req,res) =>{
+export const checkQuestionnaireStatus = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const existing = await Questionnaire.findOne({userId});
+    const existing = await Questionnaire.findOne({ userId });
 
     res.status(200).json({
-      completed: !!existing
+      completed: !!existing,
     });
   } catch (error) {
-     res.status(500).json({ message: "Error checking status" });
+    res.status(500).json({ message: "Error checking status" });
   }
 };

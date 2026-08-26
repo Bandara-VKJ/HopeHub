@@ -14,14 +14,49 @@ const RISK_FACTORS = [
 ];
 
 const LEVEL_INFO: Record<string, { description: string; color: string }> = {
-  Low: { description: "You're doing well. Keep up with your daily tasks and check-ins.", color: "#17db1a" },
-  Mid: { description: "Stay alert to your triggers. Do not forget to contact your counselor every week.", color: "#f09c00" },
-  High: { description: "Stay connect with your counselor & connect your family member to help.", color: "#e0362e" },
+    "Level 1 - No Risk": {
+      description: "No signs of risk detected. Keep up your daily habits.",
+      color: "#17db1a",
+    },
+    "Level 2 - Very Low": {
+      description: "You're doing well. Keep up with your daily tasks and check-ins.",
+      color: "#3ecf4a",
+     
+    },
+    "Level 3 - Low": {
+      description: "Low risk overall. Stay mindful of your habits and triggers.",
+      color: "#8bd100",
+      
+    },
+    "Level 4 - Moderate": {
+      description: "Stay alert to your triggers. Do not forget to contact your counselor every week.",
+      color: "#f09c00",
+    },
+    "Level 5 - High": {
+      description: "Elevated risk. Reach out to your counselor and stay close to your support system.",
+      color: "#e26d36",
+      
+    },
+    "Level 6 - Very High": {
+      description: "Stay connect with your counselor & connect your family member to help.",
+      color: "#e0362e",
+    
+    },
+    "Level 7 - Severe Addiction": {
+      description: "This needs immediate attention. Please contact your counselor right away.",
+      color: "#b0021f",
+     
+    },
 };
+
 const RISK_COLORS: Record<string, string> = {
-  Low: "#17db1a",
-  Mid: "#c96a00",
-  High: "#e0362e",
+  "Level 1 - No Risk": "#17db1a",
+  "Level 2 - Very Low": "#3ecf4a",
+  "Level 3 - Low": "#8bd100",
+  "Level 4 - Moderate": "#f09c00",
+  "Level 5 - High": "#e26d36",
+  "Level 6 - Very High": "#e0362e",
+  "Level 7 - Severe Addiction": "#b0021f",
 };
 
 type Task = {
@@ -334,9 +369,6 @@ const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
               <Text style={homeStyles.riskSub}>
                 {LEVEL_INFO[level]?.description ?? "Level not set yet. contact counselor to see your risk analysis."}
               </Text>
-            <Text style={homeStyles.riskSub}>
-              {LEVEL_INFO[level]?.description ?? "Level not set yet. contact counselor to see your risk analysis."}
-            </Text>
           </View>
         </View>
         <View style={homeStyles.mailCard}>
