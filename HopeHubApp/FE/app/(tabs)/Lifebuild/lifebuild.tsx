@@ -4,7 +4,7 @@ import { lifeRebuildStyles } from "./lifebuildStyles"
 export default function LifeScreen() {
   return (
     <View style={lifeRebuildStyles.container}>
-      <Text>Life Rebuild💼</Text>
+      <Text>Life Rebild💼</Text>
     </View>
   );
 }
