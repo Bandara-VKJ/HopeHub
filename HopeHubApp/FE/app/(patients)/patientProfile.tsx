@@ -1,7 +1,8 @@
-import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, ActivityIndicator, TouchableOpacity, ScrollView, Modal, FlatList } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { patientProfileStyles } from './patientProfile.Styles'
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
@@ -24,7 +25,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
   date?: string;
 };
 
-const LEVELS = ["Low", "Mid", "High"];
+const LEVELS = [ "No risk", "Very Low", "Low", "Moderate", "High", "Very High", "Severe Addiction" ];
 
 export default function PatientProfile() {
 
@@ -36,6 +37,7 @@ export default function PatientProfile() {
   const [loading, setLaoding] = useState(true)
   const [tasks, setTasks] = useState<Task[]>([]);
   const [updatingLevel, setUpdatingLevel] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
 
   const ngrokFetch = (url: string, options: RequestInit = {}) =>
@@ -159,36 +161,76 @@ export default function PatientProfile() {
                 Addiction level:
             </Text>
 
-            <View style={{ flexDirection: "row", gap: 8, marginTop: 6, marginBottom: 10 }}>
-                {LEVELS.map((lvl) => {
-                    const isSelected = patient.level === lvl;
-                    return (
-                        <TouchableOpacity
-                            key={lvl}
-                            disabled={updatingLevel}
-                            onPress={() => updateLevel(lvl)}
-                            style={{
-                                paddingVertical: 6,
-                                paddingHorizontal: 14,
-                                borderRadius: 20,
-                                borderWidth: 1,
-                                borderColor: isSelected ? "#4CAF50" : "#ccc",
-                                backgroundColor: isSelected ? "#4CAF50" : "transparent",
-                                opacity: updatingLevel ? 0.6 : 1,
+           <View style={{ marginTop: 6, marginBottom: 10 }}>
+            <TouchableOpacity
+                disabled={updatingLevel}
+                onPress={() => setDropdownOpen(true)}
+                style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingVertical: 10,
+                    paddingHorizontal: 14,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: "#ccc",
+                    opacity: updatingLevel ? 0.6 : 1,
+                }}
+            >
+                <Text style={{ color: "#333", fontWeight: "500" }}>
+                    {patient.level || "Select level"}
+                </Text>
+                <Ionicons name="chevron-down" size={18} color="#555" />
+            </TouchableOpacity>
+
+            <Modal
+                visible={dropdownOpen}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setDropdownOpen(false)}
+            >
+                <TouchableOpacity
+                    style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)", justifyContent: "center", padding: 24 }}
+                    activeOpacity={1}
+                    onPress={() => setDropdownOpen(false)}
+                >
+                    <View style={{ backgroundColor: "#fff", borderRadius: 12, paddingVertical: 8 }}>
+                        <FlatList
+                            data={LEVELS}
+                            keyExtractor={(item) => item}
+                            renderItem={({ item: lvl }) => {
+                                const isSelected = patient.level === lvl;
+                                return (
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setDropdownOpen(false);
+                                            updateLevel(lvl);
+                                        }}
+                                        style={{
+                                            paddingVertical: 12,
+                                            paddingHorizontal: 16,
+                                            backgroundColor: isSelected ? "#4CAF50" : "transparent",
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                color: isSelected ? "#fff" : "#333",
+                                                fontWeight: isSelected ? "600" : "400",
+                                            }}
+                                        >
+                                            {lvl}
+                                        </Text>
+                                    </TouchableOpacity>
+                                );
                             }}
-                        >
-                            <Text
-                                style={{
-                                    color: isSelected ? "#fff" : "#555",
-                                    fontWeight: isSelected ? "600" : "400",
-                                }}
-                            >
-                                {lvl}
-                            </Text>
-                        </TouchableOpacity>
-                    );
-                })}
-            </View>
+                            ItemSeparatorComponent={() => (
+                                <View style={{ height: 1, backgroundColor: "#eee" }} />
+                            )}
+                        />
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+        </View>
 
             <TouchableOpacity 
             style={patientProfileStyles.taskButton}
