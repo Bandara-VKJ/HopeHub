@@ -19,6 +19,7 @@ import diaryRouter from "./src/routes/diaryRouter.js";
 import riskRouter from "./src/routes/riskRouter.js";
 import bookingRoutes from "./src/routes/bookingRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
+import adminRouter from './src/routes/adminRoutes.js';
 
 import Booking from "./src/models/Booking.js";
 import ChatMessage from "./src/models/ChatMessage.js";
@@ -157,6 +158,9 @@ app.use(
   bookingRoutes
 );
 
+app.use(
+  "/api/admin", 
+  adminRouter);
 
 // ============================================================
 // CHAT API
