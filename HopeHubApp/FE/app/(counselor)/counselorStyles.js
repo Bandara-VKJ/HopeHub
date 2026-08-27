@@ -316,5 +316,213 @@ statusButtonText: {
   fontSize: 13,
   fontWeight: "900",
 },
+
+bookingSection: {
+  marginHorizontal: 16,
+  marginTop: 20,
+},
+
+bookingHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 12,
+},
+
+bookingSubtitle: {
+  fontSize: 12,
+  color: "#7A9A9A",
+  marginTop: 3,
+},
+
+refreshButton: {
+  width: 42,
+  height: 42,
+  borderRadius: 13,
+  backgroundColor: "#E8F8F8",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+noBookingsCard: {
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  padding: 25,
+  alignItems: "center",
+  elevation: 2,
+  shadowColor: "#000",
+  shadowOpacity: 0.05,
+  shadowRadius: 8,
+},
+
+noBookingsTitle: {
+  marginTop: 10,
+  fontSize: 16,
+  fontWeight: "900",
+  color: "#1A3A3A",
+},
+
+noBookingsText: {
+  marginTop: 5,
+  textAlign: "center",
+  fontSize: 12,
+  color: "#7A9A9A",
+},
+
+bookingCard: {
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  padding: 16,
+  marginBottom: 12,
+  elevation: 3,
+  shadowColor: "#000",
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+},
+
+bookingCardTop: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+patientAvatar: {
+  width: 48,
+  height: 48,
+  borderRadius: 15,
+  backgroundColor: "#E8F8F8",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+patientName: {
+  fontSize: 15,
+  fontWeight: "900",
+  color: "#1A3A3A",
+},
+
+patientEmail: {
+  fontSize: 11,
+  color: "#7A9A9A",
+  marginTop: 3,
+},
+
+statusBadge: {
+  borderRadius: 20,
+  paddingHorizontal: 9,
+  paddingVertical: 5,
+},
+
+statusPending: {
+  backgroundColor: "#FFF3D6",
+},
+
+statusConfirmed: {
+  backgroundColor: "#E6F9EE",
+},
+
+statusCancelled: {
+  backgroundColor: "#FDE8E8",
+},
+
+statusBadgeText: {
+  fontSize: 10,
+  fontWeight: "900",
+  color: "#555",
+},
+
+bookingDetails: {
+  marginTop: 14,
+  backgroundColor: "#F7FBFB",
+  borderRadius: 14,
+  padding: 12,
+  gap: 8,
+},
+
+bookingDetailRow: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+bookingDetailText: {
+  marginLeft: 8,
+  fontSize: 13,
+  color: "#465858",
+  fontWeight: "700",
+},
+
+bookingActions: {
+  flexDirection: "row",
+  gap: 10,
+  marginTop: 14,
+},
+
+cancelBookingButton: {
+  flex: 1,
+  height: 45,
+  borderRadius: 12,
+  backgroundColor: "#FDE8E8",
+  borderWidth: 1,
+  borderColor: "#F2B8B8",
+  justifyContent: "center",
+  alignItems: "center",
+  flexDirection: "row",
+  gap: 6,
+},
+
+cancelBookingText: {
+  color: "#DC2626",
+  fontSize: 13,
+  fontWeight: "900",
+},
+
+confirmBookingButton: {
+  flex: 1,
+  height: 45,
+  borderRadius: 12,
+  backgroundColor: "#2CA6A4",
+  justifyContent: "center",
+  alignItems: "center",
+  flexDirection: "row",
+  gap: 6,
+},
+
+confirmBookingText: {
+  color: "#fff",
+  fontSize: 13,
+  fontWeight: "900",
+},
+
+confirmedMessage: {
+  marginTop: 12,
+  padding: 11,
+  borderRadius: 12,
+  backgroundColor: "#E6F9EE",
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 7,
+},
+
+confirmedMessageText: {
+  color: "#16A34A",
+  fontSize: 12,
+  fontWeight: "800",
+},
+
+cancelledMessage: {
+  marginTop: 12,
+  padding: 11,
+  borderRadius: 12,
+  backgroundColor: "#FDE8E8",
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 7,
+},
+
+cancelledMessageText: {
+  color: "#DC2626",
+  fontSize: 12,
+  fontWeight: "800",
+},
+
 });
 export default {};
