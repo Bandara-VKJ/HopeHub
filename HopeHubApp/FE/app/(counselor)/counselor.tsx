@@ -412,4 +412,4 @@ function InfoRow({
       </View>
     </View>
   );
-}
+} // lol
