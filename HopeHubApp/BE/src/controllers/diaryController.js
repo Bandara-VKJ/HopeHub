@@ -1,6 +1,8 @@
 import Diary from '../models/Diary.js';
 import axios from "axios";
 
+const ML_DIARY_ENDPOINT = "http://127.0.0.1:8000/api/diary/predict";
+
 export const addDiary = async (req, res) => {
     try {
 
@@ -19,8 +21,9 @@ export const addDiary = async (req, res) => {
         }
 
         const mlResponse = await axios.post(
-            "http://127.0.0.1:8000/predict",
+            ML_DIARY_ENDPOINT,
             {
+                userId,
                 text: content
             }
         );
@@ -36,10 +39,8 @@ export const addDiary = async (req, res) => {
             content,
 
             emotionAnalysis: {
-                label: prediction.label,
-                positivePercentage: prediction.positive_percentage,
-                negativePercentage: prediction.negative_percentage,
-                confidence: prediction.confidence
+                dominantEmotion: prediction.dominant_emotion,
+                emotionPercentages: prediction.emotion_percentages
             }
         });
 
@@ -80,13 +81,13 @@ export const getDiaries = async (req, res) => {
          const todayString = today.toISOString().split("T")[0];
          const lastWeekString = lastWeek.toISOString().split("T")[0];
 
-        const  diaries = await Diary.find({
+        const diaries = await Diary.find({
             userId,
             date: {
                 $gte: lastWeekString,
                 $lte: todayString
             }
-        });
+        }).lean();
 
         res.status(200).json({
             message: "Diaries retrieved successfully",
@@ -134,26 +135,30 @@ export const editDiary = async (req, res) => {
             });
         }
 
-        const mlResponse = await axios.post(
-            "http://127.0.0.1:8000/predict",
-            {
-                text: content
-            }
-        );
-
-        const prediction = mlResponse.data;
-
-        console.log("Updated ML Result:", prediction);
+        let prediction = null;
+        try {
+            const mlResponse = await axios.post(
+                ML_DIARY_ENDPOINT,
+                {
+                    userId,
+                    text: content
+                }
+            );
+            prediction = mlResponse.data;
+            console.log("Updated ML Result:", prediction);
+        } catch (mlError) {
+            console.log("ML prediction failed during edit:", mlError.message);
+        }
 
         diary.mood = mood;
         diary.content = content;
 
-        diary.emotionAnalysis = {
-            label: prediction.label,
-            positivePercentage: prediction.positive_percentage,
-            negativePercentage: prediction.negative_percentage,
-            confidence: prediction.confidence
-        };
+        if (prediction) {
+            diary.emotionAnalysis = {
+                dominantEmotion: prediction.dominant_emotion,
+                emotionPercentages: prediction.emotion_percentages
+            };
+        }
 
         await diary.save();
 
@@ -172,7 +177,6 @@ export const editDiary = async (req, res) => {
         });
     }
 };
-
 export const deleteDiary = async (req, res) => {
     try {
         const { userId, diaryId } = req.params;
