@@ -1,9 +1,10 @@
-import { Text, View, TouchableOpacity, TextInput, Image, ActivityIndicator } from 'react-native'
+import { Text, View, TouchableOpacity, TextInput, Image, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { profileStyles } from './profileStyles'
 import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 
 const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
 
@@ -25,11 +26,9 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-
   useEffect(() => {
     const getUser = async () => {
       const id = await AsyncStorage.getItem("userId");
-      console.log("Loaded userId:", id);
       setUserId(id);
     };
     getUser();
@@ -40,17 +39,12 @@ export default function Profile() {
 
     const loadProfile = async () => {
       try {
-        console.log("Loading profile for:", userId);
-
         const res = await ngrokFetch(`${BASE_URL}/api/profile/${userId}`);
-        console.log("Status:", res.status);
-
         const text = await res.text();
         let data;
         try {
           data = JSON.parse(text);
         } catch (e) {
-          console.log("Non-JSON response:", text);
           return;
         }
 
@@ -58,10 +52,7 @@ export default function Profile() {
           setFirst(data.profile.firstName || '');
           setLast(data.profile.lastName || '');
           setPicture(data.profile.profilePic || null);
-        } else {
-          console.log("Profile not found or error:", data);
         }
-
       } catch (error) {
         console.log("Load error:", error);
       } finally {
@@ -95,9 +86,8 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     try {
       setSaving(true);
-      
-      const formData = new FormData
 
+      const formData = new FormData();
       formData.append("userId", userId!);
       formData.append("firstName", first);
       formData.append("lastName", last);
@@ -122,90 +112,113 @@ export default function Profile() {
         return;
       }
 
-      // Update the picture state with the server path
       if (data.profile?.profilePic) {
         setPicture(data.profile.profilePic);
       }
 
       alert("Profile saved!");
-
     } catch (error) {
       console.log("Save error:", error);
       alert("Network error");
     } finally {
       setSaving(false);
     }
-    };
+  };
 
-    if (loading) {
-      return (
-        <View style={[profileStyles.container, { justifyContent: 'center' }]}>
-          <ActivityIndicator size="large" color="#2CA6A4" />
-          <Text style={{ marginTop: 10 }}>Loading Profile...</Text>
-        </View>
-      );
+  if (loading) {
+    return (
+      <View style={profileStyles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2CA6A4" />
+        <Text style={profileStyles.loadingText}>Loading Profile...</Text>
+      </View>
+    );
   }
 
   return (
-    <View style={profileStyles.container}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: '#F4FAF9' }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={profileStyles.scrollContent}>
 
-      <TouchableOpacity onPress={pickImage} style={profileStyles.imagecontaine}>
-        {picture ? (
-          <Image
-            source={{ uri: picture?.startsWith("file://")
-              ? picture
-              :`${BASE_URL}${picture}`,
-             }}
-            style={profileStyles.profilePic}
-          />
-        ) : (
-          <View style={{
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            backgroundColor: '#e1e1e1',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-            <Text>Add Photo</Text>
+        <Text style={profileStyles.title}>My Profile</Text>
+        <Text style={profileStyles.subtitle}></Text>
+
+        <TouchableOpacity onPress={pickImage} style={profileStyles.avatarWrapper} activeOpacity={0.85}>
+          {picture ? (
+            <Image
+              source={{
+                uri: picture?.startsWith("file://")
+                  ? picture
+                  : `${BASE_URL}${picture}`,
+              }}
+              style={profileStyles.profilePic}
+            />
+          ) : (
+            <View style={profileStyles.placeholder}>
+              <Ionicons name="person" size={44} color="#9BB8B6" />
+            </View>
+          )}
+          <View style={profileStyles.editBadge}>
+            <Ionicons name="camera" size={16} color="#fff" />
           </View>
-        )}
-      </TouchableOpacity>
+        </TouchableOpacity>
 
-      <TextInput
-        placeholder='Enter first name'
-        value={first}
-        onChangeText={setFirst}
-        style={profileStyles.input}
-      />
+        <View style={profileStyles.card}>
+          <Text style={profileStyles.label}>First Name</Text>
+          <View style={profileStyles.inputWrapper}>
+            <Ionicons name="person-outline" size={18} color="#2CA6A4" style={profileStyles.inputIcon} />
+            <TextInput
+              placeholder="Enter first name"
+              placeholderTextColor="#A0AFAE"
+              value={first}
+              onChangeText={setFirst}
+              style={profileStyles.input}
+            />
+          </View>
 
-      <TextInput
-        placeholder='Enter last name'
-        value={last}
-        onChangeText={setLast}
-        style={profileStyles.input}
-      />
+          <Text style={profileStyles.label}>Last Name</Text>
+          <View style={profileStyles.inputWrapper}>
+            <Ionicons name="person-outline" size={18} color="#2CA6A4" style={profileStyles.inputIcon} />
+            <TextInput
+              placeholder="Enter last name"
+              placeholderTextColor="#A0AFAE"
+              value={last}
+              onChangeText={setLast}
+              style={profileStyles.input}
+            />
+          </View>
 
-      <TouchableOpacity
-        style={profileStyles.save}
-        onPress={handleSaveProfile}
-        disabled={saving}
-      >
-        <Text style={{ textAlign: 'center', fontWeight: 'bold' }}>
-          {saving ? "Saving..." : "Save Profile"}
-        </Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={[profileStyles.save, saving && profileStyles.saveDisabled]}
+            onPress={handleSaveProfile}
+            disabled={saving}
+            activeOpacity={0.85}
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
+                <Text style={profileStyles.saveText}>Save Profile</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
 
-     <TouchableOpacity
-        style={profileStyles.logout}
-        onPress={async () => {
-          await AsyncStorage.clear();
-          router.replace('/(auth)/Login/login');
-        }}
-      >
-        <Text>Log out</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={profileStyles.logout}
+          onPress={async () => {
+            await AsyncStorage.clear();
+            router.replace('/(auth)/Login/login');
+          }}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="log-out-outline" size={18} color="#2CA6A4" style={{ marginRight: 6 }} />
+          <Text style={profileStyles.logoutText}>Log out</Text>
+        </TouchableOpacity>
 
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
