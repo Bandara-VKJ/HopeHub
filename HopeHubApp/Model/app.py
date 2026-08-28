@@ -1,4 +1,3 @@
-import pickle
 import joblib
 import pandas as pd
 from fastapi import FastAPI, HTTPException
@@ -6,15 +5,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict
 
-# ── Load saved model components ─────────────────────────────────────
+
 model = joblib.load("addiction_rf_model.pkl")
 label_encoder = joblib.load("addiction_label_encoder.pkl")
 FEATURE_COLS = joblib.load("feature_columns.pkl")
 
-with open("emotion_model.pkl", "rb") as f:
-    emotion_model = pickle.load(f)
+tfidf_vectorizer = joblib.load("tfidf_vectorizer.pkl")
+emotion_classifier = joblib.load("emotion_classifier.pkl")
+label_classes = joblib.load("label_classes.pkl")
 
-# ── Drug frequency → numeric ─────────────────────────────────────────
+
 DRUG_FREQ_MAP = {
     "Never": 0,
     "Rarely": 1,
@@ -23,7 +23,7 @@ DRUG_FREQ_MAP = {
     "Very Often": 6,
 }
 
-# ── Keyword banks for free-text → personality score ──────────────────
+
 TRAIT_KEYWORDS = {
     "Nscore": {
         "positive": ["anxious", "stressed", "worry", "worried", "nervous",
@@ -185,10 +185,35 @@ def predict_addiction_from_questionnaire(answers: dict, gender: str = "M") -> di
     }
 
 
-# ── FastAPI app ────────────────────────────────────────────────────
+def predict_diary_emotions(text: str) -> dict:
+    """Run the new multi-emotion diary model and return a percentage
+    breakdown across all emotion classes plus the dominant one."""
+    vec = tfidf_vectorizer.transform([text])
+    probabilities = emotion_classifier.predict_proba(vec)[0]
+
+
+    if hasattr(label_classes, "inverse_transform"):
+        classes = label_classes.classes_
+    else:
+        classes = label_classes
+
+    percentages = {
+        classes[i]: round(float(p) * 100, 2)
+        for i, p in enumerate(probabilities)
+    }
+    # sort highest first
+    percentages = dict(sorted(percentages.items(), key=lambda kv: -kv[1]))
+    dominant_emotion = next(iter(percentages))
+
+    return {
+        "dominant_emotion": dominant_emotion,
+        "emotion_percentages": percentages,
+    }
+
+
 app = FastAPI(title="HopeHub ML Service")
 
-# Allow requests from the Expo app / Node backend. Tighten this in production.
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -200,7 +225,7 @@ app.add_middleware(
 class QuestionnaireRequest(BaseModel):
     userId: str | None = None
     gender: str = "M"
-    answers: Dict[str, str]  # JSON keys always arrive as strings
+    answers: Dict[str, str]
 
 
 class DiaryRequest(BaseModel):
@@ -238,21 +263,10 @@ def predict_diary_emotion(payload: DiaryRequest):
     if not text:
         raise HTTPException(status_code=400, detail="Diary text is required")
 
-    probabilities = emotion_model.predict_proba([text])[0]
-    bad_probability = float(probabilities[0])
-    good_probability = float(probabilities[1])
-
-    if good_probability >= 0.60:
-        label = "GOOD"
-    elif good_probability <= 0.40:
-        label = "BAD"
-    else:
-        label = "NEUTRAL"
+    result = predict_diary_emotions(text)
 
     return {
         "userId": payload.userId,
-        "label": label,
-        "positive_percentage": round(good_probability * 100, 1),
-        "negative_percentage": round(bad_probability * 100, 1),
-        "confidence": round(max(good_probability, bad_probability) * 100, 1),
+        "dominant_emotion": result["dominant_emotion"],
+        "emotion_percentages": result["emotion_percentages"],
     }
