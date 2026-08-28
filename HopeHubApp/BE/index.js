@@ -19,10 +19,12 @@ import diaryRouter from "./src/routes/diaryRouter.js";
 import riskRouter from "./src/routes/riskRouter.js";
 import bookingRoutes from "./src/routes/bookingRoutes.js";
 import chatRoutes from "./src/routes/chatRoutes.js";
-import adminRouter from './src/routes/adminRoutes.js';
+import adminRouter from "./src/routes/adminRoutes.js";
 
 import Booking from "./src/models/Booking.js";
 import ChatMessage from "./src/models/ChatMessage.js";
+
+import aiCounselingRoutes from "./src/routes/aiCounselingRoutes.js";
 
 
 const app = express();
@@ -159,8 +161,10 @@ app.use(
 );
 
 app.use(
-  "/api/admin", 
-  adminRouter);
+  "/api/admin",
+  adminRouter
+);
+
 
 // ============================================================
 // CHAT API
@@ -169,6 +173,31 @@ app.use(
 app.use(
   "/api/chat",
   chatRoutes
+);
+
+
+// ============================================================
+// AI COUNSELING API
+// ============================================================
+//
+// This is the ONLY new route registration.
+//
+// Frontend will use:
+//
+// GET
+// /api/ai-counseling/conversation/:userId
+//
+// POST
+// /api/ai-counseling/message
+//
+// DELETE
+// /api/ai-counseling/conversation/:userId
+//
+// ============================================================
+
+app.use(
+  "/api/ai-counseling",
+  aiCounselingRoutes
 );
 
 
@@ -300,6 +329,7 @@ io.on(
             await Booking.findById(
               bookingId
             );
+
 
           if (!booking) {
             socket.emit(
@@ -829,6 +859,10 @@ server.listen(
 
     console.log(
       "Socket.IO chat server is ready"
+    );
+
+    console.log(
+      "AI Counseling API is ready"
     );
 
     console.log(

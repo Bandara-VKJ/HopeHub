@@ -3923,7 +3923,13 @@ export default function SupportScreen() {
           AI COUNSELLING BUTTON
       ====================================================== */}
 
-      <AICounsellingFAB />
+      <AICounsellingFAB
+        onPress={() => {
+          router.push(
+            "/(tabs)/Support/ai-counseling"
+          );
+        }}
+      />
 
     </View>
   );
