@@ -6,7 +6,8 @@ import {
   getCounselorById,
   updateCounselorAvailability,
   getAllPatients,
-  getPatientById
+  getPatientById,
+  deletePatient
 } from "../controllers/CounselorController.js";
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.patch("/:id/availability", updateCounselorAvailability);
 
 router.get("/all-patients", getAllPatients);
 router.get("/patient/:patientId", getPatientById);
+router.delete("/patient/:patientId", deletePatient);
 
 router.get("/", getCounselors);
 router.get("/:id", getCounselorById);

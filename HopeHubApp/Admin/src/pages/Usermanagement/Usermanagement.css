@@ -20,11 +20,194 @@
   padding: 32px;
 }
 
-.page-body h2 {
+.um-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* Table */
+.um-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.um-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  color: #6b7280;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.um-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #111827;
+  font-size: 14px;
+}
+
+.um-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.um-row:hover {
+  background-color: #f9fafb;
+}
+
+.um-actions {
+  text-align: right;
+  width: 100px;
+}
+
+.um-delete-btn {
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.um-delete-btn:hover {
+  background-color: #b91c1c;
+}
+
+/* Details overlay/panel */
+.um-details-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.um-details-panel {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 28px;
+  width: 400px;
+  max-width: 90vw;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.um-details-panel h2 {
   margin-top: 0;
   color: #111827;
 }
 
-.page-body p {
+.um-details-panel p {
+  color: #374151;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.um-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.um-close-btn:hover {
+  color: #111827;
+}
+
+.um-details-panel .um-delete-btn {
+  margin-top: 16px;
+}
+
+/* Delete confirmation modal */
+.um-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.um-confirm-box {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 24px;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.um-confirm-box h3 {
+  margin-top: 0;
+  color: #111827;
+}
+
+.um-confirm-box p {
   color: #4b5563;
+  font-size: 14px;
+}
+
+.um-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.um-cancel-btn {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.um-cancel-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.um-confirm-delete-btn {
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.um-confirm-delete-btn:hover {
+  background-color: #b91c1c;
+}
+
+.um-confirm-delete-btn:disabled,
+.um-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
