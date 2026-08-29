@@ -3312,6 +3312,28 @@ export default function SupportScreen() {
 
 
   // ==========================================================
+  // AUTO REFRESH
+  // ==========================================================
+
+  useEffect(() => {
+
+    const autoRefreshInterval =
+      setInterval(() => {
+
+        onRefresh();
+
+      }, 5000);
+
+    return () => {
+      clearInterval(
+        autoRefreshInterval
+      );
+    };
+
+  }, []);
+
+
+  // ==========================================================
   // COMMUNICATION
   // ==========================================================
 
@@ -3333,7 +3355,7 @@ export default function SupportScreen() {
 
       if (type === "Chat") {
         router.push({
-          pathname: "/(tabs)/Support/chat" as any,
+          pathname: "/chat/chat" as any,
           params: {
             bookingId: String(bookingId),
           },
@@ -3926,7 +3948,7 @@ export default function SupportScreen() {
       <AICounsellingFAB
         onPress={() => {
           router.push(
-            "/(tabs)/Support/ai-counseling"
+            "/ai-counseling/ai-counseling"
           );
         }}
       />
