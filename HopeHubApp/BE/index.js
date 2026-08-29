@@ -232,6 +232,13 @@ const io =
 
 
 // ============================================================
+// MAKE SOCKET.IO AVAILABLE TO EXPRESS CONTROLLERS
+// ============================================================
+
+app.set("io", io);
+
+
+// ============================================================
 // SOCKET CONNECTION
 // ============================================================
 
@@ -254,6 +261,55 @@ io.on(
 
     console.log(
       "===================================="
+    );
+
+
+    // ========================================================
+    // COUNSELOR BOOKING NOTIFICATION ROOM
+    // ========================================================
+    //
+    // Each counselor joins a private room:
+    // counselor_<counselorId>
+    //
+    // When a user creates a booking, the booking controller
+    // sends "newBooking" only to that counselor's room.
+    //
+    // ========================================================
+
+    socket.on(
+      "joinCounselorRoom",
+      (counselorId) => {
+
+        if (!counselorId) {
+          console.log(
+            "Counselor room join rejected: counselor ID missing."
+          );
+
+          return;
+        }
+
+        const room =
+          `counselor_${String(counselorId)}`;
+
+        socket.join(room);
+
+        socket.data.counselorId =
+          String(counselorId);
+
+        console.log(
+          `Counselor ${counselorId} joined notification room: ${room}`
+        );
+
+        socket.emit(
+          "joinedCounselorRoom",
+          {
+            success: true,
+            counselorId:
+              String(counselorId),
+            room,
+          }
+        );
+      }
     );
 
 

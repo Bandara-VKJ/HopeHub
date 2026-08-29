@@ -163,6 +163,100 @@ export const createBooking = async (req, res) => {
       savedBooking._id
     );
 
+
+    // ========================================================
+    // REAL-TIME COUNSELOR NOTIFICATION
+    // ========================================================
+    //
+    // The counselor may be using a completely different
+    // phone, browser, or computer.
+    //
+    // The counselor frontend joins:
+    // counselor_<counselorId>
+    //
+    // This sends the notification immediately after the
+    // booking has successfully been saved to MongoDB.
+    //
+    // ========================================================
+
+    try {
+
+      const io =
+        req.app.get("io");
+
+      if (io) {
+
+        const counselorRoom =
+          `counselor_${String(counselor)}`;
+
+        const patientName =
+          patientExists.name ||
+          `${patientExists.firstName || ""} ${
+            patientExists.lastName || ""
+          }`.trim() ||
+          "A patient";
+
+        io.to(counselorRoom).emit(
+          "newBooking",
+          {
+            bookingId:
+              String(savedBooking._id),
+
+            message:
+              `${patientName} has booked a counseling session.`,
+
+            patientName,
+
+            sessionDate:
+              String(sessionDate).trim(),
+
+            sessionTime:
+              String(sessionTime).trim(),
+
+            sessionType:
+              savedBooking.sessionType,
+
+            status:
+              savedBooking.status,
+          }
+        );
+
+        console.log(
+          "NEW BOOKING NOTIFICATION SENT:",
+          {
+            room:
+              counselorRoom,
+
+            bookingId:
+              String(savedBooking._id),
+
+            counselorId:
+              String(counselor),
+
+            patientName,
+          }
+        );
+
+      } else {
+
+        console.log(
+          "Socket.IO instance was not found. Booking was still saved successfully."
+        );
+
+      }
+
+    } catch (notificationError) {
+
+      // Do not fail the booking if Socket.IO notification
+      // has a temporary problem.
+      console.error(
+        "BOOKING NOTIFICATION ERROR:",
+        notificationError
+      );
+
+    }
+
+
     // --------------------------------------------------------
     // Return populated booking
     // --------------------------------------------------------
@@ -540,5 +634,7 @@ export const cancelBooking = async (
         "Failed to cancel booking.",
       error: error.message,
     });
+
+    
   }
 };
