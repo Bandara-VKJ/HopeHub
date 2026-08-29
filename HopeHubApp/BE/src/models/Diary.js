@@ -25,27 +25,13 @@ const diarySchema = new mongoose.Schema(
         },
 
         emotionAnalysis: {
-            label: {
-                type: String,
-                enum: ["GOOD", "BAD", "NEUTRAL"]
+            dominantEmotion: {
+                type: String
             },
 
-            positivePercentage: {
-                type: Number,
-                min: 0,
-                max: 100
-            },
-
-            negativePercentage: {
-                type: Number,
-                min: 0,
-                max: 100
-            },
-
-            confidence: {
-                type: Number,
-                min: 0,
-                max: 100
+            emotionPercentages: {
+                type: Map,
+                of: Number
             }
         }
     },

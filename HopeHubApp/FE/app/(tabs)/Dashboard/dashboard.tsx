@@ -27,16 +27,28 @@ const ngrokFetch = (url: string, options: RequestInit = {}) =>
     },
   });
 
+const EMOTION_META: Record<string, { color: string; emoji: string }> = {
+  joy: { color: '#3DB87C', emoji: '😊' },
+  love: { color: '#EC4899', emoji: '❤️' },
+  surprise: { color: '#F5A623', emoji: '😮' },
+  sadness: { color: '#5B8DEF', emoji: '😢' },
+  fear: { color: '#6366F1', emoji: '😨' },
+  anger: { color: '#E5624A', emoji: '😠' },
+  stress: { color: '#F97316', emoji: '😖' },
+  anxiety: { color: '#A855F7', emoji: '😰' },
+};
+
+const emotionMeta = (emotion: string) =>
+  EMOTION_META[emotion] || { color: '#9EA5B0', emoji: '•' };
+
 interface DiaryEntry {
   id: string;
   date: string;
   mood: 'good' | 'bad';
   content: string;
   emotionAnalysis?: {
-    label: string;
-    positivePercentage: number;
-    negativePercentage: number;
-    confidence: number;
+    dominantEmotion: string;
+    emotionPercentages: Record<string, number>;
   };
 }
 
@@ -101,31 +113,66 @@ function MoodChart({ entries }: { entries: DiaryEntry[] }) {
   );
 }
 
- function MiniEmotionBar({ analysis }: { analysis: DiaryEntry['emotionAnalysis'] }) {
+// Compact badge shown on the collapsed card: dominant emotion + its %.
+function DominantEmotionBadge({ analysis }: { analysis: DiaryEntry['emotionAnalysis'] }) {
   if (!analysis) return null;
-  const { positivePercentage, negativePercentage } = analysis;
+  const { dominantEmotion, emotionPercentages } = analysis;
+  const pct = emotionPercentages?.[dominantEmotion] ?? 0;
+  const meta = emotionMeta(dominantEmotion);
 
   return (
-    <View style={{ marginLeft: 8, flex: 1, maxWidth: 60 }}>
-      <View
-        style={{
-          flexDirection: 'row',
-          height: 5,
-          borderRadius: 3,
-          overflow: 'hidden',
-          backgroundColor: '#EEE',
-        }}
-      >
-        <View style={{ flex: positivePercentage || 0.01, backgroundColor: '#3DB87C' }} />
-        <View style={{ flex: negativePercentage || 0.01, backgroundColor: '#E5624A' }} />
-      </View>
-      <Text style={{ fontSize: 9, color: '#9EA5B0', marginTop: 2 }}>
-        {Math.round(positivePercentage)}% good
+    <View
+      style={{
+        marginLeft: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: `${meta.color}1A`,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 12,
+      }}
+    >
+      <Text style={{ fontSize: 11, marginRight: 3 }}>{meta.emoji}</Text>
+      <Text style={{ fontSize: 11, fontWeight: '600', color: meta.color, textTransform: 'capitalize' }}>
+        {dominantEmotion} {Math.round(pct)}%
       </Text>
     </View>
   );
 }
 
+function EmotionBreakdown({ analysis }: { analysis: DiaryEntry['emotionAnalysis'] }) {
+  if (!analysis) return null;
+  const entries = Object.entries(analysis.emotionPercentages || {}).sort(
+    (a, b) => b[1] - a[1]
+  );
+  if (entries.length === 0) return null;
+
+  return (
+    <View style={{ marginTop: 10 }}>
+      <Text style={{ fontSize: 11, fontWeight: '600', color: '#9EA5B0', marginBottom: 6 }}>
+        EMOTION BREAKDOWN
+      </Text>
+      {entries.map(([emotion, pct]) => {
+        const meta = emotionMeta(emotion);
+        return (
+          <View key={emotion} style={{ marginBottom: 6 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+              <Text style={{ fontSize: 12, color: '#4B5563', textTransform: 'capitalize' }}>
+                {meta.emoji} {emotion}
+              </Text>
+              <Text style={{ fontSize: 12, fontWeight: '600', color: meta.color }}>
+                {Math.round(pct)}%
+              </Text>
+            </View>
+            <View style={{ height: 5, borderRadius: 3, backgroundColor: '#EEE', overflow: 'hidden' }}>
+              <View style={{ width: `${pct}%`, height: '100%', backgroundColor: meta.color }} />
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 
 function EntryCard({
@@ -152,7 +199,7 @@ function EntryCard({
         <View style={cardStyles.meta}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={cardStyles.date}>{formatDisplayDate(entry.date)}</Text>
-            <MiniEmotionBar analysis={entry.emotionAnalysis} />
+            <DominantEmotionBadge analysis={entry.emotionAnalysis} />
           </View>
           <View style={[cardStyles.pill, { backgroundColor: isGood ? '#EBF8F2' : '#FEF0ED' }]}>
             <Text style={[cardStyles.pillText, { color: isGood ? '#1B7A50' : '#B03D2A' }]}>
@@ -188,7 +235,10 @@ function EntryCard({
       </View>
 
       {expanded && (
-        <Text style={cardStyles.content}>{entry.content}</Text>
+        <>
+          <Text style={cardStyles.content}>{entry.content}</Text>
+          <EmotionBreakdown analysis={entry.emotionAnalysis} />
+        </>
       )}
     </TouchableOpacity>
   );
@@ -423,9 +473,9 @@ export default function DiaryScreen() {
         return;
       }
 
-      setEntries((prev) =>
-        prev.map((e) => (e.id === diaryId ? { ...e, mood, content } : e))
-      );
+      // Refetch so the updated emotionAnalysis (recomputed server-side) comes back too —
+      // the previous version only patched mood/content locally and lost the new analysis.
+      fetchDiaries();
     } catch (error) {
       console.log("Edit diary error:", error);
       Alert.alert("Error", "Failed to update entry");

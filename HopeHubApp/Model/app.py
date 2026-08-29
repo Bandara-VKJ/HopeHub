@@ -25,26 +25,14 @@ FEATURE_COLS = joblib.load(
 )
 
 
-# ============================================================
-# NEW MULTI-EMOTION DIARY MODEL
-# ============================================================
+model = joblib.load("addiction_rf_model.pkl")
+label_encoder = joblib.load("addiction_label_encoder.pkl")
+FEATURE_COLS = joblib.load("feature_columns.pkl")
 
-tfidf_vectorizer = joblib.load(
-    "tfidf_vectorizer.pkl"
-)
+tfidf_vectorizer = joblib.load("tfidf_vectorizer.pkl")
+emotion_classifier = joblib.load("emotion_classifier.pkl")
+label_classes = joblib.load("label_classes.pkl")
 
-emotion_classifier = joblib.load(
-    "emotion_classifier.pkl"
-)
-
-label_classes = joblib.load(
-    "label_classes.pkl"
-)
-
-
-# ============================================================
-# DRUG FREQUENCY → NUMERIC
-# ============================================================
 
 DRUG_FREQ_MAP = {
     "Never": 0,
@@ -826,18 +814,34 @@ def predict_diary_emotions(
     }
 
 
-# ============================================================
-# FASTAPI APP
-# ============================================================
-
-app = FastAPI(
-    title="HopeHub ML Service"
-)
+def predict_diary_emotions(text: str) -> dict:
+    """Run the new multi-emotion diary model and return a percentage
+    breakdown across all emotion classes plus the dominant one."""
+    vec = tfidf_vectorizer.transform([text])
+    probabilities = emotion_classifier.predict_proba(vec)[0]
 
 
-# ============================================================
-# CORS
-# ============================================================
+    if hasattr(label_classes, "inverse_transform"):
+        classes = label_classes.classes_
+    else:
+        classes = label_classes
+
+    percentages = {
+        classes[i]: round(float(p) * 100, 2)
+        for i, p in enumerate(probabilities)
+    }
+    # sort highest first
+    percentages = dict(sorted(percentages.items(), key=lambda kv: -kv[1]))
+    dominant_emotion = next(iter(percentages))
+
+    return {
+        "dominant_emotion": dominant_emotion,
+        "emotion_percentages": percentages,
+    }
+
+
+app = FastAPI(title="HopeHub ML Service")
+
 
 app.add_middleware(
 

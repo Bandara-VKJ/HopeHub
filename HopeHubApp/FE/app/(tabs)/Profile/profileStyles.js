@@ -1,53 +1,143 @@
 import { StyleSheet } from 'react-native';
 
 export const profileStyles = StyleSheet.create({
-    logout:{
-    backgroundColor: '#2CA6A4',
-    padding: 15,
-    borderRadius: 10,
+  scrollContent: {
+    flexGrow: 1,
     alignItems: 'center',
-    marginTop: 10,
-    },
-    container:{
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 40,
+    backgroundColor: '#F4FAF9',
+  },
+  loadingContainer: {
     flex: 1,
-    padding: 20,
-    alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff'
-    },
-    imagecontaine:{
-        marginBottom:30
-    },
-    profilePic:{
-    width: 120,
-    height: 120,
-    borderRadius: 60
-    },
-    placeholder:{
+    alignItems: 'center',
+    backgroundColor: '#F4FAF9',
+  },
+  loadingText: {
+    marginTop: 10,
+    color: '#5C7A78',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1E3D3B',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#7A9491',
+    marginTop: 4,
+    marginBottom: 28,
+  },
+  avatarWrapper: {
+    marginBottom: 24,
+    position: 'relative',
+  },
+  profilePic: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#e1e1e1',
+    borderWidth: 3,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  placeholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E4F1F0',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderStyle: 'dashed'
-    },
-    input:{
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    backgroundColor: '#2CA6A4',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  card: {
     width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#5C7A78',
+    marginBottom: 6,
+    marginTop: 12,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 15
-    },
-    save:{
-    backgroundColor: '#19c441',
-    padding: 15,
+    borderColor: '#DCE9E8',
+    backgroundColor: '#FAFDFD',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#1E3D3B',
+  },
+  save: {
+    flexDirection: 'row',
+    backgroundColor: '#2CA6A4',
+    paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
-    backgroundColor: '#fff'
-    }
-})
+    justifyContent: 'center',
+    marginTop: 24,
+    shadowColor: '#2CA6A4',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  saveDisabled: {
+    opacity: 0.7,
+  },
+  saveText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  logout: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  logoutText: {
+    color: '#2CA6A4',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+});
