@@ -219,31 +219,61 @@ export const getAllPatients = async (req, res) => {
   try {
     const patients = await User.find({ role: "user" });
 
-    res.status(200).json({ success: true, count : patients.length, patients})
+    res.status(200).json({ success: true, count: patients.length, patients });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });
   }
-}
+};
 
-export const getPatientById  = async (req, res) => {
+export const getPatientById = async (req, res) => {
   try {
     const { patientId } = req.params;
 
-    if(!patientId)
-    {
-      return res.status(404).json({error: "Patient ID is required"})
+    if (!patientId) {
+      return res.status(404).json({ error: "Patient ID is required" });
     }
 
-    const patient = await User.findById(patientId)
+    const patient = await User.findById(patientId);
 
     if (!patient) {
-      return res.status(404).json({error: "Patient not found",});
+      return res.status(404).json({ error: "Patient not found" });
     }
 
-    res.status(200).json({success: true, patient});
+    res.status(200).json({ success: true, patient });
   } catch (error) {
-     console.error(error);
+    console.error(error);
     res.status(500).json({ error: "Server error" });
   }
-}
+};
+
+export const deletePatient = async (req, res) => {
+  try {
+    const { patientId } = req.params;
+
+    if (!patientId) {
+      return res.status(400).json({ error: "Patient ID is required" });
+    }
+
+    const patient = await User.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    if (patient.role !== "user") {
+      return res
+        .status(403)
+        .json({ error: "This account cannot be deleted from this endpoint" });
+    }
+
+    await User.findByIdAndDelete(patientId);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Patient deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
