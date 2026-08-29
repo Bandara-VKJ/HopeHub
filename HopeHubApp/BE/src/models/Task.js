@@ -22,7 +22,7 @@ const taskSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["pending", "completed"],
+        enum: ["pending", "completed", "expired"],
         default: "pending"
     },
     family_status: {
@@ -43,5 +43,25 @@ const taskSchema = new mongoose.Schema({
 )
 
 taskSchema.index({ userId: 1, date: 1 });
+
+taskSchema.statics.expireOverdueTasks = async function () {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const result = await this.updateMany(
+        {
+            createdAt: { $lt: twentyFourHoursAgo },
+            $or: [
+                { status: "pending" },                      
+                { family_status: "pending_confirmation" }     
+            ],
+            status: { $ne: "expired" }                       
+        },
+        {
+            $set: { status: "expired" }
+        }
+    );
+
+    return result;
+};
 
 export default mongoose.model("Tasks", taskSchema);
