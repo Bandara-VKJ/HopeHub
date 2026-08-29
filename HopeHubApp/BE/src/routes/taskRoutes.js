@@ -1,5 +1,5 @@
 import express from "express";
-import {createWeeklyTasks, getTasks, getTasksById, updateFamilyStatus, updatePatientStatus } from "../controllers/taskController.js"
+import {createWeeklyTasks, getTasks, getTasksById, updateFamilyStatus, updatePatientStatus, getTaskStatusStats } from "../controllers/taskController.js"
 
 const router = express.Router();
 
@@ -8,5 +8,6 @@ router.get('/tasks', getTasks);
 router.get('/user-tasks', getTasksById);
 router.patch('/:taskId/family-status', updateFamilyStatus);
 router.patch('/:taskId/status', updatePatientStatus);
+router.get('/taks/stats', getTaskStatusStats);
 
 export default router;

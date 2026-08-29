@@ -6,12 +6,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from "lottie-react-native";
 
 
-const RISK_FACTORS = [
-  { label: "High Stress Levels", value: 70, color: "#e26d36" },
-  { label: "Social Triggers", value: 50, color: "#f09c00" },
-  { label: "Sleep Quality", value: 30, color: "#2CA6A4" },
-  { label: "Support Network", value: 80, color: "#17db1a" },
-];
+  const STATUS_STYLE: Record<string, { label: string; color: string }> = {
+    completed: { label: "Completed", color: "#17db1a" },
+    confirmed: { label: "Confirmed by Family", color: "#2CA6A4" },
+    pending: { label: "Pending", color: "#f09c00" },
+    rejected: { label: "Rejected", color: "#e26d36" },
+    expired: { label: "Expired", color: "#e0362e" },
+  };
 
 const LEVEL_INFO: Record<string, { description: string; color: string }> = {
     "Level 1 - No Risk": {
@@ -89,6 +90,11 @@ const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [level, setLevel] = useState('')
   const [levelSource, setLevelSource] = useState('')
+  const [statusStats, setStatusStats] = useState<{
+  percentages: Record<string, number>;
+  counts: Record<string, number>;
+  totalTasks: number;
+  } | null>(null);
 
   const resetInviteForm = () => {
     setFamilyName("");
@@ -125,6 +131,7 @@ const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
       }
 
         await getTasks();
+        await getTaskStats();
 
       } catch(error){
         console.log("Loading error:", error);
@@ -320,6 +327,30 @@ const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
       setUpdatingId(null);
     }
 };
+
+  const getTaskStats = async () => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+
+      const response = await fetch(
+        `${BASE_URL}/api/taks/taks/stats?userId=${userId}`,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setStatusStats(data);
+      }
+    } catch (error) {
+      console.log("Get task stats error:", error);
+    }
+  };
   return (
     <ScrollView style={homeStyles.container} showsVerticalScrollIndicator={false}>
       
@@ -495,26 +526,33 @@ const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
         )}
 
       </View>
-
-        {/* Risk Factors */}
-        <View style={homeStyles.card}>
-          <View style={[homeStyles.cardHeader, { marginBottom: 16 }]}>
-            <View style={homeStyles.cardTitle}>
-              <Ionicons name="heart" size={20} color="#e26d36" />
-              <Text style={homeStyles.cardTitleText}>Risk Factor Analysis</Text>
-            </View>
+            {/* Task Status Breakdown */}
+      <View style={homeStyles.card}>
+        <View style={[homeStyles.cardHeader, { marginBottom: 16 }]}>
+          <View style={homeStyles.cardTitle}>
+            <Ionicons name="stats-chart" size={20} color="#2CA6A4" />
+            <Text style={homeStyles.cardTitleText}>Task Status Breakdown</Text>
           </View>
-
-          {RISK_FACTORS.map((factor) => (
-            <View key={factor.label} style={homeStyles.progressRow}>
-              <View style={homeStyles.progressMeta}>
-                <Text style={homeStyles.progressLabel}>{factor.label}</Text>
-                <Text style={homeStyles.progressPct}>{factor.value}%</Text>
-              </View>
-              <ProgressBar value={factor.value} color={factor.color} />
-            </View>
-          ))}
         </View>
+
+        {!statusStats || statusStats.totalTasks === 0 ? (
+          <Text>No task data yet</Text>
+        ) : (
+          Object.entries(statusStats.percentages)
+            .filter(([, value]) => value > 0)
+            .map(([key, value]) => (
+              <View key={key} style={homeStyles.progressRow}>
+                <View style={homeStyles.progressMeta}>
+                  <Text style={homeStyles.progressLabel}>
+                    {STATUS_STYLE[key]?.label ?? key}
+                  </Text>
+                  <Text style={homeStyles.progressPct}>{value}%</Text>
+                </View>
+                <ProgressBar value={value} color={STATUS_STYLE[key]?.color ?? "#999"} />
+              </View>
+            ))
+        )}
+      </View>
       </View>
     </ScrollView>
   );

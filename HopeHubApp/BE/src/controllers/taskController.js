@@ -158,3 +158,78 @@ export const updatePatientStatus = async (req, res) => {
         res.status(500).json({ error: "Failed to update status" });
     }
 }
+
+export const getTaskStatusStats = async (req, res) => {
+    try {
+        const { userId, counselorId } = req.query;
+
+        if (!userId) {
+            return res.status(400).json({ error: "userId is required" });
+        }
+
+        // make sure any overdue tasks are marked expired before counting
+        await Task.expireOverdueTasks();
+
+        const matchStage = { userId };
+        if (counselorId) matchStage.counselorId = counselorId;
+
+        const stats = await Task.aggregate([
+            { $match: matchStage },
+            {
+                $addFields: {
+                    category: {
+                        $switch: {
+                            branches: [
+                                { case: { $eq: ["$status", "expired"] }, then: "expired" },
+                                { case: { $eq: ["$family_status", "rejected"] }, then: "rejected" },
+                                { case: { $eq: ["$family_status", "confirmed"] }, then: "confirmed" },
+                                {
+                                    case: {
+                                        $and: [
+                                            { $eq: ["$status", "completed"] },
+                                            { $eq: ["$family_status", "pending_confirmation"] }
+                                        ]
+                                    },
+                                    then: "completed"
+                                }
+                            ],
+                            default: "pending"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$category",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const categories = ["pending", "completed", "confirmed", "rejected", "expired"];
+
+        const counts = {};
+        categories.forEach(cat => { counts[cat] = 0; });
+        stats.forEach(s => { counts[s._id] = s.count; });
+
+        const totalTasks = Object.values(counts).reduce((sum, c) => sum + c, 0);
+
+        const percentages = {};
+        categories.forEach(cat => {
+            percentages[cat] = totalTasks === 0
+                ? 0
+                : Number(((counts[cat] / totalTasks) * 100).toFixed(2));
+        });
+
+        res.status(200).json({
+            success: true,
+            totalTasks,
+            counts,       
+            percentages
+        });
+
+    } catch (error) {
+        console.error("Get task status stats error:", error);
+        res.status(500).json({ error: "Failed to get task status stats" });
+    }
+}
