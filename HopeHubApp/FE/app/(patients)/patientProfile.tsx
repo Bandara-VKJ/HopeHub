@@ -116,14 +116,14 @@ export default function PatientProfile() {
    if(loading)
       {
           return(
-              <View>
+              <View style={patientProfileStyles.loadingContainer}>
                   <ActivityIndicator size = "large"/>
               </View>
           );
       }
 
     return (
-    <View>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
          <View style={patientProfileStyles.container}>
 
         <Text style={patientProfileStyles.title}>
@@ -161,7 +161,7 @@ export default function PatientProfile() {
                 Addiction level:
             </Text>
 
-           <View style={{ marginTop: 6, marginBottom: 10 }}>
+           <View style={{ marginTop: 6, marginBottom: 10, width: "100%" }}>
             <TouchableOpacity
                 disabled={updatingLevel}
                 onPress={() => setDropdownOpen(true)}
@@ -255,44 +255,39 @@ export default function PatientProfile() {
         Patient's Tasks
     </Text>
 
-    <ScrollView
-        style={patientProfileStyles.tasksScroll}
-        showsVerticalScrollIndicator={false}
-    >
-        {tasks.length === 0 ? (
-        <Text style={patientProfileStyles.emptyText}>
-            No tasks assigned yet.
+    {tasks.length === 0 ? (
+    <Text style={patientProfileStyles.emptyText}>
+        No tasks assigned yet.
+    </Text>
+    ) : (
+    tasks.map((task) => (
+        <View key={task._id} style={patientProfileStyles.taskCard}>
+        <Text style={patientProfileStyles.taskTitle}>
+            {task.title}
         </Text>
-        ) : (
-        tasks.map((task) => (
-            <View key={task._id} style={patientProfileStyles.taskCard}>
-            <Text style={patientProfileStyles.taskTitle}>
-                {task.title}
-            </Text>
 
-            <Text style={patientProfileStyles.taskDescription}>
-                {task.description}
-            </Text>
+        <Text style={patientProfileStyles.taskDescription}>
+            {task.description}
+        </Text>
 
-           <View style={patientProfileStyles.statusContainer}>
-            <Text style={patientProfileStyles.statusText}>
-                Status: {task.status}
-            </Text>
-            <Text style={patientProfileStyles.statusText}>
-                Family member status: {task.family_status}
-            </Text>
-        </View>
-            {task.date && (
-                <Text style={patientProfileStyles.dueDate}>
-                Due: {new Date(task.date).toLocaleDateString()}
-                </Text>
-            )}
-            </View>
-        ))
-        )}
-    </ScrollView>
+       <View style={patientProfileStyles.statusContainer}>
+        <Text style={patientProfileStyles.statusText}>
+            Status: {task.status}
+        </Text>
+        <Text style={patientProfileStyles.statusText}>
+            Family member status: {task.family_status}
+        </Text>
     </View>
-    </View>    
+        {task.date && (
+            <Text style={patientProfileStyles.dueDate}>
+            Due: {new Date(task.date).toLocaleDateString()}
+            </Text>
+        )}
+        </View>
+    ))
+    )}
+    </View>
+    </ScrollView>    
    
     );
 }
