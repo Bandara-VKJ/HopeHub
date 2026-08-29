@@ -1,0 +1,42 @@
+.page-topbar {
+  background-color: #ffffff;
+  padding: 20px 32px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page-topbar h1 {
+  margin: 0 0 4px 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.page-topbar p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.page-body {
+  padding: 32px;
+}
+
+.page-body p {
+  color: #4b5563;
+}
+
+.signout-btn {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.signout-btn:hover {
+  background-color: #b91c1c;
+}

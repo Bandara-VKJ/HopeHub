@@ -1,0 +1,30 @@
+.page-topbar {
+  background-color: #ffffff;
+  padding: 20px 32px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.page-topbar h1 {
+  margin: 0 0 4px 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.page-topbar p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.page-body {
+  padding: 32px;
+}
+
+.page-body h2 {
+  margin-top: 0;
+  color: #111827;
+}
+
+.page-body p {
+  color: #4b5563;
+}
