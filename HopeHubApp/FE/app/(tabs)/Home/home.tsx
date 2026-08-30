@@ -415,7 +415,7 @@ const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
           </View>
             {inviteFormOpen && (
               <View>
-                <Text>Full Name</Text>
+                <Text>Role</Text>
                 <TextInput
                   style={homeStyles.input}
                   placeholder="e.g. mother "
