@@ -27,18 +27,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { io } from "socket.io-client";
 
-
-// ============================================================
-// BACKEND URL
-// ============================================================
-
 const BASE_URL =
   "https://connector-removed-stoneware.ngrok-free.dev";
-
-
-// ============================================================
-// SOCKET.IO REAL-TIME NOTIFICATIONS
-
 
 const ngrokFetch = (
   url: string,
@@ -58,11 +48,6 @@ const ngrokFetch = (
     },
   });
 };
-
-
-// ============================================================
-// TYPES
-// ============================================================
 
 type Counselor = {
   _id: string;
@@ -96,7 +81,6 @@ type Counselor = {
   avatarColor?: string;
 };
 
-
 type Patient = {
   _id: string;
 
@@ -110,7 +94,6 @@ type Patient = {
 
   mobile?: string;
 };
-
 
 type Booking = {
   _id: string;
@@ -144,11 +127,6 @@ type Booking = {
   updatedAt?: string;
 };
 
-
-// ============================================================
-// COUNSELOR SCREEN
-// ============================================================
-
 export default function CounselorScreen() {
 
   const [
@@ -158,18 +136,15 @@ export default function CounselorScreen() {
     null
   );
 
-
   const [
     loading,
     setLoading,
   ] = useState(true);
 
-
   const [
     updatingAvailability,
     setUpdatingAvailability,
   ] = useState(false);
-
 
   const [
     bookings,
@@ -178,22 +153,15 @@ export default function CounselorScreen() {
     []
   );
 
-
   const [
     bookingLoading,
     setBookingLoading,
   ] = useState(false);
 
-
   const [
     refreshing,
     setRefreshing,
   ] = useState(false);
-
-
-  // ==========================================================
-  // QUICK ACTION STATES
-  // ==========================================================
 
   const [quickAction, setQuickAction] = useState<
     "schedule" | "chats" | "reports" | "patients" | null
@@ -208,30 +176,10 @@ export default function CounselorScreen() {
   const [savedReports, setSavedReports] =
     useState<any[]>([]);
 
-
-  // ==========================================================
-  // INITIAL LOAD
-  // ==========================================================
-
   useEffect(() => {
     loadCounselor();
     loadReports();
   }, []);
-
-
-  // ==========================================================
-  // REAL-TIME BOOKING NOTIFICATIONS
-  // ==========================================================
-  //
-  // Keeps the counselor connected to the backend even when the
-  // user is using a different phone/device.
-  //
-  // When a new booking is created for this counselor:
-  // - Socket.IO receives the event immediately
-  // - A system Alert is shown on the counselor device
-  // - Bookings are refreshed automatically
-  //
-  // ==========================================================
 
   useEffect(() => {
     if (!counselor?._id) {
@@ -258,7 +206,6 @@ export default function CounselorScreen() {
         socket.id
       );
 
-      // Join only this counselor's private notification room.
       socket.emit(
         "joinCounselorRoom",
         counselorId
@@ -294,8 +241,6 @@ export default function CounselorScreen() {
           data
         );
 
-        // Refresh the booking list so the new booking appears
-        // immediately without the counselor pressing Refresh.
         await fetchBookings(counselorId);
 
         const patientName =
@@ -325,8 +270,6 @@ export default function CounselorScreen() {
             {
               text: "View Booking",
               onPress: () => {
-                // The new booking has already been loaded into
-                // the Booking Requests section.
                 console.log(
                   "Viewing newly received booking:",
                   data?.bookingId
@@ -355,11 +298,6 @@ export default function CounselorScreen() {
     };
   }, [counselor?._id]);
 
-
-  // ==========================================================
-  // GO TO COUNSELOR LOGIN
-  // ==========================================================
-
   const goToCounselorLogin =
     () => {
 
@@ -374,11 +312,6 @@ export default function CounselorScreen() {
       });
     };
 
-
-  // ==========================================================
-  // LOAD COUNSELOR
-  // ==========================================================
-
   const loadCounselor =
     async () => {
 
@@ -389,12 +322,10 @@ export default function CounselorScreen() {
             "counselor"
           );
 
-
         const role =
           await AsyncStorage.getItem(
             "role"
           );
-
 
         if (
           role !== "counselor" ||
@@ -406,10 +337,8 @@ export default function CounselorScreen() {
           return;
         }
 
-
         let parsedCounselor:
           Counselor;
-
 
         try {
 
@@ -430,7 +359,6 @@ export default function CounselorScreen() {
           return;
         }
 
-
         if (
           !parsedCounselor?._id
         ) {
@@ -450,11 +378,9 @@ export default function CounselorScreen() {
           return;
         }
 
-
         setCounselor(
           parsedCounselor
         );
-
 
         await AsyncStorage.setItem(
           "counselorId",
@@ -462,7 +388,6 @@ export default function CounselorScreen() {
             parsedCounselor._id
           )
         );
-
 
         await fetchBookings(
           parsedCounselor._id
@@ -486,11 +411,6 @@ export default function CounselorScreen() {
       }
     };
 
-
-  // ==========================================================
-  // FETCH BOOKINGS
-  // ==========================================================
-
   const fetchBookings =
     async (
       counselorId: string
@@ -500,7 +420,6 @@ export default function CounselorScreen() {
         return;
       }
 
-
       try {
 
         const response =
@@ -508,13 +427,10 @@ export default function CounselorScreen() {
             `${BASE_URL}/api/bookings/counselor/${counselorId}`
           );
 
-
         const text =
           await response.text();
 
-
         let data: any = {};
-
 
         try {
 
@@ -530,12 +446,10 @@ export default function CounselorScreen() {
           );
         }
 
-
         console.log(
           "COUNSELOR BOOKINGS:",
           data
         );
-
 
         if (
           !response.ok
@@ -549,7 +463,6 @@ export default function CounselorScreen() {
 
           return;
         }
-
 
         setBookings(
           Array.isArray(
@@ -573,11 +486,6 @@ export default function CounselorScreen() {
       }
     };
 
-
-  // ==========================================================
-  // REFRESH BOOKINGS
-  // ==========================================================
-
   const refreshBookings =
     async () => {
 
@@ -588,13 +496,11 @@ export default function CounselorScreen() {
         return;
       }
 
-
       try {
 
         setRefreshing(
           true
         );
-
 
         await fetchBookings(
           counselor._id
@@ -608,11 +514,6 @@ export default function CounselorScreen() {
       }
     };
 
-
-  // ==========================================================
-  // GET PATIENT NAME
-  // ==========================================================
-
   const getPatientName =
     (
       booking: Booking
@@ -625,7 +526,6 @@ export default function CounselorScreen() {
         return "Patient";
       }
 
-
       return (
         booking.patient?.name ||
         `${booking.patient?.firstName || ""} ${
@@ -634,11 +534,6 @@ export default function CounselorScreen() {
         "Patient"
       );
     };
-
-
-  // ==========================================================
-  // GET PATIENT EMAIL
-  // ==========================================================
 
   const getPatientEmail =
     (
@@ -652,17 +547,11 @@ export default function CounselorScreen() {
         return "No email";
       }
 
-
       return (
         booking.patient?.email ||
         "No email"
       );
     };
-
-
-  // ==========================================================
-  // CONFIRM BOOKING
-  // ==========================================================
 
   const confirmBooking =
     (
@@ -682,12 +571,10 @@ export default function CounselorScreen() {
         return;
       }
 
-
       const patientName =
         getPatientName(
           booking
         );
-
 
       Alert.alert(
         "Confirm Session",
@@ -713,13 +600,11 @@ export default function CounselorScreen() {
                   return;
                 }
 
-
                 try {
 
                   setBookingLoading(
                     true
                   );
-
 
                   const response =
                     await ngrokFetch(
@@ -730,13 +615,10 @@ export default function CounselorScreen() {
                       }
                     );
 
-
                   const text =
                     await response.text();
 
-
                   let data: any = {};
-
 
                   try {
 
@@ -752,7 +634,6 @@ export default function CounselorScreen() {
                     data = {};
                   }
 
-
                   if (
                     !response.ok
                   ) {
@@ -765,7 +646,6 @@ export default function CounselorScreen() {
 
                     return;
                   }
-
 
                   setBookings(
                     previous =>
@@ -782,7 +662,6 @@ export default function CounselorScreen() {
                             : item
                       )
                   );
-
 
                   Alert.alert(
                     "Confirmed",
@@ -813,11 +692,6 @@ export default function CounselorScreen() {
       );
     };
 
-
-  // ==========================================================
-  // CANCEL BOOKING
-  // ==========================================================
-
   const cancelBooking =
     (
       booking: Booking
@@ -836,12 +710,10 @@ export default function CounselorScreen() {
         return;
       }
 
-
       const patientName =
         getPatientName(
           booking
         );
-
 
       Alert.alert(
         "Cancel Session",
@@ -870,13 +742,11 @@ export default function CounselorScreen() {
                   return;
                 }
 
-
                 try {
 
                   setBookingLoading(
                     true
                   );
-
 
                   const response =
                     await ngrokFetch(
@@ -887,13 +757,10 @@ export default function CounselorScreen() {
                       }
                     );
 
-
                   const text =
                     await response.text();
 
-
                   let data: any = {};
-
 
                   try {
 
@@ -909,7 +776,6 @@ export default function CounselorScreen() {
                     data = {};
                   }
 
-
                   if (
                     !response.ok
                   ) {
@@ -922,7 +788,6 @@ export default function CounselorScreen() {
 
                     return;
                   }
-
 
                   setBookings(
                     previous =>
@@ -939,7 +804,6 @@ export default function CounselorScreen() {
                             : item
                       )
                   );
-
 
                   Alert.alert(
                     "Cancelled",
@@ -970,19 +834,10 @@ export default function CounselorScreen() {
       );
     };
 
-
-  // ==========================================================
-  // OPEN CHAT WITH PATIENT
-  // ==========================================================
-
   const openPatientChat =
     async (
       booking: Booking
     ) => {
-
-      // --------------------------------------------------------
-      // CHAT ONLY AFTER CONFIRMATION
-      // --------------------------------------------------------
 
       if (
         booking.status !==
@@ -997,11 +852,6 @@ export default function CounselorScreen() {
         return;
       }
 
-
-      // --------------------------------------------------------
-      // CHECK BOOKING ID
-      // --------------------------------------------------------
-
       if (
         !booking._id
       ) {
@@ -1014,17 +864,11 @@ export default function CounselorScreen() {
         return;
       }
 
-
-      // --------------------------------------------------------
-      // CHECK COUNSELOR ID
-      // --------------------------------------------------------
-
       const counselorId =
         counselor?._id ||
         await AsyncStorage.getItem(
           "counselorId"
         );
-
 
       if (
         !counselorId
@@ -1037,7 +881,6 @@ export default function CounselorScreen() {
 
         return;
       }
-
 
       console.log(
         "OPENING COUNSELOR CHAT:",
@@ -1052,20 +895,6 @@ export default function CounselorScreen() {
             "counselor",
         }
       );
-
-
-      // ========================================================
-      // IMPORTANT:
-      // YOUR chat.tsx IS INSIDE:
-      //
-      // app/(tabs)/Support/chat.tsx
-      //
-      // Therefore:
-      //
-      // /Chat/chat       ❌ WRONG
-      //
-      // /(tabs)/Support/chat  ✅ CORRECT
-      // ========================================================
 
       router.push({
         pathname:
@@ -1083,11 +912,6 @@ export default function CounselorScreen() {
       });
     };
 
-
-  // ==========================================================
-  // AVAILABILITY
-  // ==========================================================
-
   const toggleAvailability =
     async () => {
 
@@ -1098,14 +922,11 @@ export default function CounselorScreen() {
         return;
       }
 
-
       const oldCounselor =
         counselor;
 
-
       const nextAvailable =
         !counselor.available;
-
 
       const temporaryCounselor:
         Counselor = {
@@ -1121,16 +942,13 @@ export default function CounselorScreen() {
             : "Busy",
       };
 
-
       setCounselor(
         temporaryCounselor
       );
 
-
       setUpdatingAvailability(
         true
       );
-
 
       try {
 
@@ -1154,13 +972,10 @@ export default function CounselorScreen() {
             }
           );
 
-
         const text =
           await response.text();
 
-
         let data: any = {};
-
 
         try {
 
@@ -1174,7 +989,6 @@ export default function CounselorScreen() {
           data = {};
         }
 
-
         if (
           !response.ok
         ) {
@@ -1182,7 +996,6 @@ export default function CounselorScreen() {
           setCounselor(
             oldCounselor
           );
-
 
           Alert.alert(
             "Error",
@@ -1192,7 +1005,6 @@ export default function CounselorScreen() {
 
           return;
         }
-
 
         const updatedCounselor =
           data?.counselor ||
@@ -1209,11 +1021,9 @@ export default function CounselorScreen() {
                 : "Busy",
           };
 
-
         setCounselor(
           updatedCounselor
         );
-
 
         await AsyncStorage.setItem(
           "counselor",
@@ -1222,7 +1032,6 @@ export default function CounselorScreen() {
           )
         );
 
-
         await AsyncStorage.setItem(
           "counselorId",
           String(
@@ -1230,7 +1039,6 @@ export default function CounselorScreen() {
               counselor._id
           )
         );
-
 
         Alert.alert(
           "Status Updated",
@@ -1246,12 +1054,10 @@ export default function CounselorScreen() {
           oldCounselor
         );
 
-
         console.log(
           "Availability update error:",
           error
         );
-
 
         Alert.alert(
           "Network Error",
@@ -1266,46 +1072,21 @@ export default function CounselorScreen() {
       }
     };
 
-
-  // ==========================================================
-  // QUICK ACTION - SCHEDULE
-  // ==========================================================
-
   const openSchedule = () => {
     setQuickAction("schedule");
   };
-
-
-  // ==========================================================
-  // QUICK ACTION - CHATS
-  // ==========================================================
 
   const openChats = () => {
     setQuickAction("chats");
   };
 
-
-  // ==========================================================
-  // QUICK ACTION - REPORTS
-  // ==========================================================
-
   const openReports = () => {
     setQuickAction("reports");
   };
 
-
-  // ==========================================================
-  // QUICK ACTION - PATIENTS
-  // ==========================================================
-
   const openPatients = () => {
     setQuickAction("patients");
   };
-
-
-  // ==========================================================
-  // GET UNIQUE PATIENTS
-  // ==========================================================
 
   const uniquePatients = bookings.reduce(
     (patients: Booking[], booking) => {
@@ -1339,11 +1120,6 @@ export default function CounselorScreen() {
     },
     []
   );
-
-
-  // ==========================================================
-  // SAVE COUNSELOR REPORT
-  // ==========================================================
 
   const saveReport = async () => {
 
@@ -1423,11 +1199,6 @@ export default function CounselorScreen() {
     }
   };
 
-
-  // ==========================================================
-  // LOAD REPORTS
-  // ==========================================================
-
   const loadReports = async () => {
 
     try {
@@ -1450,11 +1221,6 @@ export default function CounselorScreen() {
     }
   };
 
-
-  // ==========================================================
-  // LOGOUT
-  // ==========================================================
-
   const logout =
     async () => {
 
@@ -1471,7 +1237,6 @@ export default function CounselorScreen() {
 
           "token",
         ]);
-
 
         router.replace({
           pathname:
@@ -1490,18 +1255,12 @@ export default function CounselorScreen() {
           error
         );
 
-
         Alert.alert(
           "Error",
           "Logout failed. Please try again."
         );
       }
     };
-
-
-  // ==========================================================
-  // CONFIRM LOGOUT
-  // ==========================================================
 
   const confirmLogout =
     () => {
@@ -1534,11 +1293,6 @@ export default function CounselorScreen() {
       );
     };
 
-
-  // ==========================================================
-  // LOADING
-  // ==========================================================
-
   if (loading) {
 
     return (
@@ -1553,7 +1307,6 @@ export default function CounselorScreen() {
           color="#2CA6A4"
         />
 
-
         <Text
           style={
             styles.loadingText
@@ -1565,11 +1318,6 @@ export default function CounselorScreen() {
       </View>
     );
   }
-
-
-  // ==========================================================
-  // COUNSELOR NOT FOUND
-  // ==========================================================
 
   if (!counselor) {
 
@@ -1588,24 +1336,8 @@ export default function CounselorScreen() {
           Counselor profile not found.
         </Text>
 
-
         <TouchableOpacity
-          style={{
-            marginTop:
-              20,
-
-            backgroundColor:
-              "#2CA6A4",
-
-            paddingHorizontal:
-              25,
-
-            paddingVertical:
-              12,
-
-            borderRadius:
-              10,
-          }}
+          style={styles.loginAgainButton}
 
           onPress={
             goToCounselorLogin
@@ -1613,13 +1345,7 @@ export default function CounselorScreen() {
         >
 
           <Text
-            style={{
-              color:
-                "#FFFFFF",
-
-              fontWeight:
-                "700",
-            }}
+            style={styles.loginAgainButtonText}
           >
             Login Again
           </Text>
@@ -1630,15 +1356,9 @@ export default function CounselorScreen() {
     );
   }
 
-
-  // ==========================================================
-  // BOOKING FILTERS
-  // ==========================================================
-
   const isAvailable =
     counselor.available ??
     false;
-
 
   const pendingBookings =
     bookings.filter(
@@ -1647,18 +1367,12 @@ export default function CounselorScreen() {
         "pending"
     );
 
-
   const confirmedBookings =
     bookings.filter(
       booking =>
         booking.status ===
         "confirmed"
     );
-
-
-  // ==========================================================
-  // MAIN UI
-  // ==========================================================
 
   return (
     <View
@@ -1671,11 +1385,6 @@ export default function CounselorScreen() {
         barStyle="light-content"
         backgroundColor="#2CA6A4"
       />
-
-
-      {/* ======================================================
-          HEADER
-      ======================================================= */}
 
       <View
         style={
@@ -1699,7 +1408,6 @@ export default function CounselorScreen() {
               Welcome Back 👋
             </Text>
 
-
             <Text
               style={
                 styles.name
@@ -1710,7 +1418,6 @@ export default function CounselorScreen() {
             </Text>
 
           </View>
-
 
           <TouchableOpacity
             style={
@@ -1731,11 +1438,6 @@ export default function CounselorScreen() {
           </TouchableOpacity>
 
         </View>
-
-
-        {/* ====================================================
-            PROFILE CARD
-        ===================================================== */}
 
         <View
           style={
@@ -1760,11 +1462,8 @@ export default function CounselorScreen() {
 
           </View>
 
-
           <View
-            style={{
-              flex: 1,
-            }}
+            style={styles.flexOne}
           >
 
             <Text
@@ -1779,7 +1478,6 @@ export default function CounselorScreen() {
                 "Counselor"}
             </Text>
 
-
             <Text
               style={
                 styles.profileTitle
@@ -1788,7 +1486,6 @@ export default function CounselorScreen() {
               {counselor.title ||
                 "Professional Counselor"}
             </Text>
-
 
             <View
               style={
@@ -1801,7 +1498,6 @@ export default function CounselorScreen() {
                 size={16}
                 color="#FFC107"
               />
-
 
               <Text
                 style={
@@ -1824,11 +1520,6 @@ export default function CounselorScreen() {
 
       </View>
 
-
-      {/* ======================================================
-          BODY
-      ======================================================= */}
-
       <ScrollView
         showsVerticalScrollIndicator={
           false
@@ -1839,10 +1530,6 @@ export default function CounselorScreen() {
             30,
         }}
       >
-
-        {/* ====================================================
-            AVAILABILITY
-        ===================================================== */}
 
         <View
           style={
@@ -1859,7 +1546,6 @@ export default function CounselorScreen() {
             >
               Current Status
             </Text>
-
 
             <Text
               style={[
@@ -1879,7 +1565,6 @@ export default function CounselorScreen() {
             </Text>
 
           </View>
-
 
           <TouchableOpacity
             style={[
@@ -1933,7 +1618,6 @@ export default function CounselorScreen() {
                   }
                 />
 
-
                 <Text
                   style={[
                     styles.statusButtonText,
@@ -1959,11 +1643,6 @@ export default function CounselorScreen() {
 
         </View>
 
-
-        {/* ====================================================
-            BOOKING REQUESTS
-        ===================================================== */}
-
         <View
           style={
             styles.bookingSection
@@ -1986,7 +1665,6 @@ export default function CounselorScreen() {
                 Booking Requests
               </Text>
 
-
               <Text
                 style={
                   styles.bookingSubtitle
@@ -2001,7 +1679,6 @@ export default function CounselorScreen() {
               </Text>
 
             </View>
-
 
             <TouchableOpacity
               style={
@@ -2038,11 +1715,6 @@ export default function CounselorScreen() {
 
           </View>
 
-
-          {/* ==================================================
-              NO BOOKINGS
-          =================================================== */}
-
           {bookings.length ===
           0 ? (
 
@@ -2058,7 +1730,6 @@ export default function CounselorScreen() {
                 color="#A8CACA"
               />
 
-
               <Text
                 style={
                   styles.noBookingsTitle
@@ -2066,7 +1737,6 @@ export default function CounselorScreen() {
               >
                 No Booking Requests
               </Text>
-
 
               <Text
                 style={
@@ -2089,12 +1759,10 @@ export default function CounselorScreen() {
                     booking
                   );
 
-
                 const patientEmail =
                   getPatientEmail(
                     booking
                   );
-
 
                 return (
                   <View
@@ -2106,10 +1774,6 @@ export default function CounselorScreen() {
                       styles.bookingCard
                     }
                   >
-
-                    {/* ======================================
-                        PATIENT
-                    ======================================= */}
 
                     <View
                       style={
@@ -2131,13 +1795,8 @@ export default function CounselorScreen() {
 
                       </View>
 
-
                       <View
-                        style={{
-                          flex: 1,
-                          marginLeft:
-                            12,
-                        }}
+                        style={styles.flexOneML12}
                       >
 
                         <Text
@@ -2148,7 +1807,6 @@ export default function CounselorScreen() {
                           {patientName}
                         </Text>
 
-
                         <Text
                           style={
                             styles.patientEmail
@@ -2158,9 +1816,6 @@ export default function CounselorScreen() {
                         </Text>
 
                       </View>
-
-
-                      {/* STATUS */}
 
                       <View
                         style={[
@@ -2199,11 +1854,6 @@ export default function CounselorScreen() {
 
                     </View>
 
-
-                    {/* ======================================
-                        DETAILS
-                    ======================================= */}
-
                     <View
                       style={
                         styles.bookingDetails
@@ -2222,7 +1872,6 @@ export default function CounselorScreen() {
                           color="#2CA6A4"
                         />
 
-
                         <Text
                           style={
                             styles.bookingDetailText
@@ -2232,7 +1881,6 @@ export default function CounselorScreen() {
                         </Text>
 
                       </View>
-
 
                       <View
                         style={
@@ -2246,7 +1894,6 @@ export default function CounselorScreen() {
                           color="#2CA6A4"
                         />
 
-
                         <Text
                           style={
                             styles.bookingDetailText
@@ -2256,7 +1903,6 @@ export default function CounselorScreen() {
                         </Text>
 
                       </View>
-
 
                       <View
                         style={
@@ -2270,7 +1916,6 @@ export default function CounselorScreen() {
                           color="#2CA6A4"
                         />
 
-
                         <Text
                           style={
                             styles.bookingDetailText
@@ -2283,11 +1928,6 @@ export default function CounselorScreen() {
 
                     </View>
 
-
-                    {/* ======================================
-                        PENDING ACTIONS
-                    ======================================= */}
-
                     {booking.status ===
                       "pending" && (
 
@@ -2296,8 +1936,6 @@ export default function CounselorScreen() {
                           styles.bookingActions
                         }
                       >
-
-                        {/* CANCEL */}
 
                         <TouchableOpacity
                           style={
@@ -2321,7 +1959,6 @@ export default function CounselorScreen() {
                             color="#DC2626"
                           />
 
-
                           <Text
                             style={
                               styles.cancelBookingText
@@ -2331,9 +1968,6 @@ export default function CounselorScreen() {
                           </Text>
 
                         </TouchableOpacity>
-
-
-                        {/* CONFIRM */}
 
                         <TouchableOpacity
                           style={
@@ -2368,7 +2002,6 @@ export default function CounselorScreen() {
                                 color="#FFFFFF"
                               />
 
-
                               <Text
                                 style={
                                   styles.confirmBookingText
@@ -2387,11 +2020,6 @@ export default function CounselorScreen() {
 
                     )}
 
-
-                    {/* ======================================
-                        CONFIRMED
-                    ======================================= */}
-
                     {booking.status ===
                       "confirmed" && (
 
@@ -2409,7 +2037,6 @@ export default function CounselorScreen() {
                             color="#16A34A"
                           />
 
-
                           <Text
                             style={
                               styles.confirmedMessageText
@@ -2420,40 +2047,8 @@ export default function CounselorScreen() {
 
                         </View>
 
-
-                        {/* =================================
-                            CHAT WITH PATIENT
-                        ================================== */}
-
                         <TouchableOpacity
-                          style={{
-                            marginTop:
-                              12,
-
-                            backgroundColor:
-                              "#2CA6A4",
-
-                            paddingVertical:
-                              12,
-
-                            paddingHorizontal:
-                              16,
-
-                            borderRadius:
-                              10,
-
-                            flexDirection:
-                              "row",
-
-                            alignItems:
-                              "center",
-
-                            justifyContent:
-                              "center",
-
-                            gap:
-                              8,
-                          }}
+                          style={styles.chatWithPatientButton}
 
                           onPress={() =>
                             openPatientChat(
@@ -2472,18 +2067,8 @@ export default function CounselorScreen() {
                             color="#FFFFFF"
                           />
 
-
                           <Text
-                            style={{
-                              color:
-                                "#FFFFFF",
-
-                              fontSize:
-                                15,
-
-                              fontWeight:
-                                "700",
-                            }}
+                            style={styles.chatWithPatientButtonText}
                           >
                             Chat with Patient
                           </Text>
@@ -2493,11 +2078,6 @@ export default function CounselorScreen() {
                       </View>
 
                     )}
-
-
-                    {/* ======================================
-                        CANCELLED
-                    ======================================= */}
 
                     {booking.status ===
                       "cancelled" && (
@@ -2513,7 +2093,6 @@ export default function CounselorScreen() {
                           size={18}
                           color="#DC2626"
                         />
-
 
                         <Text
                           style={
@@ -2535,11 +2114,6 @@ export default function CounselorScreen() {
 
         </View>
 
-
-        {/* ====================================================
-            STATISTICS
-        ===================================================== */}
-
         <View
           style={
             styles.statsContainer
@@ -2558,7 +2132,6 @@ export default function CounselorScreen() {
               color="#2CA6A4"
             />
 
-
             <Text
               style={
                 styles.statNumber
@@ -2569,7 +2142,6 @@ export default function CounselorScreen() {
                 : "0"}
             </Text>
 
-
             <Text
               style={
                 styles.statLabel
@@ -2579,7 +2151,6 @@ export default function CounselorScreen() {
             </Text>
 
           </View>
-
 
           <View
             style={
@@ -2593,7 +2164,6 @@ export default function CounselorScreen() {
               color="#2CA6A4"
             />
 
-
             <Text
               style={
                 styles.statNumber
@@ -2604,7 +2174,6 @@ export default function CounselorScreen() {
                 : "No"}
             </Text>
 
-
             <Text
               style={
                 styles.statLabel
@@ -2614,7 +2183,6 @@ export default function CounselorScreen() {
             </Text>
 
           </View>
-
 
           <View
             style={
@@ -2628,7 +2196,6 @@ export default function CounselorScreen() {
               color="#2CA6A4"
             />
 
-
             <Text
               style={
                 styles.statNumber
@@ -2636,7 +2203,6 @@ export default function CounselorScreen() {
             >
               {bookings.length}
             </Text>
-
 
             <Text
               style={
@@ -2649,11 +2215,6 @@ export default function CounselorScreen() {
           </View>
 
         </View>
-
-
-        {/* ====================================================
-            PROFILE DETAILS
-        ===================================================== */}
 
         <View
           style={
@@ -2668,7 +2229,6 @@ export default function CounselorScreen() {
           >
             My Profile Details
           </Text>
-
 
           <View
             style={
@@ -2685,7 +2245,6 @@ export default function CounselorScreen() {
               }
             />
 
-
             <InfoRow
               icon="call-outline"
               label="Mobile"
@@ -2694,7 +2253,6 @@ export default function CounselorScreen() {
                 "-"
               }
             />
-
 
             <InfoRow
               icon="briefcase-outline"
@@ -2705,7 +2263,6 @@ export default function CounselorScreen() {
               }
             />
 
-
             <InfoRow
               icon="heart-outline"
               label="Specialty"
@@ -2715,7 +2272,6 @@ export default function CounselorScreen() {
               }
             />
 
-
             <InfoRow
               icon="school-outline"
               label="Experience"
@@ -2724,7 +2280,6 @@ export default function CounselorScreen() {
                 "-"
               }
             />
-
 
             <InfoRow
               icon="time-outline"
@@ -2740,11 +2295,6 @@ export default function CounselorScreen() {
           </View>
 
         </View>
-
-
-        {/* ====================================================
-            QUICK ACTIONS
-        ===================================================== */}
 
         <View
           style={
@@ -2765,8 +2315,6 @@ export default function CounselorScreen() {
               styles.actionsGrid
             }
           >
-
-            {/* SCHEDULE */}
 
             <TouchableOpacity
               style={
@@ -2799,19 +2347,12 @@ export default function CounselorScreen() {
               </Text>
 
               <Text
-                style={{
-                  fontSize: 11,
-                  color: "#777",
-                  marginTop: 3,
-                }}
+                style={styles.actionCardSubtext}
               >
                 {bookings.length} sessions
               </Text>
 
             </TouchableOpacity>
-
-
-            {/* CHATS */}
 
             <TouchableOpacity
               style={
@@ -2822,12 +2363,7 @@ export default function CounselorScreen() {
             >
 
               <View
-                style={[
-                  styles.actionIcon,
-                  {
-                    backgroundColor: "#FF9800",
-                  },
-                ]}
+                style={[styles.actionIcon, styles.actionIconOrange]}
               >
 
                 <Ionicons
@@ -2847,11 +2383,7 @@ export default function CounselorScreen() {
               </Text>
 
               <Text
-                style={{
-                  fontSize: 11,
-                  color: "#777",
-                  marginTop: 3,
-                }}
+                style={styles.actionCardSubtext}
               >
                 {bookings.filter(
                   booking =>
@@ -2860,9 +2392,6 @@ export default function CounselorScreen() {
               </Text>
 
             </TouchableOpacity>
-
-
-            {/* REPORTS */}
 
             <TouchableOpacity
               style={
@@ -2873,12 +2402,7 @@ export default function CounselorScreen() {
             >
 
               <View
-                style={[
-                  styles.actionIcon,
-                  {
-                    backgroundColor: "#9C27B0",
-                  },
-                ]}
+                style={[styles.actionIcon, styles.actionIconPurple]}
               >
 
                 <MaterialCommunityIcons
@@ -2898,19 +2422,12 @@ export default function CounselorScreen() {
               </Text>
 
               <Text
-                style={{
-                  fontSize: 11,
-                  color: "#777",
-                  marginTop: 3,
-                }}
+                style={styles.actionCardSubtext}
               >
                 {savedReports.length} reports
               </Text>
 
             </TouchableOpacity>
-
-
-            {/* PATIENTS */}
 
             <TouchableOpacity
               style={
@@ -2921,12 +2438,7 @@ export default function CounselorScreen() {
             >
 
               <View
-                style={[
-                  styles.actionIcon,
-                  {
-                    backgroundColor: "#E91E63",
-                  },
-                ]}
+                style={[styles.actionIcon, styles.actionIconPink]}
               >
 
                 <FontAwesome5
@@ -2946,11 +2458,7 @@ export default function CounselorScreen() {
               </Text>
 
               <Text
-                style={{
-                  fontSize: 11,
-                  color: "#777",
-                  marginTop: 3,
-                }}
+                style={styles.actionCardSubtext}
               >
                 {uniquePatients.length} patients
               </Text>
@@ -2961,59 +2469,26 @@ export default function CounselorScreen() {
 
         </View>
 
-
-        {/* ====================================================
-            QUICK ACTION OVERLAY
-        ===================================================== */}
-
         {quickAction !== null && (
 
           <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: "rgba(0,0,0,0.45)",
-              zIndex: 100,
-              justifyContent: "flex-end",
-            }}
+            style={styles.overlayBackdrop}
           >
 
             <View
-              style={{
-                backgroundColor: "#FFFFFF",
-                borderTopLeftRadius: 28,
-                borderTopRightRadius: 28,
-                maxHeight: "88%",
-                paddingTop: 20,
-                paddingHorizontal: 20,
-                paddingBottom: 30,
-              }}
+              style={styles.overlaySheet}
             >
 
               <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 18,
-                }}
+                style={styles.overlayHeaderRow}
               >
 
                 <View
-                  style={{
-                    flex: 1,
-                  }}
+                  style={styles.flexOne}
                 >
 
                   <Text
-                    style={{
-                      fontSize: 23,
-                      fontWeight: "800",
-                      color: "#173F3F",
-                    }}
+                    style={styles.overlayTitle}
                   >
                     {quickAction === "schedule"
                       ? "My Schedule"
@@ -3025,11 +2500,7 @@ export default function CounselorScreen() {
                   </Text>
 
                   <Text
-                    style={{
-                      marginTop: 4,
-                      fontSize: 13,
-                      color: "#777",
-                    }}
+                    style={styles.overlaySubtitle}
                   >
                     {quickAction === "schedule"
                       ? "All your scheduled counseling sessions"
@@ -3044,14 +2515,7 @@ export default function CounselorScreen() {
 
                 <TouchableOpacity
                   onPress={() => setQuickAction(null)}
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 21,
-                    backgroundColor: "#F1F5F5",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
+                  style={styles.overlayCloseButton}
                 >
 
                   <Ionicons
@@ -3064,9 +2528,6 @@ export default function CounselorScreen() {
 
               </View>
 
-
-              {/* SCHEDULE */}
-
               {quickAction === "schedule" && (
 
                 <ScrollView
@@ -3076,10 +2537,7 @@ export default function CounselorScreen() {
                   {bookings.length === 0 ? (
 
                     <View
-                      style={{
-                        alignItems: "center",
-                        paddingVertical: 45,
-                      }}
+                      style={styles.emptyStateContainer}
                     >
 
                       <Ionicons
@@ -3089,22 +2547,13 @@ export default function CounselorScreen() {
                       />
 
                       <Text
-                        style={{
-                          marginTop: 12,
-                          fontSize: 17,
-                          fontWeight: "700",
-                          color: "#444",
-                        }}
+                        style={styles.emptyStateTitle}
                       >
                         No Scheduled Sessions
                       </Text>
 
                       <Text
-                        style={{
-                          marginTop: 6,
-                          textAlign: "center",
-                          color: "#888",
-                        }}
+                        style={styles.emptyStateText}
                       >
                         Your scheduled counseling sessions
                         will appear here.
@@ -3124,32 +2573,15 @@ export default function CounselorScreen() {
 
                           <View
                             key={booking._id}
-                            style={{
-                              backgroundColor: "#F8FBFB",
-                              borderRadius: 16,
-                              padding: 16,
-                              marginBottom: 12,
-                              borderWidth: 1,
-                              borderColor: "#E4EEEE",
-                            }}
+                            style={styles.scheduleCard}
                           >
 
                             <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                              }}
+                              style={styles.rowCenter}
                             >
 
                               <View
-                                style={{
-                                  width: 45,
-                                  height: 45,
-                                  borderRadius: 23,
-                                  backgroundColor: "#DDF4F2",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                }}
+                                style={styles.scheduleCardIcon}
                               >
 
                                 <Ionicons
@@ -3161,27 +2593,17 @@ export default function CounselorScreen() {
                               </View>
 
                               <View
-                                style={{
-                                  flex: 1,
-                                  marginLeft: 12,
-                                }}
+                                style={styles.flexOneML12}
                               >
 
                                 <Text
-                                  style={{
-                                    fontSize: 16,
-                                    fontWeight: "800",
-                                    color: "#173F3F",
-                                  }}
+                                  style={styles.cardPatientName}
                                 >
                                   {patientName}
                                 </Text>
 
                                 <Text
-                                  style={{
-                                    marginTop: 4,
-                                    color: "#666",
-                                  }}
+                                  style={styles.scheduleCardDate}
                                 >
                                   {booking.sessionDate}
                                 </Text>
@@ -3189,30 +2611,11 @@ export default function CounselorScreen() {
                               </View>
 
                               <View
-                                style={{
-                                  paddingHorizontal: 9,
-                                  paddingVertical: 5,
-                                  borderRadius: 10,
-                                  backgroundColor:
-                                    booking.status === "confirmed"
-                                      ? "#E6F7ED"
-                                      : booking.status === "pending"
-                                      ? "#FFF5DD"
-                                      : "#FDEAEA",
-                                }}
+                                style={[styles.scheduleStatusChip, { backgroundColor: booking.status === "confirmed" ? "#E6F7ED" : booking.status === "pending" ? "#FFF5DD" : "#FDEAEA" }]}
                               >
 
                                 <Text
-                                  style={{
-                                    fontSize: 11,
-                                    fontWeight: "800",
-                                    color:
-                                      booking.status === "confirmed"
-                                        ? "#168447"
-                                        : booking.status === "pending"
-                                        ? "#B77900"
-                                        : "#C62828",
-                                  }}
+                                  style={[styles.scheduleStatusChipText, { color: booking.status === "confirmed" ? "#168447" : booking.status === "pending" ? "#B77900" : "#C62828" }]}
                                 >
                                   {booking.status.charAt(0).toUpperCase() +
                                     booking.status.slice(1)}
@@ -3223,18 +2626,11 @@ export default function CounselorScreen() {
                             </View>
 
                             <View
-                              style={{
-                                flexDirection: "row",
-                                marginTop: 15,
-                                gap: 18,
-                              }}
+                              style={styles.scheduleCardDetailsRow}
                             >
 
                               <View
-                                style={{
-                                  flexDirection: "row",
-                                  alignItems: "center",
-                                }}
+                                style={styles.rowCenter}
                               >
 
                                 <Ionicons
@@ -3244,10 +2640,7 @@ export default function CounselorScreen() {
                                 />
 
                                 <Text
-                                  style={{
-                                    marginLeft: 6,
-                                    color: "#555",
-                                  }}
+                                  style={styles.scheduleCardDetailText}
                                 >
                                   {booking.sessionTime}
                                 </Text>
@@ -3255,10 +2648,7 @@ export default function CounselorScreen() {
                               </View>
 
                               <View
-                                style={{
-                                  flexDirection: "row",
-                                  alignItems: "center",
-                                }}
+                                style={styles.rowCenter}
                               >
 
                                 <Ionicons
@@ -3268,10 +2658,7 @@ export default function CounselorScreen() {
                                 />
 
                                 <Text
-                                  style={{
-                                    marginLeft: 6,
-                                    color: "#555",
-                                  }}
+                                  style={styles.scheduleCardDetailText}
                                 >
                                   {booking.sessionType}
                                 </Text>
@@ -3292,9 +2679,6 @@ export default function CounselorScreen() {
 
               )}
 
-
-              {/* CHATS */}
-
               {quickAction === "chats" && (
 
                 <ScrollView
@@ -3308,10 +2692,7 @@ export default function CounselorScreen() {
                   ).length === 0 ? (
 
                     <View
-                      style={{
-                        alignItems: "center",
-                        paddingVertical: 45,
-                      }}
+                      style={styles.emptyStateContainer}
                     >
 
                       <Ionicons
@@ -3321,22 +2702,13 @@ export default function CounselorScreen() {
                       />
 
                       <Text
-                        style={{
-                          marginTop: 12,
-                          fontSize: 17,
-                          fontWeight: "700",
-                          color: "#444",
-                        }}
+                        style={styles.emptyStateTitle}
                       >
                         No Chats Yet
                       </Text>
 
                       <Text
-                        style={{
-                          marginTop: 6,
-                          textAlign: "center",
-                          color: "#888",
-                        }}
+                        style={styles.emptyStateText}
                       >
                         Confirmed or previous counseling
                         sessions will appear here.
@@ -3365,32 +2737,15 @@ export default function CounselorScreen() {
 
                             <View
                               key={booking._id}
-                              style={{
-                                backgroundColor: "#FFF9F1",
-                                borderRadius: 16,
-                                padding: 16,
-                                marginBottom: 12,
-                                borderWidth: 1,
-                                borderColor: "#F5E7D0",
-                              }}
+                              style={styles.chatCard}
                             >
 
                               <View
-                                style={{
-                                  flexDirection: "row",
-                                  alignItems: "center",
-                                }}
+                                style={styles.rowCenter}
                               >
 
                                 <View
-                                  style={{
-                                    width: 45,
-                                    height: 45,
-                                    borderRadius: 23,
-                                    backgroundColor: "#FFE5BD",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                  }}
+                                  style={styles.chatCardIcon}
                                 >
 
                                   <Ionicons
@@ -3402,27 +2757,17 @@ export default function CounselorScreen() {
                                 </View>
 
                                 <View
-                                  style={{
-                                    flex: 1,
-                                    marginLeft: 12,
-                                  }}
+                                  style={styles.flexOneML12}
                                 >
 
                                   <Text
-                                    style={{
-                                      fontSize: 16,
-                                      fontWeight: "800",
-                                      color: "#173F3F",
-                                    }}
+                                    style={styles.cardPatientName}
                                   >
                                     {patientName}
                                   </Text>
 
                                   <Text
-                                    style={{
-                                      marginTop: 4,
-                                      color: "#777",
-                                    }}
+                                    style={styles.chatCardDate}
                                   >
                                     {booking.sessionDate}
                                     {" • "}
@@ -3438,17 +2783,7 @@ export default function CounselorScreen() {
                                 onPress={() =>
                                   openPatientChat(booking)
                                 }
-                                style={{
-                                  marginTop: 13,
-                                  backgroundColor:
-                                    canChat ? "#FF9800" : "#D5D5D5",
-                                  borderRadius: 10,
-                                  paddingVertical: 11,
-                                  flexDirection: "row",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                  gap: 8,
-                                }}
+                                style={[styles.chatOpenButton, { backgroundColor: canChat ? "#FF9800" : "#D5D5D5" }]}
                               >
 
                                 <Ionicons
@@ -3458,10 +2793,7 @@ export default function CounselorScreen() {
                                 />
 
                                 <Text
-                                  style={{
-                                    color: "#FFFFFF",
-                                    fontWeight: "800",
-                                  }}
+                                  style={styles.buttonTextWhiteBold}
                                 >
                                   {canChat
                                     ? "Open Chat"
@@ -3482,9 +2814,6 @@ export default function CounselorScreen() {
 
               )}
 
-
-              {/* REPORTS */}
-
               {quickAction === "reports" && (
 
                 <ScrollView
@@ -3492,12 +2821,7 @@ export default function CounselorScreen() {
                 >
 
                   <Text
-                    style={{
-                      fontSize: 15,
-                      fontWeight: "700",
-                      color: "#333",
-                      marginBottom: 10,
-                    }}
+                    style={styles.selectPatientLabel}
                   >
                     Select Patient
                   </Text>
@@ -3505,10 +2829,7 @@ export default function CounselorScreen() {
                   {uniquePatients.length === 0 ? (
 
                     <View
-                      style={{
-                        alignItems: "center",
-                        paddingVertical: 35,
-                      }}
+                      style={styles.emptyStateContainerSmall}
                     >
 
                       <Ionicons
@@ -3518,10 +2839,7 @@ export default function CounselorScreen() {
                       />
 
                       <Text
-                        style={{
-                          marginTop: 10,
-                          color: "#777",
-                        }}
+                        style={styles.emptyStateTextSmall}
                       >
                         No patients available.
                       </Text>
@@ -3543,29 +2861,11 @@ export default function CounselorScreen() {
                             onPress={() =>
                               setReportPatient(booking)
                             }
-                            style={{
-                              padding: 14,
-                              borderRadius: 13,
-                              borderWidth: 1.5,
-                              borderColor:
-                                selected ? "#9C27B0" : "#E3E8E8",
-                              backgroundColor:
-                                selected ? "#F8EEFB" : "#FFFFFF",
-                              marginBottom: 9,
-                              flexDirection: "row",
-                              alignItems: "center",
-                            }}
+                            style={[styles.patientSelectRow, { borderColor: selected ? "#9C27B0" : "#E3E8E8", backgroundColor: selected ? "#F8EEFB" : "#FFFFFF" }]}
                           >
 
                             <View
-                              style={{
-                                width: 42,
-                                height: 42,
-                                borderRadius: 21,
-                                backgroundColor: "#F0DDF5",
-                                justifyContent: "center",
-                                alignItems: "center",
-                              }}
+                              style={styles.patientSelectAvatar}
                             >
 
                               <Ionicons
@@ -3577,27 +2877,17 @@ export default function CounselorScreen() {
                             </View>
 
                             <View
-                              style={{
-                                flex: 1,
-                                marginLeft: 12,
-                              }}
+                              style={styles.flexOneML12}
                             >
 
                               <Text
-                                style={{
-                                  fontWeight: "800",
-                                  color: "#333",
-                                }}
+                                style={styles.boldDark333}
                               >
                                 {getPatientName(booking)}
                               </Text>
 
                               <Text
-                                style={{
-                                  marginTop: 3,
-                                  fontSize: 12,
-                                  color: "#777",
-                                }}
+                                style={styles.patientSelectDate}
                               >
                                 {booking.sessionDate}
                               </Text>
@@ -3622,22 +2912,14 @@ export default function CounselorScreen() {
 
                   )}
 
-
                   {reportPatient && (
 
                     <View
-                      style={{
-                        marginTop: 8,
-                      }}
+                      style={styles.reportSection}
                     >
 
                       <Text
-                        style={{
-                          fontSize: 15,
-                          fontWeight: "700",
-                          color: "#333",
-                          marginBottom: 9,
-                        }}
+                        style={styles.reportLabel}
                       >
                         Counseling Report
                       </Text>
@@ -3649,30 +2931,12 @@ export default function CounselorScreen() {
                         placeholderTextColor="#999"
                         multiline
                         textAlignVertical="top"
-                        style={{
-                          minHeight: 150,
-                          borderWidth: 1,
-                          borderColor: "#DADADA",
-                          borderRadius: 14,
-                          padding: 14,
-                          fontSize: 14,
-                          color: "#333",
-                          backgroundColor: "#FAFAFA",
-                        }}
+                        style={styles.reportTextInput}
                       />
 
                       <TouchableOpacity
                         onPress={saveReport}
-                        style={{
-                          marginTop: 12,
-                          backgroundColor: "#9C27B0",
-                          borderRadius: 13,
-                          paddingVertical: 14,
-                          alignItems: "center",
-                          flexDirection: "row",
-                          justifyContent: "center",
-                          gap: 8,
-                        }}
+                        style={styles.createReportButton}
                       >
 
                         <MaterialCommunityIcons
@@ -3682,11 +2946,7 @@ export default function CounselorScreen() {
                         />
 
                         <Text
-                          style={{
-                            color: "#FFFFFF",
-                            fontSize: 15,
-                            fontWeight: "800",
-                          }}
+                          style={styles.createReportButtonText}
                         >
                           Create Report
                         </Text>
@@ -3697,22 +2957,14 @@ export default function CounselorScreen() {
 
                   )}
 
-
                   {savedReports.length > 0 && (
 
                     <View
-                      style={{
-                        marginTop: 25,
-                      }}
+                      style={styles.previousReportsSection}
                     >
 
                       <Text
-                        style={{
-                          fontSize: 16,
-                          fontWeight: "800",
-                          color: "#333",
-                          marginBottom: 10,
-                        }}
+                        style={styles.previousReportsTitle}
                       >
                         Previous Reports
                       </Text>
@@ -3722,39 +2974,23 @@ export default function CounselorScreen() {
 
                           <View
                             key={report.id}
-                            style={{
-                              backgroundColor: "#F8F3FA",
-                              borderRadius: 13,
-                              padding: 14,
-                              marginBottom: 10,
-                            }}
+                            style={styles.previousReportCard}
                           >
 
                             <Text
-                              style={{
-                                fontWeight: "800",
-                                color: "#333",
-                              }}
+                              style={styles.boldDark333}
                             >
                               {report.patientName}
                             </Text>
 
                             <Text
-                              style={{
-                                marginTop: 5,
-                                fontSize: 12,
-                                color: "#777",
-                              }}
+                              style={styles.previousReportDate}
                             >
                               {report.sessionDate}
                             </Text>
 
                             <Text
-                              style={{
-                                marginTop: 9,
-                                lineHeight: 20,
-                                color: "#555",
-                              }}
+                              style={styles.previousReportText}
                             >
                               {report.report}
                             </Text>
@@ -3772,9 +3008,6 @@ export default function CounselorScreen() {
 
               )}
 
-
-              {/* PATIENTS */}
-
               {quickAction === "patients" && (
 
                 <ScrollView
@@ -3784,10 +3017,7 @@ export default function CounselorScreen() {
                   {uniquePatients.length === 0 ? (
 
                     <View
-                      style={{
-                        alignItems: "center",
-                        paddingVertical: 45,
-                      }}
+                      style={styles.emptyStateContainer}
                     >
 
                       <FontAwesome5
@@ -3797,22 +3027,13 @@ export default function CounselorScreen() {
                       />
 
                       <Text
-                        style={{
-                          marginTop: 12,
-                          fontSize: 17,
-                          fontWeight: "700",
-                          color: "#444",
-                        }}
+                        style={styles.emptyStateTitle}
                       >
                         No Patients
                       </Text>
 
                       <Text
-                        style={{
-                          marginTop: 6,
-                          textAlign: "center",
-                          color: "#888",
-                        }}
+                        style={styles.emptyStateText}
                       >
                         Patients with your counseling
                         sessions will appear here.
@@ -3835,32 +3056,15 @@ export default function CounselorScreen() {
 
                           <View
                             key={booking._id}
-                            style={{
-                              backgroundColor: "#FFF6FA",
-                              borderRadius: 16,
-                              padding: 16,
-                              marginBottom: 12,
-                              borderWidth: 1,
-                              borderColor: "#F4DCE6",
-                            }}
+                            style={styles.patientCard}
                           >
 
                             <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                              }}
+                              style={styles.rowCenter}
                             >
 
                               <View
-                                style={{
-                                  width: 52,
-                                  height: 52,
-                                  borderRadius: 26,
-                                  backgroundColor: "#FADBE7",
-                                  justifyContent: "center",
-                                  alignItems: "center",
-                                }}
+                                style={styles.patientCardAvatar}
                               >
 
                                 <FontAwesome5
@@ -3872,27 +3076,17 @@ export default function CounselorScreen() {
                               </View>
 
                               <View
-                                style={{
-                                  flex: 1,
-                                  marginLeft: 13,
-                                }}
+                                style={styles.flexOneML13}
                               >
 
                                 <Text
-                                  style={{
-                                    fontSize: 17,
-                                    fontWeight: "800",
-                                    color: "#333",
-                                  }}
+                                  style={styles.patientCardName}
                                 >
                                   {patientName}
                                 </Text>
 
                                 <Text
-                                  style={{
-                                    marginTop: 4,
-                                    color: "#777",
-                                  }}
+                                  style={styles.chatCardDate}
                                 >
                                   {patientEmail}
                                 </Text>
@@ -3902,11 +3096,7 @@ export default function CounselorScreen() {
                             </View>
 
                             <View
-                              style={{
-                                marginTop: 14,
-                                flexDirection: "row",
-                                alignItems: "center",
-                              }}
+                              style={styles.patientCardSessionRow}
                             >
 
                               <Ionicons
@@ -3916,10 +3106,7 @@ export default function CounselorScreen() {
                               />
 
                               <Text
-                                style={{
-                                  marginLeft: 7,
-                                  color: "#666",
-                                }}
+                                style={styles.patientCardSessionText}
                               >
                                 Last session: {booking.sessionDate}
                               </Text>
@@ -3933,19 +3120,7 @@ export default function CounselorScreen() {
                               disabled={
                                 booking.status !== "confirmed"
                               }
-                              style={{
-                                marginTop: 13,
-                                backgroundColor:
-                                  booking.status === "confirmed"
-                                    ? "#E91E63"
-                                    : "#D4D4D4",
-                                borderRadius: 10,
-                                paddingVertical: 11,
-                                alignItems: "center",
-                                flexDirection: "row",
-                                justifyContent: "center",
-                                gap: 8,
-                              }}
+                              style={[styles.patientChatButton, { backgroundColor: booking.status === "confirmed" ? "#E91E63" : "#D4D4D4" }]}
                             >
 
                               <Ionicons
@@ -3955,10 +3130,7 @@ export default function CounselorScreen() {
                               />
 
                               <Text
-                                style={{
-                                  color: "#FFFFFF",
-                                  fontWeight: "800",
-                                }}
+                                style={styles.buttonTextWhiteBold}
                               >
                                 {booking.status === "confirmed"
                                   ? "Chat with Patient"
@@ -3985,11 +3157,6 @@ export default function CounselorScreen() {
 
         )}
 
-
-        {/* ====================================================
-            LOGOUT
-        ===================================================== */}
-
         <TouchableOpacity
           style={
             styles.logoutButton
@@ -4010,7 +3177,6 @@ export default function CounselorScreen() {
             color="#E05C5C"
           />
 
-
           <Text
             style={
               styles.logoutText
@@ -4020,11 +3186,6 @@ export default function CounselorScreen() {
           </Text>
 
         </TouchableOpacity>
-
-
-        {/* ====================================================
-            QUOTE
-        ===================================================== */}
 
         <View
           style={
@@ -4037,7 +3198,6 @@ export default function CounselorScreen() {
             size={28}
             color="#fff"
           />
-
 
           <Text
             style={
@@ -4055,11 +3215,6 @@ export default function CounselorScreen() {
     </View>
   );
 }
-
-
-// ============================================================
-// INFO ROW
-// ============================================================
 
 function InfoRow({
   icon,
@@ -4095,11 +3250,8 @@ function InfoRow({
 
       </View>
 
-
       <View
-        style={{
-          flex: 1,
-        }}
+        style={styles.flexOne}
       >
 
         <Text
@@ -4109,7 +3261,6 @@ function InfoRow({
         >
           {label}
         </Text>
-
 
         <Text
           style={

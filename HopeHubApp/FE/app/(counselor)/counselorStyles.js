@@ -524,5 +524,389 @@ cancelledMessageText: {
   fontWeight: "800",
 },
 
+loginAgainButton: {
+    marginTop: 20,
+    backgroundColor: "#2CA6A4",
+    paddingHorizontal: 25,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+
+loginAgainButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+
+flexOne: {
+    flex: 1,
+  },
+
+flexOneML12: {
+    flex: 1,
+    marginLeft: 12,
+  },
+
+chatWithPatientButton: {
+    marginTop: 12,
+    backgroundColor: "#2CA6A4",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+
+chatWithPatientButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+actionCardSubtext: {
+    fontSize: 11,
+    color: "#777",
+    marginTop: 3,
+  },
+
+overlayBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    zIndex: 100,
+    justifyContent: "flex-end",
+  },
+
+overlaySheet: {
+    backgroundColor: "#FFFFFF",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: "88%",
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+  },
+
+overlayHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 18,
+  },
+
+overlayTitle: {
+    fontSize: 23,
+    fontWeight: "800",
+    color: "#173F3F",
+  },
+
+overlaySubtitle: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#777",
+  },
+
+overlayCloseButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#F1F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+emptyStateContainer: {
+    alignItems: "center",
+    paddingVertical: 45,
+  },
+
+emptyStateTitle: {
+    marginTop: 12,
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#444",
+  },
+
+emptyStateText: {
+    marginTop: 6,
+    textAlign: "center",
+    color: "#888",
+  },
+
+scheduleCard: {
+    backgroundColor: "#F8FBFB",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E4EEEE",
+  },
+
+rowCenter: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+scheduleCardIcon: {
+    width: 45,
+    height: 45,
+    borderRadius: 23,
+    backgroundColor: "#DDF4F2",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+cardPatientName: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#173F3F",
+  },
+
+scheduleCardDate: {
+    marginTop: 4,
+    color: "#666",
+  },
+
+scheduleStatusChip: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 10,
+  },
+
+scheduleStatusChipText: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+
+scheduleCardDetailsRow: {
+    flexDirection: "row",
+    marginTop: 15,
+    gap: 18,
+  },
+
+scheduleCardDetailText: {
+    marginLeft: 6,
+    color: "#555",
+  },
+
+chatCard: {
+    backgroundColor: "#FFF9F1",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#F5E7D0",
+  },
+
+chatCardIcon: {
+    width: 45,
+    height: 45,
+    borderRadius: 23,
+    backgroundColor: "#FFE5BD",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+chatCardDate: {
+    marginTop: 4,
+    color: "#777",
+  },
+
+chatOpenButton: {
+    marginTop: 13,
+    borderRadius: 10,
+    paddingVertical: 11,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+
+buttonTextWhiteBold: {
+    color: "#FFFFFF",
+    fontWeight: "800",
+  },
+
+selectPatientLabel: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 10,
+  },
+
+emptyStateContainerSmall: {
+    alignItems: "center",
+    paddingVertical: 35,
+  },
+
+emptyStateTextSmall: {
+    marginTop: 10,
+    color: "#777",
+  },
+
+patientSelectRow: {
+    padding: 14,
+    borderRadius: 13,
+    borderWidth: 1.5,
+    marginBottom: 9,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+patientSelectAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#F0DDF5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+boldDark333: {
+    fontWeight: "800",
+    color: "#333",
+  },
+
+patientSelectDate: {
+    marginTop: 3,
+    fontSize: 12,
+    color: "#777",
+  },
+
+reportSection: {
+    marginTop: 8,
+  },
+
+reportLabel: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 9,
+  },
+
+reportTextInput: {
+    minHeight: 150,
+    borderWidth: 1,
+    borderColor: "#DADADA",
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 14,
+    color: "#333",
+    backgroundColor: "#FAFAFA",
+  },
+
+createReportButton: {
+    marginTop: 12,
+    backgroundColor: "#9C27B0",
+    borderRadius: 13,
+    paddingVertical: 14,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+
+createReportButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+
+previousReportsSection: {
+    marginTop: 25,
+  },
+
+previousReportsTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#333",
+    marginBottom: 10,
+  },
+
+previousReportCard: {
+    backgroundColor: "#F8F3FA",
+    borderRadius: 13,
+    padding: 14,
+    marginBottom: 10,
+  },
+
+previousReportDate: {
+    marginTop: 5,
+    fontSize: 12,
+    color: "#777",
+  },
+
+previousReportText: {
+    marginTop: 9,
+    lineHeight: 20,
+    color: "#555",
+  },
+
+patientCard: {
+    backgroundColor: "#FFF6FA",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#F4DCE6",
+  },
+
+patientCardAvatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#FADBE7",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+flexOneML13: {
+    flex: 1,
+    marginLeft: 13,
+  },
+
+patientCardName: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#333",
+  },
+
+patientCardSessionRow: {
+    marginTop: 14,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+patientCardSessionText: {
+    marginLeft: 7,
+    color: "#666",
+  },
+
+patientChatButton: {
+    marginTop: 13,
+    borderRadius: 10,
+    paddingVertical: 11,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 8,
+  },
+
+actionIconOrange: {
+    backgroundColor: "#FF9800",
+  },
+
+actionIconPurple: {
+    backgroundColor: "#9C27B0",
+  },
+
+actionIconPink: {
+    backgroundColor: "#E91E63",
+  },
+
 });
 export default {};
