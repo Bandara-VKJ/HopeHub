@@ -895,6 +895,56 @@ patientChatButton: {
     justifyContent: "center",
     gap: 8,
   },
+  patientProfileContainer: {
+  marginTop: 20,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 20,
+  padding: 18,
+  borderWidth: 1,
+  borderColor: "#E3F2FD",
+  shadowColor: "#000",
+  shadowOpacity: 0.06,
+  shadowRadius: 8,
+  elevation: 4,
+},
+
+patientProfileHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 18,
+  paddingBottom: 16,
+  borderBottomWidth: 1,
+  borderBottomColor: "#EEF5F5",
+},
+
+patientProfileAvatar: {
+  width: 64,
+  height: 64,
+  borderRadius: 32,
+  justifyContent: "center",
+  alignItems: "center",
+  borderWidth: 2,
+  borderColor: "#2196F3",
+},
+
+patientProfileName: {
+  fontSize: 19,
+  fontWeight: "800",
+  color: "#173F3F",
+},
+
+patientProfileSubtitle: {
+  marginTop: 3,
+  fontSize: 13,
+  color: "#7A9A9A",
+  fontWeight: "600",
+},
+
+patientProfileInfoCard: {
+  backgroundColor: "#F7FBFB",
+  borderRadius: 14,
+  padding: 6,
+},
 
 actionIconOrange: {
     backgroundColor: "#FF9800",
@@ -907,6 +957,9 @@ actionIconPurple: {
 actionIconPink: {
     backgroundColor: "#E91E63",
   },
+actionIconBlue: {
+  backgroundColor: "#2196F3",
+},
 
 });
 export default {};

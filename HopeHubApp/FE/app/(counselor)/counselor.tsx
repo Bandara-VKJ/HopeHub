@@ -164,8 +164,8 @@ export default function CounselorScreen() {
   ] = useState(false);
 
   const [quickAction, setQuickAction] = useState<
-    "schedule" | "chats" | "reports" | "patients" | null
-  >(null);
+  "schedule" | "chats" | "reports" | "patients" | "profiles" | null
+>(null);
 
   const [reportPatient, setReportPatient] =
     useState<Booking | null>(null);
@@ -1087,6 +1087,10 @@ export default function CounselorScreen() {
   const openPatients = () => {
     setQuickAction("patients");
   };
+
+  const openProfiles = () => {
+    setQuickAction("profiles");
+  }
 
   const uniquePatients = bookings.reduce(
     (patients: Booking[], booking) => {
@@ -2467,6 +2471,33 @@ export default function CounselorScreen() {
 
           </View>
 
+          <TouchableOpacity
+            style={styles.actionCard}
+            activeOpacity={0.75}
+            onPress={() => router.push("/(patients)/patients")}
+          >
+            <View
+              style={[
+                styles.actionIcon,
+                styles.actionIconBlue,
+              ]}
+            >
+              <Ionicons
+                name="person-circle"
+                size={26}
+                color="#fff"
+              />
+            </View>
+
+            <Text style={styles.actionText}>
+              Patient Profile
+            </Text>
+
+            <Text style={styles.actionCardSubtext}>
+              View patient details
+            </Text>
+          </TouchableOpacity>
+
         </View>
 
         {quickAction !== null && (
@@ -2496,7 +2527,9 @@ export default function CounselorScreen() {
                       ? "My Chats"
                       : quickAction === "reports"
                       ? "Patient Reports"
-                      : "My Patients"}
+                      : quickAction === "patients"
+                      ? "My Patients"
+                      : "Patient Profile"}
                   </Text>
 
                   <Text
@@ -2508,7 +2541,9 @@ export default function CounselorScreen() {
                       ? "Active and previous counseling chats"
                       : quickAction === "reports"
                       ? "Create and manage patient reports"
-                      : "Patients assigned to your counseling sessions"}
+                      : quickAction === "patients"
+                      ? "Patients assigned to your counseling sessions"
+                      : "View detailed patient information"}
                   </Text>
 
                 </View>
@@ -3040,6 +3075,7 @@ export default function CounselorScreen() {
                       </Text>
 
                     </View>
+                    
 
                   ) : (
 
@@ -3155,6 +3191,180 @@ export default function CounselorScreen() {
 
           </View>
 
+        )}
+        
+        {quickAction === "profiles" && (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.selectPatientLabel}>
+              Select Patient
+            </Text>
+
+            {uniquePatients.length === 0 ? (
+              <View
+                style={styles.emptyStateContainer}
+              >
+                <Ionicons
+                  name="person-circle-outline"
+                  size={55}
+                  color="#C4D1D1"
+                />
+
+                <Text style={styles.emptyStateTitle}>
+                  No Patients
+                </Text>
+
+                <Text style={styles.emptyStateText}>
+                  Patients with your counseling
+                  sessions will appear here.
+                </Text>
+              </View>
+            ) : (
+              uniquePatients.map((booking) => {
+                const patient =
+                  typeof booking.patient === "string"
+                    ? null
+                    : booking.patient;
+
+                const selected =
+                  reportPatient?._id === booking._id;
+
+                return (
+                  <TouchableOpacity
+                    key={booking._id}
+                    onPress={() =>
+                      setReportPatient(booking)
+                    }
+                    style={[
+                      styles.patientSelectRow,
+                      {
+                        borderColor: selected
+                          ? "#2196F3"
+                          : "#E3E8E8",
+                        backgroundColor: selected
+                          ? "#EEF7FF"
+                          : "#FFFFFF",
+                      },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.patientSelectAvatar,
+                        {
+                          backgroundColor: "#E3F2FD",
+                        },
+                      ]}
+                    >
+                      <Ionicons
+                        name="person"
+                        size={20}
+                        color="#2196F3"
+                      />
+                    </View>
+
+                    <View style={styles.flexOneML12}>
+                      <Text style={styles.boldDark333}>
+                        {getPatientName(booking)}
+                      </Text>
+
+                      <Text
+                        style={styles.patientSelectDate}
+                      >
+                        {getPatientEmail(booking)}
+                      </Text>
+                    </View>
+
+                    {selected && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={23}
+                        color="#2196F3"
+                      />
+                    )}
+                  </TouchableOpacity>
+                );
+              })
+            )}
+
+            {reportPatient && (
+              <View style={styles.patientProfileContainer}>
+                <View style={styles.patientProfileHeader}>
+                  <View
+                    style={[
+                      styles.patientProfileAvatar,
+                      {
+                        backgroundColor: "#E3F2FD",
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="person"
+                      size={35}
+                      color="#2196F3"
+                    />
+                  </View>
+
+                  <View style={styles.flexOneML12}>
+                    <Text
+                      style={styles.patientProfileName}
+                    >
+                      {getPatientName(reportPatient)}
+                    </Text>
+
+                    <Text
+                      style={styles.patientProfileSubtitle}
+                    >
+                      Patient Profile
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.patientProfileInfoCard}>
+                  <InfoRow
+                    icon="person-outline"
+                    label="Full Name"
+                    value={getPatientName(reportPatient)}
+                  />
+
+                  <InfoRow
+                    icon="calendar-outline"
+                    label="Last Session"
+                    value={
+                      reportPatient.sessionDate || "-"
+                    }
+                  />
+
+                  <InfoRow
+                    icon="time-outline"
+                    label="Session Time"
+                    value={
+                      reportPatient.sessionTime || "-"
+                    }
+                  />
+
+                  <InfoRow
+                    icon="chatbubble-outline"
+                    label="Session Type"
+                    value={
+                      reportPatient.sessionType || "-"
+                    }
+                  />
+
+                  <InfoRow
+                    icon="information-circle-outline"
+                    label="Booking Status"
+                    value={
+                      reportPatient.status
+                        .charAt(0)
+                        .toUpperCase() +
+                      reportPatient.status.slice(1)
+                    }
+                  />
+                </View>
+              </View>
+            )}
+          </ScrollView>
         )}
 
         <TouchableOpacity
