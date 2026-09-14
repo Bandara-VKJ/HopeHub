@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Usermanagement.css";
 
-const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const withSkipWarning = (url) => {
   const separator = url.includes("?") ? "&" : "?";

@@ -77,7 +77,7 @@ const ProgressBar = ({ value, color }: { value: number; color: string }) => (
 
 export default function HomeScreen() {
 
-const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [firstName, setFirstName] = useState('')

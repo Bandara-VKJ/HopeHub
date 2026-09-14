@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { patientsStyles } from "./patientsStyles";
 import { router } from "expo-router";
 
-const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ngrokFetch = (url: string, options: RequestInit = {}) =>
   fetch(url, {

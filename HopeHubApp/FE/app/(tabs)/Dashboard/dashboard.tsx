@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { chartStyles, cardStyles, modalStyles, screenStyles } from './dashboardStyles';
 
-const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ngrokFetch = (url: string, options: RequestInit = {}) =>
   fetch(url, {
