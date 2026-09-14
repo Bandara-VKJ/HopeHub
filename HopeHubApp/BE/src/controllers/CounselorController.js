@@ -1,6 +1,14 @@
 import Counselor from "../models/Counselor.js";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
+
+const generateToken = (counselor) =>
+  jwt.sign(
+    { id: counselor._id, role: "counselor" },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
 
 const safeCounselor = (counselor) => ({
   _id: counselor._id,
@@ -86,8 +94,11 @@ export const registerCounselor = async (req, res) => {
       avatarColor: "#2CA6A4",
     });
 
+    const token = generateToken(counselor);
+
     res.status(201).json({
       message: "Counselor registered successfully",
+      token,
       counselor: safeCounselor(counselor),
       user: safeCounselor(counselor),
     });
@@ -104,39 +115,32 @@ export const loginCounselor = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({
-        message: "Email and password are required",
-      });
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const counselor = await Counselor.findOne({
-      email: email.trim().toLowerCase(),
-    });
+    const counselor = await Counselor.findOne({ email: email.trim().toLowerCase() });
 
     if (!counselor) {
-      return res.status(404).json({
-        message: "Counselor not found",
-      });
+      return res.status(404).json({ message: "Counselor not found" });
     }
 
     const isMatch = await bcrypt.compare(password, counselor.password);
 
     if (!isMatch) {
-      return res.status(401).json({
-        message: "Invalid password",
-      });
+      return res.status(401).json({ message: "Invalid password" });
     }
+
+    const token = generateToken(counselor);
 
     res.status(200).json({
       message: "Counselor login successful",
+      token,
       counselor: safeCounselor(counselor),
       user: safeCounselor(counselor),
     });
   } catch (error) {
     console.log("loginCounselor error:", error);
-    res.status(500).json({
-      message: "Counselor login failed",
-    });
+    res.status(500).json({ message: "Counselor login failed" });
   }
 };
 

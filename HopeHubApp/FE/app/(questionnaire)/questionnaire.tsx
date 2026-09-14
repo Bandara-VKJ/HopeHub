@@ -19,14 +19,22 @@ import LottieView from 'lottie-react-native';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-const ngrokFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, {
+const ngrokFetch = async (
+  url: string,
+  options: RequestInit = {}
+) => {
+  const token = await AsyncStorage.getItem("token");
+  console.log("JWT:", token);
+  return fetch(url, {
     ...options,
     headers: {
       ...options.headers,
+      "Content-Type": "application/json",
       "ngrok-skip-browser-warning": "true",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
+};
 
 const TEXT_INPUT_INDICES = new Set([
   6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
@@ -341,7 +349,7 @@ export default function LifeScreen() {
     }).start();
   }, [currentIndex]);
 
-  // Fade + slide the question card in on every navigation.
+
   useEffect(() => {
     fadeAnim.setValue(0);
     slideAnim.setValue(14);

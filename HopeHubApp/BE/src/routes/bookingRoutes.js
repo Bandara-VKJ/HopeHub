@@ -1,59 +1,19 @@
 import express from "express";
+import { createBooking, getPatientBookings, getCounselorBookings, getBookedSlots, confirmBooking, cancelBooking } from "../controllers/bookingController.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
-import {
-  createBooking,
-  getPatientBookings,
-  getCounselorBookings,
-  getBookedSlots,
-  confirmBooking,
-  cancelBooking,
-} from "../controllers/bookingController.js";
+const router = express.Router();
 
-const router =
-  express.Router();
+router.post( "/", protect, createBooking );
 
-// ============================================================
-// USER
-// ============================================================
+router.get( "/patient/:patientId", protect, getPatientBookings );
 
-// Create booking
-router.post(
-  "/",
-  createBooking
-);
+router.get( "/counselor/:counselorId", protect, getCounselorBookings );
 
-// Get user's bookings
-router.get(
-  "/patient/:patientId",
-  getPatientBookings
-);
+router.get( "/counselor/:counselorId/slots", protect, getBookedSlots );
 
-// ============================================================
-// COUNSELOR
-// ============================================================
+router.patch("/:bookingId/confirm", protect, confirmBooking );
 
-// Get counselor bookings
-router.get(
-  "/counselor/:counselorId",
-  getCounselorBookings
-);
-
-// Get unavailable slots
-router.get(
-  "/counselor/:counselorId/slots",
-  getBookedSlots
-);
-
-// Confirm booking
-router.patch(
-  "/:bookingId/confirm",
-  confirmBooking
-);
-
-// Cancel booking
-router.patch(
-  "/:bookingId/cancel",
-  cancelBooking
-);
+router.patch("/:bookingId/cancel", protect, cancelBooking );
 
 export default router;

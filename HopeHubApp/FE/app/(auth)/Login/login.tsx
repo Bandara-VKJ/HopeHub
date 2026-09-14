@@ -13,17 +13,9 @@ import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { loginStyles } from "./loginStyles";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
-const ngrokFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      "ngrok-skip-browser-warning": "true",
-    },
-  });
 
 type LoginRole = "user" | "counselor" | "family";
 
@@ -144,21 +136,23 @@ export default function Login() {
         return;
       }
 
-      if (logrole === "counselor") {
-        await AsyncStorage.setItem("role", "counselor");
-        await AsyncStorage.setItem("loginRole", "counselor");
-        await AsyncStorage.setItem("counselorId", data.counselor._id);
-        await AsyncStorage.setItem("counselor", JSON.stringify(data.counselor));
+    if (logrole === "counselor") {
+    await AsyncStorage.setItem("role", "counselor");
+    await AsyncStorage.setItem("loginRole", "counselor");
+    await AsyncStorage.setItem("token", data.token);
+    await AsyncStorage.setItem("counselorId", data.counselor._id);
+    await AsyncStorage.setItem("counselor", JSON.stringify(data.counselor));
 
-        router.replace("/(counselor)/counselor");
-        return;
-      }
+    router.replace("/(counselor)/counselor");
+    return;
+  }
 
       const userId = data.user._id || data.user.id;
 
       await AsyncStorage.setItem("role", "user");
       await AsyncStorage.setItem("loginRole", "user");
       await AsyncStorage.setItem("userId", userId);
+      await AsyncStorage.setItem("token", data.token);
 
       const statusRes = await ngrokFetch(
         `${BASE_URL}/api/questionnaire/status/${userId}`

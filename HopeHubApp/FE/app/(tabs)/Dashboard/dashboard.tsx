@@ -15,17 +15,10 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { chartStyles, cardStyles, modalStyles, screenStyles } from './dashboardStyles';
+import { ngrokFetch } from '@/utill/ngrokFetch';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-const ngrokFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      "ngrok-skip-browser-warning": "true",
-    },
-  });
 
 const EMOTION_META: Record<string, { color: string; emoji: string }> = {
   joy: { color: '#3DB87C', emoji: '😊' },

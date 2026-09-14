@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { homeStyles } from "./homeStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from "lottie-react-native";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
 
   const STATUS_STYLE: Record<string, { label: string; color: string }> = {
@@ -113,7 +114,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 
         // Get profile
-        const res = await fetch(
+       const res = await ngrokFetch(
           `${BASE_URL}/api/profile/${userId}`,
           {
             headers:{
@@ -170,29 +171,22 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
     (task) => task.status === "completed"
   ).length;
 
-  const getTasks = async () => {
+const getTasks = async () => {
   try {
     const userId = await AsyncStorage.getItem("userId");
-
     if (!userId) return;
 
-    const response = await fetch(
-      `${BASE_URL}/api/taks/user-tasks?userId=${userId}`,
-      {
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-        },
-      }
+    const response = await ngrokFetch(
+      `${BASE_URL}/api/taks/user-tasks?userId=${userId}`
     );
+   
 
     const data = await response.json();
-
     console.log("Tasks response:", data);
 
     if (response.ok) {
-      setTasks(data.tasks  || []);
+      setTasks(data.tasks || []);
     }
-
   } catch (error) {
     console.log("Get tasks error:", error);
     setTasks([]);
@@ -220,7 +214,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
     try {
       const userId = await AsyncStorage.getItem('userId')
       
-      const res = await fetch(`${BASE_URL}/api/family/invite`,{
+      const res = await ngrokFetch(`${BASE_URL}/api/family/invite`,{
         method : "POST",
         headers: {
           "Content-Type": "application/json",
@@ -256,7 +250,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
     try {
       setUpdatingId(taskId);
 
-      const response = await fetch(`${BASE_URL}/api/taks/${taskId}/status`, {
+      const response = await ngrokFetch(`${BASE_URL}/api/taks/${taskId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -288,44 +282,40 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   };
 
   const toggleTaskStatus = async (taskId: string, currentStatus: string) => {
-    const newStatus = currentStatus === "completed" ? "pending" : "completed";
+  const newStatus = currentStatus === "completed" ? "pending" : "completed";
 
-    try {
-      setUpdatingId(taskId);
+  try {
+    setUpdatingId(taskId);
 
-      const response = await fetch(`${BASE_URL}/api/taks/${taskId}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
+    const response = await ngrokFetch(`${BASE_URL}/api/taks/${taskId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: newStatus }),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (!response.ok) {
-        Alert.alert("Error", data.error || "Failed to update task");
-        return;
-      }
-
-      setTasks((prev) =>
-        prev.map((task) =>
-          task._id === taskId
-            ? {
-                ...task,
-                status: newStatus,
-                family_status: newStatus === "completed" ? "pending_confirmation" : task.family_status,
-              }
-            : task
-        )
-      );
-    } catch (error) {
-      console.log("Toggle task status error:", error);
-      Alert.alert("Error", "Failed to update task");
-    } finally {
-      setUpdatingId(null);
+    if (!response.ok) {
+      Alert.alert("Error", data.error || "Failed to update task");
+      return;
     }
+
+    setTasks((prev) =>
+      prev.map((task) =>
+        task._id === taskId
+          ? {
+              ...task,
+              status: newStatus,
+              family_status: newStatus === "completed" ? "pending_confirmation" : task.family_status,
+            }
+          : task
+      )
+    );
+  } catch (error) {
+    console.log("Toggle task status error:", error);
+    Alert.alert("Error", "Failed to update task");
+  } finally {
+    setUpdatingId(null);
+  }
 };
 
   const getTaskStats = async () => {
@@ -333,7 +323,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
       const userId = await AsyncStorage.getItem("userId");
       if (!userId) return;
 
-      const response = await fetch(
+      const response = await ngrokFetch(
         `${BASE_URL}/api/taks/taks/stats?userId=${userId}`,
         {
           headers: {

@@ -14,6 +14,7 @@ import { useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
 type TaskDraft = {
   id: string;
@@ -47,15 +48,6 @@ export default function Tasks() {
   const [submitting, setSubmitting] = useState(false);
   const [dayDrafts, setDayDrafts] = useState<DayDraft[]>([makeEmptyDay()]);
   const [pickerOpenForDayId, setPickerOpenForDayId] = useState<string | null>(null);
-
-  const ngrokFetch = (url: string, options: RequestInit = {}) =>
-    fetch(url, {
-      ...options,
-      headers: {
-        ...(options.headers || {}),
-        "ngrok-skip-browser-warning": "true",
-      },
-    });
 
   const addDay = () => {
     setDayDrafts((prev) => [...prev, makeEmptyDay()]);

@@ -1,41 +1,13 @@
 import express from "express";
-
-import {
-  getAIConversation,
-  sendAIMessage,
-  clearAIConversation,
-} from "../controllers/aiCounselingController.js";
+import { getAIConversation, sendAIMessage, clearAIConversation } from "../controllers/aiCounselingController.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-/*
-============================================================
-GET CONVERSATION
-============================================================
-*/
-router.get(
-  "/conversation/:userId",
-  getAIConversation
-);
+router.get("/conversation/:userId", protect, getAIConversation );
 
-/*
-============================================================
-SEND MESSAGE
-============================================================
-*/
-router.post(
-  "/message",
-  sendAIMessage
-);
+router.post("/message", protect, sendAIMessage );
 
-/*
-============================================================
-CLEAR CONVERSATION
-============================================================
-*/
-router.delete(
-  "/conversation/:userId",
-  clearAIConversation
-);
+router.delete("/conversation/:userId", protect, clearAIConversation );
 
 export default router;

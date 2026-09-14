@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { patientProfileStyles } from './patientProfile.Styles'
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
 
    type Patient = {
@@ -39,15 +40,6 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const [updatingLevel, setUpdatingLevel] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-
-  const ngrokFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || { }),
-      "ngrok-skip-browser-warning": "true",
-    },
-  });
 
   useEffect ( ()=>{
     getPatientById(),
