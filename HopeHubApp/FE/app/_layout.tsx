@@ -24,6 +24,7 @@ export default function RootLayout() {
    const [completed, setCompleted] = useState(false);
    const [checkingStatus, setCheckingStatus] = useState(true);
    const [role, setRole] = useState<'user' | 'counselor' | null>(null);
+   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -55,7 +56,7 @@ export default function RootLayout() {
       try {
         if (userId && role === 'user') {
           const res = await fetch(
-            `https://connector-removed-stoneware.ngrok-free.dev/api/questionnaire/status/${userId}`,
+            `${BASE_URL}/api/questionnaire/status/${userId}`,
             {
               headers: {
                 "ngrok-skip-browser-warning": "true",

@@ -30,7 +30,7 @@ const LEVELS = [ "No risk", "Very Low", "Low", "Moderate", "High", "Very High", 
 export default function PatientProfile() {
 
   const { patientId } = useLocalSearchParams();
-  const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 
   const [patient, setPatient] = useState<Patient | null>(null)

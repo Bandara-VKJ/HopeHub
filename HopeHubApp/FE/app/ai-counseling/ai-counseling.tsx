@@ -34,8 +34,7 @@ BACKEND URL
 ============================================================
 */
 
-const BASE_URL =
-  "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 /*
 ============================================================

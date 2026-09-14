@@ -40,7 +40,7 @@ const makeEmptyDay = (): DayDraft => ({
 });
 
 export default function Tasks() {
-  const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const { patientId } = useLocalSearchParams();
 
   const [loading, setLoading] = useState(false);

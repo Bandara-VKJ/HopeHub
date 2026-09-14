@@ -13,7 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { familyDashStyles } from "./familyDashStyles";
 
-const BASE_URL = "https://connector-removed-stoneware.ngrok-free.dev";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const ngrokFetch = (url: string, options: RequestInit = {}) =>
   fetch(url, {
