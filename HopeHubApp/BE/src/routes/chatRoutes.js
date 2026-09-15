@@ -1,21 +1,11 @@
 import express from "express";
 
-import {
-  getChatMessages,
-} from "../controllers/chatController.js";
+import { getChatMessages } from "../controllers/chatController.js";
+import { protect } from "../middlewares/authMiddleware.js";
 
-const router =
-  express.Router();
+const router = express.Router();
 
-
-// ============================================================
-// GET CHAT HISTORY
-// ============================================================
-
-router.get(
-  "/:bookingId/messages",
-  getChatMessages
-);
+router.get("/:bookingId/messages", protect, getChatMessages );
 
 
 export default router;

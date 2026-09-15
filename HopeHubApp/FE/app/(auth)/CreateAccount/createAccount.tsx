@@ -4,18 +4,10 @@ import { useState } from "react";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
-    const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-const ngrokFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      "ngrok-skip-browser-warning": "true",
-    },
-  });
-
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 export default function CreateAccount() {
   const [logrole, setLogrole] = useState<"user" | "counselor">("user");
 

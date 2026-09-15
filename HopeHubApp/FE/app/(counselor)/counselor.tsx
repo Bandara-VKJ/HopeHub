@@ -26,27 +26,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { router } from "expo-router";
 import { io } from "socket.io-client";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
-const ngrokFetch = (
-  url: string,
-  options: RequestInit = {}
-) => {
-  return fetch(url, {
-    ...options,
-
-    headers: {
-      ...(options.headers || {}),
-
-      "ngrok-skip-browser-warning":
-        "true",
-
-      Accept:
-        "application/json",
-    },
-  });
-};
 
 type Counselor = {
   _id: string;

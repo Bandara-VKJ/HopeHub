@@ -25,6 +25,7 @@ import {
   styles,
   aiStyles,
 } from "./supportStyles";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
 
 // ============================================================
@@ -32,30 +33,6 @@ import {
 // ============================================================
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-
-
-// ============================================================
-// NGROK FETCH
-// ============================================================
-
-const ngrokFetch = (
-  url: string,
-  options: RequestInit = {}
-) => {
-  return fetch(url, {
-    ...options,
-
-    headers: {
-      ...(options.headers || {}),
-
-      "ngrok-skip-browser-warning":
-        "true",
-
-      Accept:
-        "application/json",
-    },
-  });
-};
 
 
 // ============================================================
