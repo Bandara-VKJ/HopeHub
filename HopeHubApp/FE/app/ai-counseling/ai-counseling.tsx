@@ -27,6 +27,7 @@ import { router } from "expo-router";
 import {
   aiCounselingStyles as styles,
 } from "./ai-counselingStyles";
+import { ngrokFetch } from "@/utill/ngrokFetch";
 
 /*
 ============================================================
@@ -54,31 +55,6 @@ type AIMessage = {
   content: string;
 
   createdAt?: string;
-};
-
-/*
-============================================================
-FETCH HELPER
-============================================================
-*/
-
-const apiFetch = (
-  url: string,
-  options: RequestInit = {}
-) => {
-  return fetch(url, {
-    ...options,
-
-    headers: {
-      Accept:
-        "application/json",
-
-      ...(options.headers || {}),
-
-      "ngrok-skip-browser-warning":
-        "true",
-    },
-  });
 };
 
 /*
@@ -249,7 +225,7 @@ export default function AICounselingScreen() {
           setUserId(id);
 
           const response =
-            await apiFetch(
+            await ngrokFetch(
               `${BASE_URL}/api/ai-counseling/conversation/${encodeURIComponent(
                 id
               )}`
@@ -413,7 +389,7 @@ export default function AICounselingScreen() {
 
       try {
         const response =
-          await apiFetch(
+          await ngrokFetch(
             `${BASE_URL}/api/ai-counseling/message`,
             {
               method: "POST",
@@ -548,7 +524,7 @@ export default function AICounselingScreen() {
                   setLoading(true);
 
                   const response =
-                    await apiFetch(
+                    await ngrokFetch(
                       `${BASE_URL}/api/ai-counseling/conversation/${encodeURIComponent(
                         userId
                       )}`,
