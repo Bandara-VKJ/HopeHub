@@ -221,11 +221,24 @@ export const updateCounselorAvailability = async (req, res) => {
 
 export const getAllPatients = async (req, res) => {
   try {
-    const patients = await User.find({ role: "user" });
+    const patients = await User.find({ role: "user" })
+      .select("_id firstName lastName profilePic")
+      .lean();
 
-    res.status(200).json({ success: true, count: patients.length, patients });
+    const formattedPatients = patients.map((patient) => ({
+      _id: patient._id,
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      profilePic: patient.profilePic,
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: formattedPatients.length,
+      patients: formattedPatients,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Get patients error:", error);
     res.status(500).json({ error: "Server error" });
   }
 };
