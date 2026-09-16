@@ -6,22 +6,40 @@ export const accountCreateStyles = StyleSheet.create({
     backgroundColor: "#F4F9F9",
   },
 
-  header: {
+  pageContent: {
+    paddingBottom: 40,
+  },
+  hero: {
+    height: 300,
     backgroundColor: "#2CA6A4",
-    paddingTop: 60,
-    paddingHorizontal: 22,
-    paddingBottom: 32,
+
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    overflow: "hidden",
+    position: "relative",
+  },
+  heroAnimation: {
+    position: "absolute",
+    width: 380,
+    height: 380,
+    alignSelf: "center",
+    top: -35,
+    opacity: 0.9,
+  },
+  heroContent: {
+    position: "absolute",
+    left: 22,
+    bottom: 105,
+    zIndex: 2,
   },
 
   smallTitle: {
     color: "#DFF7F6",
     fontSize: 16,
     fontWeight: "500",
+    textShadowColor: "rgba(0, 0, 0, 0.6)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 6,
   },
 
   brand: {
@@ -29,33 +47,34 @@ export const accountCreateStyles = StyleSheet.create({
     fontSize: 38,
     fontWeight: "900",
     marginTop: 2,
+    textShadowColor: "rgba(0, 0, 0, 0.6)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 7,
   },
 
   subtitle: {
     color: "#EAFDFC",
     fontSize: 13,
     marginTop: 6,
-    width: 210,
+    width: 230,
     lineHeight: 19,
-  },
-
-  logo: {
-    width: 95,
-    height: 95,
-    resizeMode: "contain",
+    textShadowColor: "rgba(0, 0, 0, 0.6)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 5,
   },
 
   roleSwitch: {
     flexDirection: "row",
     backgroundColor: "#fff",
     marginHorizontal: 20,
-    marginTop: -22,
+    marginTop: -100,
     borderRadius: 18,
     padding: 5,
     shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 10,
     elevation: 4,
+    zIndex: 5,
   },
 
   roleBtn: {
@@ -72,6 +91,7 @@ export const accountCreateStyles = StyleSheet.create({
   roleText: {
     color: "#7A9A9A",
     fontWeight: "700",
+    fontSize: 13,
   },
 
   roleTextActive: {
@@ -83,26 +103,22 @@ export const accountCreateStyles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 20,
     marginBottom: 35,
-    padding: 18,
+    padding: 22,
     borderRadius: 24,
     shadowColor: "#000",
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.10,
     shadowRadius: 12,
     elevation: 5,
+    zIndex: 4,
   },
 
   cardTitle: {
     fontSize: 24,
     fontWeight: "800",
     color: "#1A3A3A",
-    marginBottom: 16,
-  },
+    marginBottom: 20,
 
-  sectionLabel: {
-    fontSize: 14,
-    color: "#2CA6A4",
-    fontWeight: "800",
-    marginBottom: 10,
+    textAlign: "center",
   },
 
   row: {
@@ -112,7 +128,7 @@ export const accountCreateStyles = StyleSheet.create({
 
   inputWrapper: {
     minHeight: 54,
-    backgroundColor: "#F4F9F9",
+    backgroundColor: "rgba(244, 249, 249, 0.85)",
     borderRadius: 16,
     paddingHorizontal: 14,
     marginBottom: 12,
@@ -128,6 +144,13 @@ export const accountCreateStyles = StyleSheet.create({
     fontSize: 14,
     color: "#1A3A3A",
     paddingVertical: 0,
+    outlineStyle: "none",
+  },
+  sectionLabel: {
+    fontSize: 14,
+    color: "#2CA6A4",
+    fontWeight: "800",
+    marginBottom: 10,
   },
 
   divider: {
@@ -157,7 +180,7 @@ export const accountCreateStyles = StyleSheet.create({
 
   bottomText: {
     textAlign: "center",
-    marginTop: 16,
+    marginTop: 18,
     color: "#7A9A9A",
   },
 

@@ -1,10 +1,11 @@
 import { accountCreateStyles as styles } from "./createAccountStyles";
-import { Text, View, TextInput, TouchableOpacity, Alert, Image, ScrollView, ActivityIndicator } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
 import { useState } from "react";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ngrokFetch } from "@/utill/ngrokFetch";
+import LottieView from "lottie-react-native";
 
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -117,23 +118,24 @@ export default function CreateAccount() {
 
   return (
     <ScrollView style={styles.page} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.smallTitle}>Welcome to</Text>
-          <Text style={styles.brand}>HopeHub</Text>
-          <Text style={styles.subtitle}>
-            {logrole === "counselor"
-              ? "Create your professional counselor profile"
-              : "Create your user account"}
+     <View style={styles.hero}>
+        <LottieView
+          source={require("../../../assets/animations/medicine online.json")}
+          autoPlay
+          loop
+          style={styles.heroAnimation}
+        />
+
+        <View style={styles.heroContent}>
+          <Text style={styles.smallTitle}>
+            Welcome to
+          </Text>
+
+          <Text style={styles.brand}>
+            HopeHub
           </Text>
         </View>
-
-        <Image
-          source={require("../../../assets/images/logo.png")}
-          style={styles.logo}
-        />
       </View>
-
       <View style={styles.roleSwitch}>
         <TouchableOpacity
           style={[styles.roleBtn, logrole === "user" && styles.roleBtnActive]}
