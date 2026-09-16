@@ -14,6 +14,7 @@ import { loginStyles } from "./loginStyles";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ngrokFetch } from "@/utill/ngrokFetch";
+import LottieView from 'lottie-react-native';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -173,116 +174,174 @@ export default function Login() {
     }
   };
 
-  return (
-    <ScrollView style={loginStyles.page} showsVerticalScrollIndicator={false}>
-      <View style={loginStyles.header}>
-        <View>
-          <Text style={loginStyles.smallTitle}>Welcome back to</Text>
-          <Text style={loginStyles.brand}>HopeHub</Text>
-          <Text style={loginStyles.subtitle}>{ROLE_SUBTITLES[logrole]}</Text>
-        </View>
+ return (
+  <ScrollView
+    style={loginStyles.page}
+    contentContainerStyle={loginStyles.pageContent}
+    showsVerticalScrollIndicator={false}
+  >
 
-        <Image
-          source={require("../../../assets/images/logo.png")}
-          style={loginStyles.logo}
+    <View style={loginStyles.hero}>
+      <LottieView
+        source={require("../../../assets/animations/Login.json")}
+        autoPlay
+        loop
+        style={loginStyles.heroAnimation}
+      />
+
+      <View style={loginStyles.heroContent}>
+        <Text style={loginStyles.smallTitle}>
+          Welcome back to
+        </Text>
+
+        <Text style={loginStyles.brand}>
+          HopeHub
+        </Text>
+      </View>
+    </View>
+
+    <View style={loginStyles.roleSwitch}>
+      <TouchableOpacity
+        style={[
+          loginStyles.roleBtn,
+          logrole === "user" && loginStyles.roleBtnActive,
+        ]}
+        onPress={() => selectRole("user")}
+      >
+        <Text
+          style={[
+            loginStyles.roleText,
+            logrole === "user" && loginStyles.roleTextActive,
+          ]}
+        >
+          User
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          loginStyles.roleBtn,
+          logrole === "counselor" && loginStyles.roleBtnActive,
+        ]}
+        onPress={() => selectRole("counselor")}
+      >
+        <Text
+          style={[
+            loginStyles.roleText,
+            logrole === "counselor" &&
+              loginStyles.roleTextActive,
+          ]}
+        >
+          Counselor
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[
+          loginStyles.roleBtn,
+          logrole === "family" && loginStyles.roleBtnActive,
+        ]}
+        onPress={() => selectRole("family")}
+      >
+        <Text
+          style={[
+            loginStyles.roleText,
+            logrole === "family" &&
+              loginStyles.roleTextActive,
+          ]}
+        >
+          Family
+        </Text>
+      </TouchableOpacity>
+    </View>
+
+    <View style={loginStyles.card}>
+      <Text style={loginStyles.cardTitle}>
+        {ROLE_TITLES[logrole]}
+      </Text>
+
+      <View style={loginStyles.inputWrapper}>
+        <Ionicons
+          name="mail-outline"
+          size={20}
+          color="#7A9A9A"
+        />
+
+        <TextInput
+          placeholder="Email address"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={loginStyles.input as any}
         />
       </View>
 
-      <View style={loginStyles.roleSwitch}>
-        <TouchableOpacity
-          style={[loginStyles.roleBtn, logrole === "user" && loginStyles.roleBtnActive]}
-          onPress={() => selectRole("user")}
-        >
-          <Text style={[loginStyles.roleText, logrole === "user" && loginStyles.roleTextActive]}>
-            User
-          </Text>
-        </TouchableOpacity>
+      <View style={loginStyles.inputWrapper}>
+        <Ionicons
+          name="lock-closed-outline"
+          size={20}
+          color="#7A9A9A"
+        />
+
+        <TextInput
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={!showpassword}
+          style={loginStyles.input as any}
+        />
 
         <TouchableOpacity
-          style={[loginStyles.roleBtn, logrole === "counselor" && loginStyles.roleBtnActive]}
-          onPress={() => selectRole("counselor")}
+          onPress={() => setshowpassword(!showpassword)}
         >
-          <Text
-            style={[loginStyles.roleText, logrole === "counselor" && loginStyles.roleTextActive]}
-          >
-            Counselor
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[loginStyles.roleBtn, logrole === "family" && loginStyles.roleBtnActive]}
-          onPress={() => selectRole("family")}
-        >
-          <Text
-            style={[loginStyles.roleText, logrole === "family" && loginStyles.roleTextActive]}
-          >
-            Family
-          </Text>
+          <Ionicons
+            name={
+              showpassword
+                ? "eye-off-outline"
+                : "eye-outline"
+            }
+            size={20}
+            color="#7A9A9A"
+          />
         </TouchableOpacity>
       </View>
 
-      <View style={loginStyles.card}>
-        <Text style={loginStyles.cardTitle}>{ROLE_TITLES[logrole]}</Text>
-
-        <View style={loginStyles.inputWrapper}>
-          <Ionicons name="mail-outline" size={20} color="#7A9A9A" />
-          <TextInput
-            placeholder="Email address"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={loginStyles.input as any}
-          />
-        </View>
-
-        <View style={loginStyles.inputWrapper}>
-          <Ionicons name="lock-closed-outline" size={20} color="#7A9A9A" />
-          <TextInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showpassword}
-            style={loginStyles.input as any}
-          />
-          <TouchableOpacity onPress={() => setshowpassword(!showpassword)}>
-            <Ionicons
-              name={showpassword ? "eye-off-outline" : "eye-outline"}
-              size={20}
-              color="#7A9A9A"
-            />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={[loginStyles.button, loading && { opacity: 0.6 }]}
-          onPress={handleLogin}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={loginStyles.buttonText}>Login</Text>
-          )}
-        </TouchableOpacity>
-
-        {logrole !== "family" && (
-          <Text style={loginStyles.bottomText}>
-            Don't have an account?{" "}
-            <Text
-              style={loginStyles.loginText}
-              onPress={() =>
-                router.push({
-                  pathname: "/(auth)/CreateAccount/createAccount",
-                  params: { role: logrole },
-                })
-              }
-            >
-              Create now
-            </Text>
+      <TouchableOpacity
+        style={[
+          loginStyles.button,
+          loading && { opacity: 0.6 },
+        ]}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={loginStyles.buttonText}>
+            Login
           </Text>
         )}
-      </View>
-    </ScrollView>
-  );
+      </TouchableOpacity>
+
+      {logrole !== "family" && (
+        <Text style={loginStyles.bottomText}>
+          Don't have an account?{" "}
+          <Text
+            style={loginStyles.loginText}
+            onPress={() =>
+              router.push({
+                pathname:
+                  "/(auth)/CreateAccount/createAccount",
+                params: { role: logrole },
+              })
+            }
+          >
+            Create now
+          </Text>
+        </Text>
+      )}
+    </View>
+  </ScrollView>
+);
 }
