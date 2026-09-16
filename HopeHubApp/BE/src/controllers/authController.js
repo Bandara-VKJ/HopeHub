@@ -6,11 +6,16 @@ export const registerUser = async (req, res) => {
   try {
     
 
-    const { firstName, lastName, email, password, mobile, role } = req.body;
+    const { firstName, lastName, email, password, mobile, role, language } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({
         message: "First name, last name, email and password are required",
+      });
+    }
+    if(!language ){
+       return res.status(400).json({
+        message: "Please select languege",
       });
     }
 
@@ -33,6 +38,7 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
       mobile: mobile || "",
       role: role || "user",
+      language: language,
     });
 
     return res.status(201).json({
@@ -45,6 +51,7 @@ export const registerUser = async (req, res) => {
         role: user.role,
         mobile: user.mobile,
         profilePic: user.profilePic,
+        language: user.language,
       },
     });
   } catch (error) {
@@ -101,6 +108,8 @@ export const LoginUser = async (req, res) => {
         role: user.role,
         mobile: user.mobile,
         profilePic: user.profilePic,
+        language: user.language,
+
       },
     });
   } catch (error) {

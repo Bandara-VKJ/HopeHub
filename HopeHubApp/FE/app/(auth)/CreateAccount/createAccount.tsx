@@ -1,6 +1,6 @@
 import { accountCreateStyles as styles } from "./createAccountStyles";
-import { Text, View, TextInput, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from "react-native";
-import { useState } from "react";
+import { Text, View, TextInput, TouchableOpacity, Alert, ScrollView, ActivityIndicator, Modal } from "react-native";
+import { useState, useEffect } from "react";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -28,7 +28,34 @@ export default function CreateAccount() {
   const [showconfpassword, setconfShowpassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [languageModalVisible, setLanguageModalVisible] = useState(true);
+  const [selectedLanguage, setSelectedLanguage] = useState<
+    "en" | "si" | null
+  >(null);
+
+   useEffect(() => {
+    const loadLanguage = async () => {
+      try {
+        const language = await AsyncStorage.getItem(
+          "selectedLanguage"
+        );
+
+        if (language === "en" || language === "si") {
+          setSelectedLanguage(language);
+        }
+
+      } catch (error) {
+        console.log("Error loading language:", error);
+      }
+    };
+
+    loadLanguage();
+  }, []);
+
   const handleCreateAccount = async () => {
+
+    
+        console.log(BASE_URL);
     if (loading) return;
 
     if (!first || !last || !email || !password || !confpassword) {
@@ -45,9 +72,15 @@ export default function CreateAccount() {
       Alert.alert("Error", "Password must be at least 6 characters");
       return;
     }
-
     try {
       setLoading(true);
+
+       const selectedLang = await AsyncStorage.getItem(
+          "selectedLanguage"
+        );
+
+        console.log("Selected language:", selectedLang);
+
 
       if (logrole === "counselor") {
         if (!mobile || !title || !specialty || !experience) {
@@ -67,7 +100,7 @@ export default function CreateAccount() {
             title,
             specialty,
             experience,
-            availability,
+            availability
           }),
         });
 
@@ -95,6 +128,7 @@ export default function CreateAccount() {
           password,
           mobile,
           role: "user",
+          language: selectedLang || "en",
         }),
       });
 
@@ -115,8 +149,94 @@ export default function CreateAccount() {
       setLoading(false);
     }
   };
+  const selectLanguage = async (language: "en" | "si") => {
+    try {
+      setSelectedLanguage(language);
 
+      await AsyncStorage.setItem(
+        "selectedLanguage",
+        language
+      );
+
+      console.log("Language saved:", language);
+
+    } catch (error) {
+      console.log("Error saving language:", error);
+    }
+  };
   return (
+   <>
+
+     <Modal
+      visible={languageModalVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setLanguageModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+
+        <View style={styles.languageModal}>
+
+          <Text style={styles.modalTitle}>
+            Select Language
+          </Text>
+
+          <Text style={styles.modalSubtitle}>
+            භාෂාව තෝරන්න
+          </Text>
+
+          <TouchableOpacity
+            style={[
+              styles.languageButton,
+              selectedLanguage === "en" &&
+                styles.languageButtonSelected,
+            ]}
+            onPress={() => selectLanguage("en")}
+          >
+            <Text style={styles.languageText}>
+              🇬🇧 English
+            </Text>
+          </TouchableOpacity>
+
+          {/* Sinhala */}
+        <TouchableOpacity
+          style={[
+            styles.languageButton,
+            selectedLanguage === "si" &&
+              styles.languageButtonSelected,
+          ]}
+          onPress={() => selectLanguage("si")}
+        >
+          <Text style={styles.languageText}>
+            🇱🇰 සිංහල
+          </Text>
+        </TouchableOpacity>
+
+          {/* Continue */}
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={() => {
+              if (!selectedLanguage) {
+                Alert.alert(
+                  "Select Language",
+                  "Please select a language"
+                );
+                return;
+              }
+
+              setLanguageModalVisible(false);
+            }}
+          >
+            <Text style={styles.continueButtonText}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+
+        </View>
+
+      </View>
+    </Modal>
+
     <ScrollView style={styles.page} showsVerticalScrollIndicator={false}>
      <View style={styles.hero}>
         <LottieView
@@ -322,5 +442,6 @@ export default function CreateAccount() {
         </Text>
       </View>
     </ScrollView>
+   </>
   );
 }

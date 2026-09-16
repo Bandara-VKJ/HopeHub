@@ -9,9 +9,15 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["user", "counselor"], default: "user" },
     mobile: { type: String, default: "" },
     profilePic: { type: String, default: null },
+    
 
     predictedLevel: { type: String, default: null },
 
+    language: {
+    type: String,
+    enum: ["en", "si"],
+    default: "en",
+    },
     counselorLevel: {
       type: String,
       enum: ["No risk", "Very Low", "Low", "Moderate", "High", "Very High", "Severe Addiction", "Contact with counselor"],
