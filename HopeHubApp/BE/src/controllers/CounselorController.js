@@ -222,7 +222,7 @@ export const updateCounselorAvailability = async (req, res) => {
 export const getAllPatients = async (req, res) => {
   try {
     const patients = await User.find({ role: "user" })
-      .select("_id firstName lastName profilePic")
+      .select("_id firstName lastName profilePic email")
       .lean();
 
     const formattedPatients = patients.map((patient) => ({
@@ -230,6 +230,7 @@ export const getAllPatients = async (req, res) => {
       firstName: patient.firstName,
       lastName: patient.lastName,
       profilePic: patient.profilePic,
+      email: patient.email,
     }));
 
     res.status(200).json({

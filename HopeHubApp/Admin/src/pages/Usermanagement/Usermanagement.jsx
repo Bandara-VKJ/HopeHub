@@ -8,15 +8,20 @@ const withSkipWarning = (url) => {
   return `${url}${separator}ngrok-skip-browser-warning=true`;
 };
 
-const ngrokFetch = (url, options = {}) =>
-  fetch(withSkipWarning(url), {
+const ngrokFetch = (url, options = {}) => {
+  const token = localStorage.getItem("adminToken");
+
+  return fetch(withSkipWarning(url), {
     ...options,
     headers: {
       ...(options.headers || {}),
       "ngrok-skip-browser-warning": "true",
+      ...(token && {
+        Authorization: `Bearer ${token}`,
+      }),
     },
   });
-
+};
 function UserManagement() {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +32,8 @@ function UserManagement() {
 
   const [patientToDelete, setPatientToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetchPatients();
@@ -77,7 +84,7 @@ function UserManagement() {
   const closeDetails = () => setSelectedPatient(null);
 
   const requestDelete = (patient) => {
-    // stop the row click handler from also firing / reopening details
+
     setPatientToDelete(patient);
   };
 
@@ -114,7 +121,23 @@ function UserManagement() {
       setDeleting(false);
     }
   };
+  const filteredPatients = patients.filter((patient) => {
+  const search = searchTerm.toLowerCase().trim();
 
+    if (!search) return true;
+
+    const firstName = patient.firstName?.toLowerCase() || "";
+    const lastName = patient.lastName?.toLowerCase() || "";
+    const email = patient.email?.toLowerCase() || "";
+    const userId = patient._id?.toLowerCase() || "";
+
+    return (
+      firstName.includes(search) ||
+      lastName.includes(search) ||
+      email.includes(search) ||
+      userId.includes(search)
+    );
+  });
   return (
     <div>
       <header className="page-topbar">
@@ -122,13 +145,36 @@ function UserManagement() {
         <p>Manage patient accounts</p>
       </header>
 
+      <div className="um-search-wrapper">
+      <input
+        type="text"
+        className="um-search-input"
+        placeholder="Search by first name, last name, email or user ID..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+
+      {searchTerm && (
+        <button
+          className="um-search-clear"
+          onClick={() => setSearchTerm("")}
+        >
+          ×
+        </button>
+      )}
+    </div>
+
       <section className="page-body">
         {error && <div className="um-error">{error}</div>}
 
         {loading ? (
           <p>Loading patients...</p>
-        ) : patients.length === 0 ? (
-          <p>No patients found.</p>
+        ) : filteredPatients.length === 0 ? (
+          <p>
+            {patients.length === 0
+              ? "No patients found."
+              : "No patients match your search."}
+          </p>
         ) : (
           <table className="um-table">
             <thead>
@@ -139,7 +185,7 @@ function UserManagement() {
               </tr>
             </thead>
             <tbody>
-              {patients.map((patient) => (
+              {filteredPatients.map((patient) => (
                 <tr
                   key={patient._id}
                   className="um-row"
