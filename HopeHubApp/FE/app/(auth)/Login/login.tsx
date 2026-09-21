@@ -23,7 +23,7 @@ type LoginRole = "user" | "counselor" | "family";
 
 export default function Login() {
   const params = useLocalSearchParams();
-  const { t } = useLanguage();
+  const { t, setLanguage } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -142,6 +142,11 @@ export default function Login() {
       }
 
       const userId = data.user._id || data.user.id;
+
+      const savedLang = data.user?.language;
+      if (savedLang === "en" || savedLang === "si") {
+        await setLanguage(savedLang);
+      }
 
       await AsyncStorage.setItem("role", "user");
       await AsyncStorage.setItem("loginRole", "user");
