@@ -1,15 +1,26 @@
 import { accountCreateStyles as styles } from "./createAccountStyles";
-import { Text, View, TextInput, TouchableOpacity, Alert, ScrollView, ActivityIndicator, Modal } from "react-native";
-import { useState, useEffect } from "react";
+import {
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import { useState } from "react";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ngrokFetch } from "@/utill/ngrokFetch";
 import LottieView from "lottie-react-native";
-
+import { useLanguage } from "@/i18n/LanguageContext";
+import LanguageToggle from "@/components/LanguageToggle";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
 export default function CreateAccount() {
+  const { t, language } = useLanguage();
+
   const [logrole, setLogrole] = useState<"user" | "counselor">("user");
 
   const [first, setFirst] = useState("");
@@ -20,7 +31,7 @@ export default function CreateAccount() {
   const [title, setTitle] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [experience, setExperience] = useState("");
-  const [availability, setAvailability] = useState("Available Today");
+  const [availability, setAvailability] = useState("");
 
   const [password, setPassword] = useState("");
   const [confpassword, setconfPassword] = useState("");
@@ -28,93 +39,63 @@ export default function CreateAccount() {
   const [showconfpassword, setconfShowpassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [languageModalVisible, setLanguageModalVisible] = useState(true);
-  const [selectedLanguage, setSelectedLanguage] = useState<
-    "en" | "si" | null
-  >(null);
-
-   useEffect(() => {
-    const loadLanguage = async () => {
-      try {
-        const language = await AsyncStorage.getItem(
-          "selectedLanguage"
-        );
-
-        if (language === "en" || language === "si") {
-          setSelectedLanguage(language);
-        }
-
-      } catch (error) {
-        console.log("Error loading language:", error);
-      }
-    };
-
-    loadLanguage();
-  }, []);
-
   const handleCreateAccount = async () => {
-
-    
-        console.log(BASE_URL);
     if (loading) return;
 
     if (!first || !last || !email || !password || !confpassword) {
-      Alert.alert("Error", "Please fill all basic fields");
+      Alert.alert(t.common.error, t.createAccount.fillBasic);
       return;
     }
 
     if (password !== confpassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert(t.common.error, t.createAccount.passwordMismatch);
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+      Alert.alert(t.common.error, t.createAccount.passwordShort);
       return;
     }
+
     try {
       setLoading(true);
 
-       const selectedLang = await AsyncStorage.getItem(
-          "selectedLanguage"
-        );
-
-        console.log("Selected language:", selectedLang);
-
-
       if (logrole === "counselor") {
         if (!mobile || !title || !specialty || !experience) {
-          Alert.alert("Error", "Please fill all counselor details");
+          Alert.alert(t.common.error, t.createAccount.fillCounselor);
           return;
         }
 
-        const response = await ngrokFetch(`${BASE_URL}/api/counselors/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            firstName: first,
-            lastName: last,
-            email: email.trim().toLowerCase(),
-            password,
-            mobile,
-            title,
-            specialty,
-            experience,
-            availability
-          }),
-        });
+        const response = await ngrokFetch(
+          `${BASE_URL}/api/counselors/register`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firstName: first,
+              lastName: last,
+              email: email.trim().toLowerCase(),
+              password,
+              mobile,
+              title,
+              specialty,
+              experience,
+              availability,
+            }),
+          }
+        );
 
-        // Redirect to login
-        Alert.alert("Success", "Account created successfully. Please login.");
-        router.replace('/(auth)/Login/login')
-        const data = await response.json();
+        if (!response.ok) {
+          const data = await response.json();
+          Alert.alert(
+            t.common.error,
+            data.message || t.createAccount.registrationFailed
+          );
+          return;
+        }
 
-        await AsyncStorage.setItem("role", "counselor");
-        await AsyncStorage.setItem("counselorId", data.counselor._id);
-        await AsyncStorage.setItem("counselor", JSON.stringify(data.counselor));
-
-        Alert.alert("Success", "Counselor account created");
-        router.replace("/(counselor)/counselor");
+        Alert.alert(t.common.success, t.createAccount.counselorCreated);
+        router.replace("/(auth)/Login/login");
         return;
       }
 
@@ -128,117 +109,34 @@ export default function CreateAccount() {
           password,
           mobile,
           role: "user",
-          language: selectedLang || "en",
+          language,
         }),
       });
 
-     
-
       if (!response.ok) {
         const data = await response.json();
-        Alert.alert("Error", data.message || "User registration failed");
+        Alert.alert(
+          t.common.error,
+          data.message || t.createAccount.registrationFailed
+        );
         return;
       }
 
-      Alert.alert("Success", "User account created");
+      Alert.alert(t.common.success, t.createAccount.userCreated);
       router.replace("/(auth)/Login/login");
     } catch (error) {
       console.log("Create account error:", error);
-      Alert.alert("Error", "Network error");
+      Alert.alert(t.common.error, t.common.networkError);
     } finally {
       setLoading(false);
     }
   };
-  const selectLanguage = async (language: "en" | "si") => {
-    try {
-      setSelectedLanguage(language);
 
-      await AsyncStorage.setItem(
-        "selectedLanguage",
-        language
-      );
-
-      console.log("Language saved:", language);
-
-    } catch (error) {
-      console.log("Error saving language:", error);
-    }
-  };
   return (
-   <>
-
-     <Modal
-      visible={languageModalVisible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => setLanguageModalVisible(false)}
-    >
-      <View style={styles.modalOverlay}>
-
-        <View style={styles.languageModal}>
-
-          <Text style={styles.modalTitle}>
-            Select Language
-          </Text>
-
-          <Text style={styles.modalSubtitle}>
-            භාෂාව තෝරන්න
-          </Text>
-
-          <TouchableOpacity
-            style={[
-              styles.languageButton,
-              selectedLanguage === "en" &&
-                styles.languageButtonSelected,
-            ]}
-            onPress={() => selectLanguage("en")}
-          >
-            <Text style={styles.languageText}>
-              English
-            </Text>
-          </TouchableOpacity>
-
-          {/* Sinhala */}
-        <TouchableOpacity
-          style={[
-            styles.languageButton,
-            selectedLanguage === "si" &&
-              styles.languageButtonSelected,
-          ]}
-          onPress={() => selectLanguage("si")}
-        >
-          <Text style={styles.languageText}>
-            සිංහල
-          </Text>
-        </TouchableOpacity>
-
-          {/* Continue */}
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={() => {
-              if (!selectedLanguage) {
-                Alert.alert(
-                  "Select Language",
-                  "Please select a language"
-                );
-                return;
-              }
-
-              setLanguageModalVisible(false);
-            }}
-          >
-            <Text style={styles.continueButtonText}>
-              Continue
-            </Text>
-          </TouchableOpacity>
-
-        </View>
-
-      </View>
-    </Modal>
-
     <ScrollView style={styles.page} showsVerticalScrollIndicator={false}>
-     <View style={styles.hero}>
+      <View style={styles.hero}>
+        <LanguageToggle />
+
         <LottieView
           source={require("../../../assets/animations/medicine online.json")}
           autoPlay
@@ -247,27 +145,32 @@ export default function CreateAccount() {
         />
 
         <View style={styles.heroContent}>
-          <Text style={styles.smallTitle}>
-            Welcome to
-          </Text>
+          <Text style={styles.smallTitle}>{t.createAccount.welcome}</Text>
 
-          <Text style={styles.brand}>
-            HopeHub
-          </Text>
+          <Text style={styles.brand}>HopeHub</Text>
         </View>
       </View>
+
       <View style={styles.roleSwitch}>
         <TouchableOpacity
           style={[styles.roleBtn, logrole === "user" && styles.roleBtnActive]}
           onPress={() => setLogrole("user")}
         >
-          <Text style={[styles.roleText, logrole === "user" && styles.roleTextActive]}>
-            User
+          <Text
+            style={[
+              styles.roleText,
+              logrole === "user" && styles.roleTextActive,
+            ]}
+          >
+            {t.common.user}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.roleBtn, logrole === "counselor" && styles.roleBtnActive]}
+          style={[
+            styles.roleBtn,
+            logrole === "counselor" && styles.roleBtnActive,
+          ]}
           onPress={() => setLogrole("counselor")}
         >
           <Text
@@ -276,21 +179,23 @@ export default function CreateAccount() {
               logrole === "counselor" && styles.roleTextActive,
             ]}
           >
-            Counselor
+            {t.common.counselor}
           </Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>
-          {logrole === "counselor" ? "Counselor Details" : "Account Details"}
+          {logrole === "counselor"
+            ? t.createAccount.counselorDetails
+            : t.createAccount.accountDetails}
         </Text>
 
         <View style={styles.row}>
           <View style={[styles.inputWrapper, { flex: 1 }]}>
             <Ionicons name="person-outline" size={20} color="#7A9A9A" />
             <TextInput
-              placeholder="First name"
+              placeholder={t.createAccount.firstName}
               value={first}
               onChangeText={setFirst}
               style={styles.input}
@@ -300,7 +205,7 @@ export default function CreateAccount() {
           <View style={[styles.inputWrapper, { flex: 1 }]}>
             <Ionicons name="person-outline" size={20} color="#7A9A9A" />
             <TextInput
-              placeholder="Last name"
+              placeholder={t.createAccount.lastName}
               value={last}
               onChangeText={setLast}
               style={styles.input}
@@ -311,7 +216,7 @@ export default function CreateAccount() {
         <View style={styles.inputWrapper}>
           <Ionicons name="mail-outline" size={20} color="#7A9A9A" />
           <TextInput
-            placeholder="Email address"
+            placeholder={t.common.email}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -323,7 +228,7 @@ export default function CreateAccount() {
         <View style={styles.inputWrapper}>
           <Ionicons name="call-outline" size={20} color="#7A9A9A" />
           <TextInput
-            placeholder="Mobile number"
+            placeholder={t.createAccount.mobile}
             value={mobile}
             onChangeText={setMobile}
             keyboardType="phone-pad"
@@ -335,12 +240,14 @@ export default function CreateAccount() {
           <>
             <View style={styles.divider} />
 
-            <Text style={styles.sectionLabel}>Professional Information</Text>
+            <Text style={styles.sectionLabel}>
+              {t.createAccount.professionalInfo}
+            </Text>
 
             <View style={styles.inputWrapper}>
               <Ionicons name="briefcase-outline" size={20} color="#7A9A9A" />
               <TextInput
-                placeholder="Title e.g. Clinical Psychologist"
+                placeholder={t.createAccount.titlePlaceholder}
                 value={title}
                 onChangeText={setTitle}
                 style={styles.input}
@@ -350,7 +257,7 @@ export default function CreateAccount() {
             <View style={styles.inputWrapper}>
               <Ionicons name="heart-outline" size={20} color="#7A9A9A" />
               <TextInput
-                placeholder="Specialty e.g. Addiction Recovery"
+                placeholder={t.createAccount.specialtyPlaceholder}
                 value={specialty}
                 onChangeText={setSpecialty}
                 style={styles.input}
@@ -360,7 +267,7 @@ export default function CreateAccount() {
             <View style={styles.inputWrapper}>
               <Ionicons name="school-outline" size={20} color="#7A9A9A" />
               <TextInput
-                placeholder="Experience e.g. 5 years experience"
+                placeholder={t.createAccount.experiencePlaceholder}
                 value={experience}
                 onChangeText={setExperience}
                 style={styles.input}
@@ -370,7 +277,7 @@ export default function CreateAccount() {
             <View style={styles.inputWrapper}>
               <Ionicons name="calendar-outline" size={20} color="#7A9A9A" />
               <TextInput
-                placeholder="Availability"
+                placeholder={t.createAccount.availabilityPlaceholder}
                 value={availability}
                 onChangeText={setAvailability}
                 style={styles.input}
@@ -384,7 +291,7 @@ export default function CreateAccount() {
         <View style={styles.inputWrapper}>
           <Ionicons name="lock-closed-outline" size={20} color="#7A9A9A" />
           <TextInput
-            placeholder="Password"
+            placeholder={t.common.password}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showpassword}
@@ -402,13 +309,15 @@ export default function CreateAccount() {
         <View style={styles.inputWrapper}>
           <Ionicons name="lock-closed-outline" size={20} color="#7A9A9A" />
           <TextInput
-            placeholder="Confirm password"
+            placeholder={t.createAccount.confirmPassword}
             value={confpassword}
             onChangeText={setconfPassword}
             secureTextEntry={!showconfpassword}
             style={styles.input}
           />
-          <TouchableOpacity onPress={() => setconfShowpassword(!showconfpassword)}>
+          <TouchableOpacity
+            onPress={() => setconfShowpassword(!showconfpassword)}
+          >
             <Ionicons
               name={showconfpassword ? "eye-off-outline" : "eye-outline"}
               size={20}
@@ -426,22 +335,23 @@ export default function CreateAccount() {
             <ActivityIndicator color="#fff" />
           ) : (
             <Text style={styles.buttonText}>
-              {logrole === "counselor" ? "Create Counselor Profile" : "Create Account"}
+              {logrole === "counselor"
+                ? t.createAccount.createCounselor
+                : t.createAccount.createAccount}
             </Text>
           )}
         </TouchableOpacity>
 
         <Text style={styles.bottomText}>
-          Already have an account?{" "}
+          {t.createAccount.haveAccount}{" "}
           <Text
             style={styles.loginText}
             onPress={() => router.push("/(auth)/Login/login")}
           >
-            Login
+            {t.common.login}
           </Text>
         </Text>
       </View>
     </ScrollView>
-   </>
   );
 }

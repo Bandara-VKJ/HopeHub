@@ -1,0 +1,51 @@
+import type { Translations } from "./en";
+
+export const si: Translations = {
+  common: {
+    error: "දෝෂයකි",
+    success: "සාර්ථකයි",
+    networkError: "ජාල දෝෂයකි",
+    user: "පරිශීලක",
+    counselor: "උපදේශක",
+    family: "පවුල",
+    email: "විද්‍යුත් තැපැල් ලිපිනය",
+    password: "මුරපදය",
+    login: "පිවිසෙන්න",
+  },
+
+  login: {
+    welcome: "නැවත සාදරයෙන් පිළිගනිමු",
+    userLogin: "පරිශීලක පිවිසුම",
+    counselorLogin: "උපදේශක පිවිසුම",
+    familyLogin: "පවුලේ සාමාජික පිවිසුම",
+    noAccount: "ගිණුමක් නොමැතිද?",
+    createNow: "දැන් සාදන්න",
+    enterCredentials: "කරුණාකර විද්‍යුත් තැපෑල සහ මුරපදය ඇතුළත් කරන්න",
+    loginFailed: "පිවිසීම අසාර්ථකයි",
+  },
+
+  createAccount: {
+    welcome: "සාදරයෙන් පිළිගනිමු",
+    accountDetails: "ගිණුම් විස්තර",
+    counselorDetails: "උපදේශක විස්තර",
+    firstName: "මුල් නම",
+    lastName: "අවසන් නම",
+    mobile: "ජංගම දුරකථන අංකය",
+    professionalInfo: "වෘත්තීය තොරතුරු",
+    titlePlaceholder: "පදවි නාමය උදා: සායනික මනෝවිද්‍යාඥ",
+    specialtyPlaceholder: "විශේෂඥතාව උදා: ඇබ්බැහිවීමෙන් සුවය ලැබීම",
+    experiencePlaceholder: "පළපුරුද්ද උදා: වසර 5ක පළපුරුද්ද",
+    availabilityPlaceholder: "ලබා ගත හැකි වේලාව",
+    confirmPassword: "මුරපදය තහවුරු කරන්න",
+    createAccount: "ගිණුම සාදන්න",
+    createCounselor: "උපදේශක පැතිකඩ සාදන්න",
+    haveAccount: "දැනටමත් ගිණුමක් තිබේද?",
+    fillBasic: "කරුණාකර මූලික ක්ෂේත්‍ර සියල්ල පුරවන්න",
+    passwordMismatch: "මුරපද නොගැලපේ",
+    passwordShort: "මුරපදය අවම වශයෙන් අක්ෂර 6ක් විය යුතුය",
+    fillCounselor: "කරුණාකර උපදේශක විස්තර සියල්ල පුරවන්න",
+    counselorCreated: "ගිණුම සාර්ථකව සාදන ලදී. කරුණාකර පිවිසෙන්න.",
+    userCreated: "පරිශීලක ගිණුම සාදන ලදී",
+    registrationFailed: "ලියාපදිංචිය අසාර්ථකයි",
+  },
+};
