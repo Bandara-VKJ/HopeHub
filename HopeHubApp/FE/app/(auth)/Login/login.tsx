@@ -7,8 +7,9 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  Modal,
 } from "react-native";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { loginStyles } from "./loginStyles";
 import { Ionicons } from "@expo/vector-icons";
@@ -40,6 +41,8 @@ export default function Login() {
   const [showpassword, setshowpassword] = useState(false);
   const [logrole, setLogrole] = useState<LoginRole>("user");
   const [loading, setLoading] = useState(false);
+  const [languageModalVisible, setLanguageModalVisible] = useState(true);
+  const [selectedLanguage, setSelectedLanguage] = useState<"en" | "si" | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -175,7 +178,79 @@ export default function Login() {
   };
 
  return (
-  <ScrollView
+  <>
+
+      <Modal
+      visible={languageModalVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setLanguageModalVisible(false)}
+    >
+      <View style={loginStyles.modalOverlay}>
+
+        <View style={loginStyles.languageModal}>
+
+          <Text style={loginStyles.modalTitle}>
+            Select Language
+          </Text>
+
+          <Text style={loginStyles.modalSubtitle}>
+            භාෂාව තෝරන්න
+          </Text>
+
+          {/* English */}
+          <TouchableOpacity
+            style={[
+              loginStyles.languageButton,
+              selectedLanguage === "en" &&
+                loginStyles.languageButtonSelected,
+            ]}
+            onPress={() => setSelectedLanguage("en")}
+          >
+            <Text style={loginStyles.languageText}>
+              English
+            </Text>
+          </TouchableOpacity>
+
+          {/* Sinhala */}
+          <TouchableOpacity
+            style={[
+              loginStyles.languageButton,
+              selectedLanguage === "si" &&
+                loginStyles.languageButtonSelected,
+            ]}
+            onPress={() => setSelectedLanguage("si")}
+          >
+            <Text style={loginStyles.languageText}>
+              සිංහල
+            </Text>
+          </TouchableOpacity>
+
+          {/* Continue */}
+          <TouchableOpacity
+            style={loginStyles.continueButton}
+            onPress={() => {
+              if (!selectedLanguage) {
+                Alert.alert(
+                  "Select Language",
+                  "Please select a language"
+                );
+                return;
+              }
+
+              setLanguageModalVisible(false);
+            }}
+          >
+            <Text style={loginStyles.continueButtonText}>
+              Continue
+            </Text>
+          </TouchableOpacity>
+
+        </View>
+
+      </View>
+    </Modal>
+   <ScrollView
     style={loginStyles.page}
     contentContainerStyle={loginStyles.pageContent}
     showsVerticalScrollIndicator={false}
@@ -343,5 +418,7 @@ export default function Login() {
       )}
     </View>
   </ScrollView>
+  </>
+ 
 );
 }

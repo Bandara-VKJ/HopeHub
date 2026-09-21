@@ -188,5 +188,68 @@ export const accountCreateStyles = StyleSheet.create({
     color: "#2CA6A4",
     fontWeight: "800",
   },
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+languageModal: {
+  width: "85%",
+  backgroundColor: "#FFFFFF",
+  borderRadius: 20,
+  padding: 25,
+  alignItems: "center",
+},
+
+modalTitle: {
+  fontSize: 24,
+  fontWeight: "bold",
+  color: "#234B4B",
+  marginBottom: 8,
+},
+
+modalSubtitle: {
+  fontSize: 16,
+  color: "#7A9A9A",
+  marginBottom: 25,
+},
+
+languageButton: {
+  width: "100%",
+  padding: 15,
+  borderWidth: 1,
+  borderColor: "#D5E2E2",
+  borderRadius: 12,
+  marginBottom: 12,
+  alignItems: "center",
+},
+
+languageButtonSelected: {
+  borderColor: "#4F8A8A",
+  backgroundColor: "#E8F4F4",
+},
+
+languageText: {
+  fontSize: 17,
+  color: "#234B4B",
+  fontWeight: "500",
+},
+
+continueButton: {
+  width: "100%",
+  padding: 15,
+  borderRadius: 12,
+  backgroundColor: "#4F8A8A",
+  alignItems: "center",
+  marginTop: 15,
+},
+
+continueButtonText: {
+  fontSize: 17,
+  fontWeight: "bold",
+  color: "#FFFFFF",
+},
 });
 export default {};
