@@ -194,7 +194,7 @@ export default function CreateAccount() {
             onPress={() => selectLanguage("en")}
           >
             <Text style={styles.languageText}>
-              🇬🇧 English
+              English
             </Text>
           </TouchableOpacity>
 
@@ -208,7 +208,7 @@ export default function CreateAccount() {
           onPress={() => selectLanguage("si")}
         >
           <Text style={styles.languageText}>
-            🇱🇰 සිංහල
+            සිංහල
           </Text>
         </TouchableOpacity>
 

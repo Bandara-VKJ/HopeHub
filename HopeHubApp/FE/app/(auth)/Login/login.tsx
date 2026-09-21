@@ -208,7 +208,7 @@ export default function Login() {
             onPress={() => setSelectedLanguage("en")}
           >
             <Text style={loginStyles.languageText}>
-              🇬🇧 English
+              English
             </Text>
           </TouchableOpacity>
 
@@ -222,7 +222,7 @@ export default function Login() {
             onPress={() => setSelectedLanguage("si")}
           >
             <Text style={loginStyles.languageText}>
-              🇱🇰 සිංහල
+              සිංහල
             </Text>
           </TouchableOpacity>
 
