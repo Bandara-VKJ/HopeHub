@@ -7,12 +7,21 @@ import { useEffect, useState } from 'react';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LanguageProvider } from '@/i18n/LanguageContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
 };
 
 export default function RootLayout() {
+  return (
+    <LanguageProvider>
+      <RootLayoutNav />
+    </LanguageProvider>
+  );
+}
+
+function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const [fontLoard] = useFonts({
     Kavoon: require('../assets/fonts/Kavoon-Regular.ttf'),
@@ -23,7 +32,7 @@ export default function RootLayout() {
    const [loading, setLoading] = useState(true);
    const [completed, setCompleted] = useState(false);
    const [checkingStatus, setCheckingStatus] = useState(true);
-   const [role, setRole] = useState<'user' | 'counselor' | null>(null);
+   const [role, setRole] = useState<'user' | 'counselor' | 'family' | null>(null);
    const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
   useEffect(() => {
@@ -34,7 +43,7 @@ export default function RootLayout() {
 
         if (storedUserId) {
           setUserId(storedUserId);
-          setRole(storedRole as 'user' | 'counselor');
+          setRole(storedRole as 'user' | 'counselor' | 'family');
         } else {
           setUserId(null);
           setRole(null);
@@ -90,6 +99,11 @@ export default function RootLayout() {
 
       if (role === 'counselor') {
         router.replace('/(counselor)/counselor');
+        return;
+      }
+
+      if (role === 'family') {
+        router.replace('/(family)/familyDash');
         return;
       }
 
