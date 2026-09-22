@@ -219,4 +219,22 @@ export const si: Translations = {
       expired: "කල් ඉකුත් වී ඇත",
     },
   },
+  profile: {
+  title: "මගේ පැතිකඩ",
+  subtitle: "ඔබේ පැතිකඩ තොරතුරු කළමනාකරණය කරන්න",
+  firstName: "මුල් නම",
+  lastName: "අවසන් නම",
+  firstNamePlaceholder: "මුල් නම ඇතුළත් කරන්න",
+  lastNamePlaceholder: "අවසන් නම ඇතුළත් කරන්න",
+  saveProfile: "පැතිකඩ සුරකින්න",
+  logout: "ගිණුමෙන් ඉවත් වන්න",
+
+  loading: "පැතිකඩ පූරණය වෙමින්...",
+  permissionDenied: "අවසරය ප්‍රතික්ෂේප කරන ලදී!",
+  error: "දෝෂයකි",
+  success: "සාර්ථකයි",
+  saveFailed: "සුරැකීම අසාර්ථක විය",
+  profileSaved: "පැතිකඩ සාර්ථකව සුරකින ලදී!",
+  networkError: "ජාල දෝෂයකි",
+}
 };

@@ -221,6 +221,24 @@ home: {
     expired: "Expired",
   },
 },
+profile: {
+  title: "My Profile",
+  subtitle: "Manage your profile information",
+  firstName: "First Name",
+  lastName: "Last Name",
+  firstNamePlaceholder: "Enter first name",
+  lastNamePlaceholder: "Enter last name",
+  saveProfile: "Save Profile",
+  logout: "Log out",
+
+  loading: "Loading Profile...",
+  permissionDenied: "Permission denied!",
+  error: "Error",
+  success: "Success",
+  saveFailed: "Save failed",
+  profileSaved: "Profile saved!",
+  networkError: "Network error",
+}
 };
 
 export type Translations = typeof en;
