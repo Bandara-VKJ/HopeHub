@@ -1,8 +1,5 @@
-// English is the source of truth. si.ts is typed against this file,
-// so TypeScript errors if a key is missing or misspelled in Sinhala.
-
 export const en = {
-  // Shared across many screens
+
   common: {
     error: "Error",
     success: "Success",
@@ -50,6 +47,118 @@ export const en = {
     userCreated: "User account created",
     registrationFailed: "Registration failed",
   },
+  questionnaire: {
+  sessionExpired: "Session expired.",
+  userIdMissing: "User ID missing",
+  failed: "Failed",
+  skipAll: "Skip all",
+  progress: (current: number, total: number) => `Question ${current} of ${total}`,
+  explain: "Explain the Problem",
+  hideExplain: "Hide Explanation",
+  yourAnswer: "Your answer",
+  defaultPlaceholder: "Type your answer or tap the mic...",
+  listening: "Listening... speak now",
+  back: "Back",
+  next: "Next",
+  finish: "Finish",
+  allSet: "All set!",
+  answered: (count: number, total: number) => `You answered ${count} of ${total} questions.`,
+  startJourney: "Let's Start Journey..!",
+  review: "Review my answers",
+
+  sections: {
+    lifestyle: "Lifestyle & Habits",
+    mental: "Mental Wellbeing",
+    social: "Social Energy",
+    personality: "Personality Traits",
+  },
+
+
+  options: ["Never", "Rarely", "Sometimes", "Often", "Very Often"],
+
+  questions: [
+    "How often do you consume alcohol?",
+    "How often do you use cannabis?",
+    "How often do you use cocaine?",
+    "How often do you use heroin?",
+    "How often do you use methamphetamine?",
+    "How often do you use nicotine (smoking/vaping)?",
+    "How often do you feel anxious or stressed?",
+    "Do you frequently feel emotionally unstable or worried?",
+    "Do you enjoy being in social gatherings frequently?",
+    "Do you feel energized when interacting with others?",
+    "Do you enjoy trying new and unusual experiences?",
+    "Are you open to taking risks or exploring new ideas?",
+    "Do you consider yourself cooperative and empathetic?",
+    "Do you often avoid conflicts with others?",
+    "Do you plan your tasks and follow routines?",
+    "Do you consider yourself disciplined and responsible?",
+    "Do you often act without thinking about consequences?",
+    "Do you make quick decisions without planning?",
+    "Do you enjoy thrilling or risky activities?",
+    "Do you seek excitement even if it involves danger?",
+  ],
+
+
+  details: {
+    6: {
+      explanation: "Stress or anxiety can include overthinking, constant worrying, panic feelings, racing thoughts, headaches, or difficulty sleeping.",
+      example: "Example: I overthink at night and feel nervous before exams.",
+    },
+    7: {
+      explanation: "Emotional instability may include mood swings, becoming upset easily, or feeling emotionally overwhelmed.",
+      example: "Example: My emotions change quickly and small problems affect me deeply.",
+    },
+    8: {
+      explanation: "This question checks whether you enjoy spending time with people or attending social gatherings.",
+      example: "Example: I enjoy spending time with friends and group activities.",
+    },
+    9: {
+      explanation: "Feeling energized around people means social interaction improves your mood and motivation.",
+      example: "Example: Talking with people makes me feel more active and motivated.",
+    },
+    10: {
+      explanation: "Trying new experiences includes exploring new hobbies, activities, or environments.",
+      example: "Example: I enjoy learning new things and trying different experiences.",
+    },
+    11: {
+      explanation: "Risk-taking may include making bold decisions or enjoying uncertain challenges.",
+      example: "Example: I like trying challenging things even if success is uncertain.",
+    },
+    12: {
+      explanation: "Being cooperative and empathetic means understanding and supporting other people emotionally.",
+      example: "Example: I try to understand others and help when they are struggling.",
+    },
+    13: {
+      explanation: "Avoiding conflict means trying to prevent arguments or uncomfortable situations.",
+      example: "Example: I prefer peaceful discussions instead of arguments.",
+    },
+    14: {
+      explanation: "Planning routines means organizing tasks, managing schedules, and preparing ahead.",
+      example: "Example: I make plans and schedules before starting work.",
+    },
+    15: {
+      explanation: "Discipline and responsibility include finishing tasks on time and staying focused on goals.",
+      example: "Example: I complete my responsibilities seriously and on time.",
+    },
+    16: {
+      explanation: "Acting without thinking may include impulsive decisions or emotional reactions.",
+      example: "Example: Sometimes I react quickly and regret it later.",
+    },
+    17: {
+      explanation: "Quick decisions without planning involve acting fast without fully considering consequences.",
+      example: "Example: I often decide things immediately without much thought.",
+    },
+    18: {
+      explanation: "Thrill-seeking behavior includes enjoying adventurous or risky activities.",
+      example: "Example: I enjoy exciting and adventurous experiences.",
+    },
+    19: {
+      explanation: "Seeking excitement despite danger means enjoying risky situations for excitement.",
+      example: "Example: I sometimes enjoy risky activities because they feel exciting.",
+    },
+  } as Record<number, { explanation: string; example: string }>,
+},
 };
 
 export type Translations = typeof en;
