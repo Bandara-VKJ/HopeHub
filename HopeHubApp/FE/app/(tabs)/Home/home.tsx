@@ -5,60 +5,26 @@ import { homeStyles } from "./homeStyles";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from "lottie-react-native";
 import { ngrokFetch } from "@/utill/ngrokFetch";
+import { useLanguage } from "@/i18n/LanguageContext";
 
+const LEVEL_ORDER = [
+  "Level 1 - No Risk",
+  "Level 2 - Very Low",
+  "Level 3 - Low",
+  "Level 4 - Moderate",
+  "Level 5 - High",
+  "Level 6 - Very High",
+  "Level 7 - Severe Addiction",
+];
 
-  const STATUS_STYLE: Record<string, { label: string; color: string }> = {
-    completed: { label: "Completed", color: "#17db1a" },
-    confirmed: { label: "Confirmed by Family", color: "#2CA6A4" },
-    pending: { label: "Pending", color: "#f09c00" },
-    rejected: { label: "Rejected", color: "#e26d36" },
-    expired: { label: "Expired", color: "#e0362e" },
-  };
+const LEVEL_COLORS = ["#17db1a", "#3ecf4a", "#8bd100", "#f09c00", "#e26d36", "#e0362e", "#b0021f"];
 
-const LEVEL_INFO: Record<string, { description: string; color: string }> = {
-    "Level 1 - No Risk": {
-      description: "No signs of risk detected. Keep up your daily habits.",
-      color: "#17db1a",
-    },
-    "Level 2 - Very Low": {
-      description: "You're doing well. Keep up with your daily tasks and check-ins.",
-      color: "#3ecf4a",
-     
-    },
-    "Level 3 - Low": {
-      description: "Low risk overall. Stay mindful of your habits and triggers.",
-      color: "#8bd100",
-      
-    },
-    "Level 4 - Moderate": {
-      description: "Stay alert to your triggers. Do not forget to contact your counselor every week.",
-      color: "#f09c00",
-    },
-    "Level 5 - High": {
-      description: "Elevated risk. Reach out to your counselor and stay close to your support system.",
-      color: "#e26d36",
-      
-    },
-    "Level 6 - Very High": {
-      description: "Stay connect with your counselor & connect your family member to help.",
-      color: "#e0362e",
-    
-    },
-    "Level 7 - Severe Addiction": {
-      description: "This needs immediate attention. Please contact your counselor right away.",
-      color: "#b0021f",
-     
-    },
-};
-
-const RISK_COLORS: Record<string, string> = {
-  "Level 1 - No Risk": "#17db1a",
-  "Level 2 - Very Low": "#3ecf4a",
-  "Level 3 - Low": "#8bd100",
-  "Level 4 - Moderate": "#f09c00",
-  "Level 5 - High": "#e26d36",
-  "Level 6 - Very High": "#e0362e",
-  "Level 7 - Severe Addiction": "#b0021f",
+const STATUS_COLORS: Record<string, string> = {
+  completed: "#17db1a",
+  confirmed: "#2CA6A4",
+  pending: "#f09c00",
+  rejected: "#e26d36",
+  expired: "#e0362e",
 };
 
 type Task = {
@@ -96,6 +62,13 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   counts: Record<string, number>;
   totalTasks: number;
   } | null>(null);
+  const { t } = useLanguage();
+  const home = t.home;
+
+  const levelIndex = LEVEL_ORDER.indexOf(level);
+  const levelColor = levelIndex >= 0 ? LEVEL_COLORS[levelIndex] : "#c96a00";
+  const levelInfo = levelIndex >= 0 ? home.levels[levelIndex] : null;
+  
 
   const resetInviteForm = () => {
     setFamilyName("");
@@ -145,13 +118,13 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
     loadData();
 
   }, []);
-  const getGreeting = () =>{
-    const hour = new Date().getHours();
 
-    if (hour < 12) return "Good morning 👋"
-    if (hour < 18) return "Good afternoon ☀️"
-    return "Good evening 🌙"
-  }
+  const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return home.greetingMorning;
+  if (hour < 18) return home.greetingAfternoon;
+  return home.greetingEvening;
+};
 
  const toggle = (id: string) =>
   setTasks((prev) =>
@@ -194,21 +167,18 @@ const getTasks = async () => {
 };
   const  handleSendInvite = async () => {
 
-    if(!familyName.trim())
-    {
-      Alert.alert("Missing name", "Please enter the family member's role.")
-      return
-    }
-    if(!familyEmail.trim())
-    {
-      Alert.alert("Invalid email", "Please enter a valid email address.")
-      return
-    }
-    if(!familyPhone.trim())
-    {
-      Alert.alert("Missing contact number", "Please enter a contact number.")
-      return
-    }
+   if (!familyName.trim()) {
+  Alert.alert(home.missingNameTitle, home.missingNameMsg);
+    return;
+  }
+  if (!familyEmail.trim()) {
+    Alert.alert(home.invalidEmailTitle, home.invalidEmailMsg);
+    return;
+  }
+  if (!familyPhone.trim()) {
+    Alert.alert(home.missingPhoneTitle, home.missingPhoneMsg);
+    return;
+  }
 
     setSubmitting(true)
     try {
@@ -230,18 +200,16 @@ const getTasks = async () => {
 
       const data = await res.json();
 
-      if(res.ok)
-      {
-        Alert.alert("Invite sent", `An invite was sent to ${familyEmail}.`)
-        resetInviteForm();
-      }
-      else{
-        Alert.alert("Error", data.error || "Could not send invite. Try again.")
-      }
+      if (res.ok) {
+      Alert.alert(home.inviteSentTitle, home.inviteSentMsg(familyEmail));
+      resetInviteForm();
+    } else {
+      Alert.alert(t.common.error, data.error || home.inviteFailed);
+    }
     } catch (error) {
-       console.log("Error sending invite:", error);
-      Alert.alert("Error", "Something went wrong. Please try again.");
-    } finally {
+      console.log("Error sending invite:", error);
+      Alert.alert(t.common.error, home.somethingWrong);
+    }finally {
       setSubmitting(false);
     }
   };
@@ -262,7 +230,7 @@ const getTasks = async () => {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert("Error", data.error || "Failed to update task");
+        Alert.alert(t.common.error, data.error || home.taskUpdateFailed);
         return;
       }
 
@@ -275,7 +243,7 @@ const getTasks = async () => {
       );
     } catch (error) {
       console.log("Mark complete error:", error);
-      Alert.alert("Error", "Failed to update task");
+      Alert.alert(t.common.error, home.taskUpdateFailed);
     } finally {
       setUpdatingId(null);
     }
@@ -356,15 +324,17 @@ const getTasks = async () => {
          <View style={homeStyles.headerCircleLarge} />
         <View style={homeStyles.headerCircleSmall} />
         <Text style={homeStyles.greeting}>{getGreeting()}</Text>
-        <Text style={homeStyles.name}>{loading ? "Welcome..." : `Welcome ,${firstName || "User"}`}</Text>
+       <Text style={homeStyles.name}>
+        {loading ? home.welcomeLoading : home.welcome(firstName || home.defaultUser)}
+      </Text>
 
         <View style={homeStyles.streakCard}>
           <View style={homeStyles.streakIconWrap}>
             <Ionicons name="ribbon" size={22} color="#fff" />
           </View>
           <View>
-            <Text style={homeStyles.streakLabel}>Sobriety Streak</Text>
-            <Text style={homeStyles.streakValue}>50 Days!</Text>
+            <Text style={homeStyles.streakLabel}>{home.sobrietyStreak}</Text>
+            <Text style={homeStyles.streakValue}>{home.streakDays(50)}</Text>
           </View>
         </View>
       </View>
@@ -375,56 +345,58 @@ const getTasks = async () => {
         <View
           style={[
             homeStyles.riskCard,
-            { backgroundColor: `${RISK_COLORS[level] ?? "#c96a00"}20`, borderLeftWidth: 4, borderLeftColor: RISK_COLORS[level] ?? "#c96a00" },
+            { backgroundColor: `${levelColor}20`, borderLeftWidth: 4, borderLeftColor: levelColor },
           ]}
         >
-          <View style={[homeStyles.riskIconWrap, { backgroundColor: `${RISK_COLORS[level] ?? "#c96a00"}30` }]}>
-            <Ionicons name="warning" size={22} color={RISK_COLORS[level] ?? "#c96a00"} />
+          <View style={[homeStyles.riskIconWrap, { backgroundColor: `${levelColor}30` }]}>
+            <Ionicons name="warning" size={22} color={levelColor} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={homeStyles.riskLevel}>RISK LEVEL</Text>
-            <Text style={[homeStyles.riskValue, { color: RISK_COLORS[level] ?? "#c96a00" }]}>{level || "Not set"}</Text>
-              {levelSource === "counselor" && (
-                <Text style={{ fontSize: 11, color: "#888" }}>Set by your counselor</Text>
-              )}
-              <Text style={homeStyles.riskSub}>
-                {LEVEL_INFO[level]?.description ?? "Level not set yet. contact counselor to see your risk analysis."}
-              </Text>
+            <Text style={homeStyles.riskLevel}>{home.riskLevelLabel}</Text>
+            <Text style={[homeStyles.riskValue, { color: levelColor }]}>
+              {levelInfo ? levelInfo.label : home.levelNotSet}
+            </Text>
+            {levelSource === "counselor" && (
+              <Text style={{ fontSize: 11, color: "#888" }}>{home.setByCounselor}</Text>
+            )}
+            <Text style={homeStyles.riskSub}>
+              {levelInfo?.description ?? home.levelNoData}
+            </Text>
           </View>
         </View>
         <View style={homeStyles.mailCard}>
           {/* Invite Banner */}
           <View style={homeStyles.inviteRow}>
-            <Text style={homeStyles.cardTitleText}>{!inviteFormOpen ? "Invite Family Member" : "Invite mail"}</Text>
+          <Text style={homeStyles.cardTitleText}>{home.inviteFamily}</Text>
 
             {!inviteFormOpen && (
             <TouchableOpacity style={homeStyles.inviteBtn}>
-              <Text style={homeStyles.inviteBtnText} onPress={() => setInviteFormOpen(true)}>Send</Text>
+             <Text style={homeStyles.inviteBtnText} onPress={() => setInviteFormOpen(true)}>{home.send}</Text>
             </TouchableOpacity>
             )}
           </View>
             {inviteFormOpen && (
               <View>
-                <Text>Role</Text>
+                <Text>{home.role}</Text>
                 <TextInput
                   style={homeStyles.input}
-                  placeholder="e.g. mother "
+                  placeholder={home.rolePlaceholder}
                   value= {familyName}
                   onChangeText={setFamilyName}
                 />
-                <Text>Email</Text>
+               <Text>{home.email}</Text>
                 <TextInput
                   style={homeStyles.input}
-                  placeholder="e.g. kamala@gmail.com"
+                  placeholder={home.emailPlaceholder}
                   value= {familyEmail}
                   onChangeText={setFamilyEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
                 />
-                <Text>Phone</Text>
+                <Text>{home.phone}</Text>
                 <TextInput
                   style={homeStyles.input}
-                  placeholder="e.g. 07x xxxxxxx"
+                  placeholder={home.phonePlaceholder}
                   value= {familyPhone}
                   onChangeText={setFamilyPhone}
                   keyboardType="phone-pad"
@@ -435,16 +407,14 @@ const getTasks = async () => {
                      onPress={resetInviteForm}
                      disabled={submitting}
                     >
-                      <Text style={homeStyles.cancelBtnText}>Cancel</Text>
+                      <Text style={homeStyles.cancelBtnText}>{home.cancel}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[homeStyles.submitBtn, submitting && { opacity: 0.6 }]}
                     onPress={handleSendInvite}
                     disabled={submitting}
                   >
-                    <Text>
-                      {submitting ? "Sending..." : "Send invite"}
-                    </Text>
+                    <Text>{submitting ? home.sending : home.sendInvite}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -456,20 +426,20 @@ const getTasks = async () => {
           <View style={homeStyles.cardTitle}>
             <Ionicons name="checkbox" size={20} color="#17db1a" />
             <Text style={homeStyles.cardTitleText}>
-              Daily Tasks
+              {home.dailyTasks}
             </Text>
           </View>
           <View style={homeStyles.badge}>
             <Text style={homeStyles.badgeText}>
-              {tasks.filter(t => t.status === "completed").length} / {tasks.length} Complete
+              {tasks.filter(t => t.status === "completed").length} / {tasks.length} {home.complete}
             </Text>
           </View>
         </View>
         {tasks.length === 0 ? (
 
-          <Text>
-            No tasks assigned for today
-          </Text>
+            <Text>
+              {home.noTasks}
+            </Text>
 
         ) : (
 
@@ -505,8 +475,9 @@ const getTasks = async () => {
         <Text>{task.description}</Text>
 
         {task.status === "completed" && (
+          
           <Text style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
-            Family review: {task.family_status}
+            {home.familyReview(task.family_status)}
           </Text>
         )}
       </View>
@@ -521,27 +492,27 @@ const getTasks = async () => {
         <View style={[homeStyles.cardHeader, { marginBottom: 16 }]}>
           <View style={homeStyles.cardTitle}>
             <Ionicons name="stats-chart" size={20} color="#2CA6A4" />
-            <Text style={homeStyles.cardTitleText}>Task Status Breakdown</Text>
+            <Text style={homeStyles.cardTitleText}>{home.taskBreakdown}</Text>
           </View>
         </View>
 
-        {!statusStats || statusStats.totalTasks === 0 ? (
-          <Text>No task data yet</Text>
-        ) : (
-          Object.entries(statusStats.percentages)
-            .filter(([, value]) => value > 0)
-            .map(([key, value]) => (
-              <View key={key} style={homeStyles.progressRow}>
-                <View style={homeStyles.progressMeta}>
-                  <Text style={homeStyles.progressLabel}>
-                    {STATUS_STYLE[key]?.label ?? key}
-                  </Text>
-                  <Text style={homeStyles.progressPct}>{value}%</Text>
-                </View>
-                <ProgressBar value={value} color={STATUS_STYLE[key]?.color ?? "#999"} />
+      {!statusStats || statusStats.totalTasks === 0 ? (
+        <Text>{home.noTaskData}</Text>
+      ) : (
+        Object.entries(statusStats.percentages)
+          .filter(([, value]) => value > 0)
+          .map(([key, value]) => (
+            <View key={key} style={homeStyles.progressRow}>
+              <View style={homeStyles.progressMeta}>
+                <Text style={homeStyles.progressLabel}>
+                  {home.statusLabels[key as keyof typeof home.statusLabels] ?? key}
+                </Text>
+                <Text style={homeStyles.progressPct}>{value}%</Text>
               </View>
-            ))
-        )}
+              <ProgressBar value={value} color={STATUS_COLORS[key] ?? "#999"} />
+            </View>
+          ))
+      )}
       </View>
       </View>
     </ScrollView>
