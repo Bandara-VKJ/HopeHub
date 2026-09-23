@@ -6,6 +6,7 @@ import { router } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { ngrokFetch } from '@/utill/ngrokFetch'
+import { useLanguage } from '@/i18n/LanguageContext';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -18,6 +19,8 @@ export default function Profile() {
   const [last, setLast] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { t } = useLanguage();
+  const profile = t.profile;
 
   useEffect(() => {
     const getUser = async () => {
@@ -60,7 +63,7 @@ export default function Profile() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      alert('Permission denied!');
+      alert(profile.permissionDenied);
       return;
     }
 
@@ -101,7 +104,7 @@ export default function Profile() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Save failed");
+        alert(data.message || profile.saveFailed);
         return;
       }
 
@@ -109,10 +112,10 @@ export default function Profile() {
         setPicture(data.profile.profilePic);
       }
 
-      alert("Profile saved!");
+      alert(profile.profileSaved);
     } catch (error) {
       console.log("Save error:", error);
-      alert("Network error");
+      alert(profile.networkError);
     } finally {
       setSaving(false);
     }
@@ -122,7 +125,9 @@ export default function Profile() {
     return (
       <View style={profileStyles.loadingContainer}>
         <ActivityIndicator size="large" color="#2CA6A4" />
-        <Text style={profileStyles.loadingText}>Loading Profile...</Text>
+        <Text style={profileStyles.loadingText}>
+          {profile.loading}
+        </Text>
       </View>
     );
   }
@@ -134,9 +139,14 @@ export default function Profile() {
     >
       <ScrollView contentContainerStyle={profileStyles.scrollContent}>
 
-        <Text style={profileStyles.title}>My Profile</Text>
-        <Text style={profileStyles.subtitle}></Text>
+        <Text style={profileStyles.title}>
+        {profile.title}
+      </Text>
 
+      <Text style={profileStyles.subtitle}>
+        {profile.subtitle}
+      </Text>
+      
         <TouchableOpacity onPress={pickImage} style={profileStyles.avatarWrapper} activeOpacity={0.85}>
           {picture ? (
             <Image
@@ -158,11 +168,11 @@ export default function Profile() {
         </TouchableOpacity>
 
         <View style={profileStyles.card}>
-          <Text style={profileStyles.label}>First Name</Text>
+          <Text style={profileStyles.label}>{profile.firstName}</Text>
           <View style={profileStyles.inputWrapper}>
             <Ionicons name="person-outline" size={18} color="#2CA6A4" style={profileStyles.inputIcon} />
             <TextInput
-              placeholder="Enter first name"
+              placeholder={profile.firstNamePlaceholder}
               placeholderTextColor="#A0AFAE"
               value={first}
               onChangeText={setFirst}
@@ -170,11 +180,11 @@ export default function Profile() {
             />
           </View>
 
-          <Text style={profileStyles.label}>Last Name</Text>
+          <Text style={profileStyles.label}>{profile.lastName}</Text>
           <View style={profileStyles.inputWrapper}>
             <Ionicons name="person-outline" size={18} color="#2CA6A4" style={profileStyles.inputIcon} />
             <TextInput
-              placeholder="Enter last name"
+              placeholder={profile.lastNamePlaceholder}
               placeholderTextColor="#A0AFAE"
               value={last}
               onChangeText={setLast}
@@ -193,7 +203,9 @@ export default function Profile() {
             ) : (
               <>
                 <Ionicons name="checkmark-circle-outline" size={18} color="#fff" style={{ marginRight: 6 }} />
-                <Text style={profileStyles.saveText}>Save Profile</Text>
+                <Text style={profileStyles.saveText}>
+                  {profile.saveProfile}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -208,7 +220,9 @@ export default function Profile() {
           activeOpacity={0.85}
         >
           <Ionicons name="log-out-outline" size={18} color="#2CA6A4" style={{ marginRight: 6 }} />
-          <Text style={profileStyles.logoutText}>Log out</Text>
+          <Text style={profileStyles.logoutText}>
+            {profile.logout}
+          </Text>
         </TouchableOpacity>
 
       </ScrollView>
