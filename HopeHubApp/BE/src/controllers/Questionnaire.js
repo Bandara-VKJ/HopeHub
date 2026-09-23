@@ -67,6 +67,7 @@ export const checkQuestionnaireStatus = async (req, res) => {
 
     res.status(200).json({
       completed: !!existing,
+      completedAt: existing ? existing.completedAt : null,
     });
   } catch (error) {
     res.status(500).json({ message: "Error checking status" });

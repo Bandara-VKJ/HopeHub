@@ -62,9 +62,10 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   counts: Record<string, number>;
   totalTasks: number;
   } | null>(null);
+  const [journeyDays, setJourneyDays] = useState(0);
+
   const { t } = useLanguage();
   const home = t.home;
-
   const levelIndex = LEVEL_ORDER.indexOf(level);
   const levelColor = levelIndex >= 0 ? LEVEL_COLORS[levelIndex] : "#c96a00";
   const levelInfo = levelIndex >= 0 ? home.levels[levelIndex] : null;
@@ -85,6 +86,15 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
         if (!userId) return;
 
+        const questionnaireRes = await ngrokFetch(
+        `${BASE_URL}/api/questionnaire/status/${userId}`
+        );
+
+        const questionnaireData = await questionnaireRes.json();
+
+        if (questionnaireRes.ok && questionnaireData.completedAt) {
+          setJourneyDays(calculateJourneyDays(questionnaireData.completedAt));
+        }
 
         // Get profile
        const res = await ngrokFetch(
@@ -309,6 +319,18 @@ const getTasks = async () => {
       console.log("Get task stats error:", error);
     }
   };
+
+  const calculateJourneyDays = (completedAt: string | Date) => {
+    const start = new Date(completedAt);
+    const today = new Date();
+
+    start.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return Math.floor(
+      (today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+    ) + 1;
+  };
   return (
     <ScrollView style={homeStyles.container} showsVerticalScrollIndicator={false}>
       
@@ -334,7 +356,7 @@ const getTasks = async () => {
           </View>
           <View>
             <Text style={homeStyles.streakLabel}>{home.sobrietyStreak}</Text>
-            <Text style={homeStyles.streakValue}>{home.streakDays(50)}</Text>
+            <Text style={homeStyles.streakValue}>{home.streakDays(journeyDays)}</Text>
           </View>
         </View>
       </View>
