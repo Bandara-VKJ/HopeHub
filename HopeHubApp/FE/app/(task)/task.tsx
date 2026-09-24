@@ -15,11 +15,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ngrokFetch } from "@/utill/ngrokFetch";
+import { WebView } from "react-native-webview";
 
 type TaskDraft = {
   id: string;
   title: string;
   description: string;
+  youtubeUrl: string;
 };
 
 type DayDraft = {
@@ -32,6 +34,7 @@ const makeEmptyTask = (): TaskDraft => ({
   id: Date.now().toString() + Math.random(),
   title: "",
   description: "",
+   youtubeUrl: "",
 });
 
 const makeEmptyDay = (): DayDraft => ({
@@ -84,7 +87,7 @@ export default function Tasks() {
   const updateTaskInDay = (
     dayId: string,
     taskId: string,
-    field: "title" | "description",
+    field: "title" | "description" | "youtubeUrl",
     value: string
   ) => {
     setDayDrafts((prev) =>
@@ -108,18 +111,83 @@ export default function Tasks() {
     return `${yyyy}-${mm}-${dd}`;
   };
 
+  const isValidYouTubeUrl = (url: string) => {
+  if (!url.trim()) return true;
+
+  try {
+    const parsedUrl = new URL(url.trim());
+
+    const hostname = parsedUrl.hostname.toLowerCase();
+
+    return (
+      hostname === "youtube.com" ||
+      hostname === "www.youtube.com" ||
+      hostname === "m.youtube.com" ||
+      hostname === "youtu.be" ||
+      hostname === "www.youtu.be"
+    );
+  } catch {
+    return false;
+  }
+ };
+  const getYouTubeVideoId = (url: string): string | null => {
+    try {
+      const parsedUrl = new URL(url.trim());
+      const hostname = parsedUrl.hostname.toLowerCase();
+
+      if (
+        hostname === "youtube.com" ||
+        hostname === "www.youtube.com" ||
+        hostname === "m.youtube.com"
+      ) {
+        return parsedUrl.searchParams.get("v");
+      }
+
+      // youtu.be/VIDEO_ID
+      if (
+        hostname === "youtu.be" ||
+        hostname === "www.youtu.be"
+      ) {
+        return parsedUrl.pathname.split("/")[1] || null;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
   const addTasks = async () => {
 
   for (const day of dayDrafts) {
-    if (!day.date) {
-      Alert.alert("Missing date", "Please pick a date for every day added.");
+     if (!day.date) {
+    Alert.alert("Missing date", "Please pick a date for every day added.");
+    return;
+  }
+
+  const hasTitledTask = day.tasks.some(
+    (t) => t.title.trim().length > 0
+  );
+
+  if (!hasTitledTask) {
+    Alert.alert(
+      "Missing tasks",
+      `Add at least one task for ${formatDate(day.date)}.`
+    );
+    return;
+  }
+
+  for (const task of day.tasks) {
+    if (
+      task.youtubeUrl.trim() &&
+      !isValidYouTubeUrl(task.youtubeUrl)
+    ) {
+      Alert.alert(
+        "Invalid YouTube link",
+        `Please enter a valid YouTube link for "${task.title || "this task"}".`
+      );
       return;
     }
-    const hasTitledTask = day.tasks.some((t) => t.title.trim().length > 0);
-    if (!hasTitledTask) {
-      Alert.alert("Missing tasks", `Add at least one task for ${formatDate(day.date)}.`);
-      return;
-    }
+  }
   }
 
   if (!patientId) {
@@ -134,7 +202,7 @@ export default function Tasks() {
       const days = dayDrafts.map((d) => ({
         date: formatDate(d.date as Date),
         tasks: d.tasks
-          .map((t) => ({ title: t.title.trim(), description: t.description.trim() }))
+          .map((t) => ({ title: t.title.trim(), description: t.description.trim(), youtubeUrl: t.youtubeUrl.trim(), }))
           .filter((t) => t.title.length > 0),
       }));
    
@@ -316,6 +384,48 @@ export default function Tasks() {
                   marginTop: 8,
                 }}
               />
+              <TextInput
+                placeholder="YouTube link (optional)"
+                placeholderTextColor="#999"
+                value={task.youtubeUrl}
+                onChangeText={(v) =>
+                  updateTaskInDay(day.id, task.id, "youtubeUrl", v)
+                }
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                style={{
+                  borderWidth: 1,
+                  borderColor: "#e0e0e0",
+                  borderRadius: 8,
+                  padding: 8,
+                  marginTop: 8,
+                }}
+              />
+
+              {isValidYouTubeUrl(task.youtubeUrl) &&
+                getYouTubeVideoId(task.youtubeUrl) && (
+                  <View
+                    style={{
+                      height: 200,
+                      marginTop: 10,
+                      borderRadius: 10,
+                      overflow: "hidden",
+                      backgroundColor: "#000",
+                    }}
+                  >
+                    <WebView
+                      source={{
+                        uri: `https://www.youtube.com/embed/${getYouTubeVideoId(
+                          task.youtubeUrl
+                        )}`,
+                      }}
+                      allowsFullscreenVideo
+                      javaScriptEnabled
+                      domStorageEnabled
+                    />
+                  </View>
+                )}
             </View>
           ))}
 
