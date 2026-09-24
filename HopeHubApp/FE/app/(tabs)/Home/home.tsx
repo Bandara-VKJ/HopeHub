@@ -363,7 +363,6 @@ const getTasks = async () => {
 
       <View style={homeStyles.content}>
         
-        {/* Risk Banner */}
         <View
           style={[
             homeStyles.riskCard,
