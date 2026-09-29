@@ -16,6 +16,9 @@ const taskSchema = new mongoose.Schema({
     description: {
         type: String,
     },
+    youtubeUrl: {
+        type: String,
+    },
     date: {
         type: String,
         required: true
