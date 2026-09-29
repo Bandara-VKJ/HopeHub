@@ -1,5 +1,3 @@
-//lifebuildStyles.js
-
 import { StyleSheet } from "react-native";
 
 export const lifeBuildStyles = StyleSheet.create({
@@ -9,21 +7,18 @@ export const lifeBuildStyles = StyleSheet.create({
   },
 
   /* ================= HEADER ================= */
-
   header: {
     position: "relative",
-    minHeight: 230,
+    minHeight: 160,
     backgroundColor: "#2CA6A4",
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 38,
+    paddingBottom: 22,
     paddingHorizontal: 24,
     overflow: "hidden",
   },
-
   headerContent: {
     width: "75%",
   },
-
   headerCircleLarge: {
     position: "absolute",
     top: -50,
@@ -33,7 +28,6 @@ export const lifeBuildStyles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 90,
   },
-
   headerCircleSmall: {
     position: "absolute",
     top: 45,
@@ -43,7 +37,6 @@ export const lifeBuildStyles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 45,
   },
-
   headerSmallText: {
     color: "rgba(255,255,255,0.75)",
     fontSize: 11,
@@ -51,20 +44,25 @@ export const lifeBuildStyles = StyleSheet.create({
     letterSpacing: 1.2,
     marginBottom: 5,
   },
-
   headerTitle: {
     color: "#fff",
     fontSize: 30,
     fontWeight: "700",
     marginBottom: 8,
   },
-
   headerDescription: {
     color: "rgba(255,255,255,0.85)",
     fontSize: 13,
     lineHeight: 20,
   },
-
+  headerImage: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    width: "66%",
+    height: "100%",
+    opacity: 1,
+  },
   headerIcon: {
     position: "absolute",
     right: 30,
@@ -78,7 +76,6 @@ export const lifeBuildStyles = StyleSheet.create({
   },
 
   /* ================= CONTENT ================= */
-
   content: {
     padding: 16,
     gap: 14,
@@ -91,13 +88,8 @@ export const lifeBuildStyles = StyleSheet.create({
     padding: 18,
     borderWidth: 1,
     borderColor: "#e0f0ef",
-
     shadowColor: "#2CA6A4",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 2,
@@ -121,8 +113,264 @@ export const lifeBuildStyles = StyleSheet.create({
     color: "#1a2e2e",
   },
 
-  /* ================= START ASSESSMENT ================= */
+  /* ================= START SCREEN - NEW LAYOUT ================= */
+  welcomeSection: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  welcomeTitle: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#1a2e2e",
+    marginBottom: 6,
+  },
+  welcomeHighlight: {
+    color: "#2CA6A4",
+  },
+  welcomeSubtitle: {
+    fontSize: 14,
+    color: "#718181",
+    lineHeight: 21,
+    marginBottom: 4,
+  },
 
+  /* Main Start Card */
+  startMainCard: {
+    backgroundColor: "#fff",
+    borderRadius: 22,
+    padding: 22,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+    shadowColor: "#2CA6A4",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 3,
+    minHeight: 190,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    overflow: "hidden",
+    position: "relative",
+  },
+  startCenterContent: {
+    flex: 1,
+    alignItems: "center",
+    zIndex: 2,
+  },
+  startLeftImage: {
+    width: 180,
+    height: 150,
+    marginLeft: 4,
+    zIndex: 1,
+  },
+  startRightImage: {
+    width: 200,
+    height: 150,
+    marginRight: 4,
+    zIndex: 1,
+  },
+  startIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#e1f5f4",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  startMainTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1a2e2e",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  startMainDescription: {
+    fontSize: 13,
+    color: "#718181",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 20,
+    paddingHorizontal: 8,
+  },
+  startButton: {
+    backgroundColor: "#2CA6A4",
+    borderRadius: 14,
+    paddingVertical: 15,
+    paddingHorizontal: 28,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    width: "100%",
+  },
+  startButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+
+  /* 2x2 Step Grid */
+  stepsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginTop: 16,
+    gap: 12,
+  },
+  stepCard: {
+    width: "47.5%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+    shadowColor: "#2CA6A4",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    position: "relative",
+    minHeight: 112,
+    overflow: "hidden",
+    paddingRight: 150,
+  },
+  stepImage: {
+    position: "absolute",
+    right: 12,
+    bottom: 6,
+    width: 125,
+    height: 100,
+    zIndex: 1,
+  },
+  stepCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  stepNumberBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#e1f5f4",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  stepNumberText: {
+    color: "#2CA6A4",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  stepIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#f0fafa",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  stepCardTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1a2e2e",
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+  stepCardDescription: {
+    fontSize: 11,
+    color: "#718181",
+    lineHeight: 15,
+    marginBottom: 10,
+  },
+  stepCardArrow: {
+    alignSelf: "flex-end",
+  },
+
+  /* Encouragement Banner */
+  encourageBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#e8f7f6",
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "#d0efed",
+  },
+  encourageIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#d4f0ee",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
+  },
+  encourageTextWrap: {
+    flex: 1,
+  },
+  encourageTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1a2e2e",
+    marginBottom: 3,
+  },
+  encourageSubtitle: {
+    fontSize: 12,
+    color: "#5a7a7a",
+    lineHeight: 17,
+  },
+
+  /* Feature Row */
+  featureRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    gap: 10,
+  },
+  featureItem: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+  },
+  featureIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#e1f5f4",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  featureTitle: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#1a2e2e",
+    textAlign: "center",
+    marginBottom: 3,
+  },
+  featureDescription: {
+    fontSize: 10,
+    color: "#718181",
+    textAlign: "center",
+    lineHeight: 14,
+  },
+
+  /* ================= START ASSESSMENT (legacy kept for safety) ================= */
   startIcon: {
     width: 80,
     height: 80,
@@ -133,7 +381,6 @@ export const lifeBuildStyles = StyleSheet.create({
     alignSelf: "center",
     marginBottom: 16,
   },
-
   startTitle: {
     fontSize: 20,
     fontWeight: "700",
@@ -141,7 +388,6 @@ export const lifeBuildStyles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 10,
   },
-
   startDescription: {
     fontSize: 13,
     color: "#718181",
@@ -150,25 +396,7 @@ export const lifeBuildStyles = StyleSheet.create({
     marginBottom: 22,
   },
 
-  startButton: {
-    backgroundColor: "#2CA6A4",
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  startButtonText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-
-  /* ================= HOW LIFE BUILD WORKS ================= */
-
+  /* ================= HOW IT WORKS (legacy) ================= */
   howItWorksCard: {
     backgroundColor: "#ffffff",
     borderRadius: 18,
@@ -176,7 +404,6 @@ export const lifeBuildStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e0f0ef",
   },
-
   howItWorksDescription: {
     fontSize: 12,
     color: "#718181",
@@ -184,79 +411,187 @@ export const lifeBuildStyles = StyleSheet.create({
     marginTop: -4,
     marginBottom: 18,
   },
-
-  /* ================= QUESTIONNAIRE ================= */
-
-  progressContainer: {
+  stepRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: 18,
   },
-
-  progressText: {
-    fontSize: 12,
+  stepNumber: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#e1f5f4",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  stepContent: {
+    flex: 1,
+  },
+  stepTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1a2e2e",
+    marginBottom: 3,
+  },
+  stepDescription: {
+    fontSize: 11,
     color: "#718181",
+    lineHeight: 16,
+  },
+
+  /* ================= QUESTIONNAIRE ================= */
+  screenPadding: {
+    padding: 16,
+    paddingTop: 60,
+    paddingBottom: 100,
+  },
+  sectionLabel: {
+    color: "#2CA6A4",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  screenTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1a2e2e",
     marginBottom: 8,
+  },
+  screenSubtitle: {
+    fontSize: 13,
+    color: "#718181",
+    lineHeight: 20,
+    marginBottom: 20,
   },
 
   progressTrack: {
     height: 8,
-    backgroundColor: "#e6eeee",
+    backgroundColor: "#e1f5f4",
     borderRadius: 10,
     overflow: "hidden",
+    marginBottom: 8,
   },
-
   progressFill: {
     height: "100%",
     backgroundColor: "#2CA6A4",
     borderRadius: 10,
   },
-
-  questionNumber: {
+  progressText: {
+    textAlign: "right",
+    color: "#718181",
     fontSize: 12,
+    marginBottom: 20,
+  },
+
+  questionCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+  },
+  questionSection: {
     color: "#2CA6A4",
+    fontSize: 12,
     fontWeight: "700",
     marginBottom: 8,
   },
-
   questionText: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "700",
     color: "#1a2e2e",
-    lineHeight: 26,
-    marginBottom: 20,
+    marginBottom: 18,
+    lineHeight: 25,
+  },
+  questionMeta: {
+    color: "#718181",
+    fontSize: 12,
+    marginBottom: 12,
+  },
+
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#d5eeec",
+    backgroundColor: "#f7fefe",
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 14,
+    fontSize: 14,
+    color: "#1a2e2e",
   },
 
   optionButton: {
     borderWidth: 1,
     borderColor: "#d5eeec",
     backgroundColor: "#f7fefe",
-    borderRadius: 14,
-    padding: 15,
+    borderRadius: 12,
+    padding: 14,
     marginBottom: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-
   optionButtonSelected: {
-    backgroundColor: "#e1f5f4",
     borderColor: "#2CA6A4",
-    borderWidth: 2,
+    backgroundColor: "#e1f5f4",
   },
-
   optionText: {
-    fontSize: 14,
-    color: "#405050",
-  },
-
-  optionTextSelected: {
     color: "#1a2e2e",
+    fontSize: 14,
+    fontWeight: "400",
+    flex: 1,
+  },
+  optionTextSelected: {
+    color: "#1a7775",
     fontWeight: "700",
   },
 
-  navigationButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 12,
-    gap: 12,
+  maxSelectHint: {
+    fontSize: 12,
+    color: "#718181",
+    marginBottom: 12,
   },
 
+  skillLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1a2e2e",
+    marginBottom: 10,
+  },
+  skillRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 18,
+  },
+  skillButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f7fefe",
+    borderWidth: 1,
+    borderColor: "#d5eeec",
+  },
+  skillButtonSelected: {
+    backgroundColor: "#2CA6A4",
+    borderColor: "#2CA6A4",
+  },
+  skillButtonText: {
+    color: "#1a2e2e",
+    fontWeight: "700",
+  },
+  skillButtonTextSelected: {
+    color: "#fff",
+  },
+
+  navigationRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 20,
+  },
   previousButton: {
     flex: 1,
     borderWidth: 1,
@@ -266,13 +601,11 @@ export const lifeBuildStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   previousButtonText: {
     color: "#2CA6A4",
     fontSize: 14,
     fontWeight: "700",
   },
-
   nextButton: {
     flex: 1,
     backgroundColor: "#2CA6A4",
@@ -281,7 +614,9 @@ export const lifeBuildStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
+  nextButtonSuccess: {
+    backgroundColor: "#17a673",
+  },
   nextButtonText: {
     color: "#ffffff",
     fontSize: 14,
@@ -289,12 +624,10 @@ export const lifeBuildStyles = StyleSheet.create({
   },
 
   /* ================= SCORE ================= */
-
   scoreContainer: {
     alignItems: "center",
     marginVertical: 12,
   },
-
   scoreCircle: {
     width: 145,
     height: 145,
@@ -305,19 +638,16 @@ export const lifeBuildStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
   scoreText: {
     fontSize: 34,
     fontWeight: "700",
     color: "#1a2e2e",
   },
-
   scoreLabel: {
     fontSize: 11,
     color: "#678080",
     marginTop: 2,
   },
-
   scoreProgressTrack: {
     height: 9,
     borderRadius: 10,
@@ -325,14 +655,12 @@ export const lifeBuildStyles = StyleSheet.create({
     marginTop: 10,
     backgroundColor: "#e6eeee",
   },
-
   scoreProgressFill: {
     height: "100%",
     borderRadius: 10,
   },
 
   /* ================= STATUS ================= */
-
   statusBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -342,13 +670,11 @@ export const lifeBuildStyles = StyleSheet.create({
     borderRadius: 14,
     borderLeftWidth: 4,
   },
-
   statusTitle: {
     fontSize: 14,
     fontWeight: "700",
     marginBottom: 3,
   },
-
   statusDescription: {
     fontSize: 11,
     color: "#657575",
@@ -356,14 +682,12 @@ export const lifeBuildStyles = StyleSheet.create({
   },
 
   /* ================= CAREERS ================= */
-
   sectionDescription: {
     fontSize: 12,
     color: "#687878",
     lineHeight: 18,
     marginBottom: 14,
   },
-
   careerCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -374,7 +698,6 @@ export const lifeBuildStyles = StyleSheet.create({
     padding: 13,
     marginBottom: 10,
   },
-
   careerIcon: {
     width: 45,
     height: 45,
@@ -384,18 +707,15 @@ export const lifeBuildStyles = StyleSheet.create({
     alignItems: "center",
     marginRight: 12,
   },
-
   careerContent: {
     flex: 1,
   },
-
   careerTitle: {
     fontSize: 14,
     fontWeight: "700",
     color: "#1a2e2e",
     marginBottom: 3,
   },
-
   careerDescription: {
     fontSize: 11,
     color: "#718181",
@@ -403,7 +723,6 @@ export const lifeBuildStyles = StyleSheet.create({
   },
 
   /* ================= SUPPORT ================= */
-
   supportCard: {
     backgroundColor: "#fff7f7",
     borderRadius: 18,
@@ -412,7 +731,6 @@ export const lifeBuildStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ffd6d6",
   },
-
   supportIcon: {
     width: 60,
     height: 60,
@@ -422,14 +740,12 @@ export const lifeBuildStyles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
-
   supportTitle: {
     fontSize: 17,
     fontWeight: "700",
     color: "#b02a2a",
     marginBottom: 7,
   },
-
   supportDescription: {
     fontSize: 12,
     color: "#7d6060",
@@ -437,42 +753,169 @@ export const lifeBuildStyles = StyleSheet.create({
     lineHeight: 19,
   },
 
-  /* ================= HOW IT WORKS ================= */
-
-  stepRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 18,
+  /* Restart button */
+  restartButton: {
+    borderWidth: 1,
+    borderColor: "#2CA6A4",
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  restartButtonText: {
+    color: "#2CA6A4",
+    fontSize: 14,
+    fontWeight: "700",
   },
 
-  stepNumber: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+  /* ================= RESULT SCREEN (new layout) ================= */
+  resultScoreCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+    shadowColor: "#2CA6A4",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  resultScoreHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  resultScoreHeaderText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1a2e2e",
+  },
+  resultScoreBody: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 16,
+  },
+  resultCircleWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  resultCircleOuter: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 8,
+    borderColor: "#2CA6A4",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#e8f7f6",
+  },
+  resultCircleInner: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  resultScoreValue: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1a2e2e",
+  },
+  resultScoreLabel: {
+    fontSize: 11,
+    color: "#678080",
+    marginTop: 2,
+  },
+  resultStatusBox: {
+    flex: 1,
+    borderRadius: 14,
+    padding: 14,
+  },
+  resultStatusIconRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 6,
+  },
+  resultStatusTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  resultStatusDesc: {
+    fontSize: 12,
+    color: "#657575",
+    lineHeight: 17,
+  },
+  resultProgressTrack: {
+    height: 6,
+    borderRadius: 6,
+    backgroundColor: "#e8f0f0",
+    overflow: "hidden",
+  },
+  resultProgressFill: {
+    height: "100%",
+    borderRadius: 6,
+  },
+
+  /* Career list on result */
+  resultCareerCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+    shadowColor: "#2CA6A4",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  resultCareerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  resultCareerHeaderText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1a2e2e",
+  },
+  resultCareerDesc: {
+    fontSize: 12,
+    color: "#687878",
+    lineHeight: 18,
+    marginBottom: 14,
+  },
+  resultCareerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f7fefe",
+    borderWidth: 1,
+    borderColor: "#d5eeec",
+    borderRadius: 14,
+    padding: 13,
+    marginBottom: 10,
+  },
+  resultCareerIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     backgroundColor: "#e1f5f4",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
-
-  stepNumberText: {
-    color: "#2CA6A4",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-
-  stepContent: {
+  resultCareerContent: {
     flex: 1,
   },
-
-  stepTitle: {
-    fontSize: 13,
+  resultCareerTitle: {
+    fontSize: 14,
     fontWeight: "700",
     color: "#1a2e2e",
     marginBottom: 3,
   },
-
-  stepDescription: {
+  resultCareerText: {
     fontSize: 11,
     color: "#718181",
     lineHeight: 16,

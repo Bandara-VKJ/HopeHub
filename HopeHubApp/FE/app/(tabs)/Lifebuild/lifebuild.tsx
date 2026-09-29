@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Image,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -75,28 +76,15 @@ const CAREER_PATHS: Career[] = [
 
 /* =====================================================
    PROFILE QUESTIONS
-   QUESTIONS 1 - 16
-
-   These questions are used for:
-   - Personal background
-   - Skills
-   - Interests
-   - Career recommendation
-
-   They are NOT directly used for the
-   Recovery Safety Score.
 ===================================================== */
 
 const PROFILE_QUESTIONS: ProfileQuestion[] = [
-  /* ================= SECTION A ================= */
-
   {
     id: "age",
     question: "What is your age?",
     type: "number",
     section: "Demographic Information",
   },
-
   {
     id: "gender",
     question: "What is your gender?",
@@ -104,7 +92,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
     section: "Demographic Information",
     options: ["Male", "Female", "Prefer not to say"],
   },
-
   {
     id: "education",
     question: "What is your education level?",
@@ -118,23 +105,18 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Degree or higher",
     ],
   },
-
-  /* ================= SECTION B ================= */
-
   {
     id: "substance",
     question: "What type of substance did you previously use?",
     type: "text",
     section: "Substance Use Background",
   },
-
   {
     id: "firstUseAge",
     question: "At what age did you first use drugs?",
     type: "number",
     section: "Substance Use Background",
   },
-
   {
     id: "substanceDuration",
     question: "What was the duration of substance use?",
@@ -150,7 +132,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Other",
     ],
   },
-
   {
     id: "treatmentReferral",
     question: "How were you referred for treatment?",
@@ -162,7 +143,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Self-referred",
     ],
   },
-
   {
     id: "receivedTreatment",
     question: "What treatment have you received?",
@@ -175,9 +155,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Physical Activities",
     ],
   },
-
-  /* ================= SECTION C ================= */
-
   {
     id: "stressFrequency",
     question: "How often do you experience stress?",
@@ -185,7 +162,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
     section: "Psychological & Environmental Factors",
     options: ["Never", "Rarely", "Sometimes", "Often", "Always"],
   },
-
   {
     id: "emotionalTriggers",
     question: "How much do emotional triggers affect you?",
@@ -198,7 +174,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Significantly",
     ],
   },
-
   {
     id: "recoveryFactors",
     question: "Which factors affect your recovery?",
@@ -216,16 +191,12 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Others",
     ],
   },
-
-  /* ================= SECTION D ================= */
-
   {
     id: "skills",
     question: "Rate your confidence in each skill.",
     type: "skills",
     section: "Skills, Interests & Reintegration",
   },
-
   {
     id: "jobInterest",
     question:
@@ -248,7 +219,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Working outdoors",
     ],
   },
-
   {
     id: "willingToLearn",
     question: "Are you willing to learn new skills?",
@@ -256,7 +226,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
     section: "Skills, Interests & Reintegration",
     options: ["Yes", "No"],
   },
-
   {
     id: "supportNeeded",
     question: "What type of support do you need?",
@@ -270,7 +239,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Other",
     ],
   },
-
   {
     id: "recoveryStatus",
     question: "What is your current recovery status?",
@@ -297,14 +265,9 @@ const SKILLS = [
 
 /* =====================================================
    RECOVERY SAFETY QUESTIONS
-   EXACTLY 25 QUESTIONS
-
-   5 Sections × 5 Questions
 ===================================================== */
 
 const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
-  /* ================= SECTION A ================= */
-
   {
     id: 1,
     section: "Recovery Self-Efficacy",
@@ -314,14 +277,12 @@ const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
   {
     id: 2,
     section: "Recovery Self-Efficacy",
-    question:
-      "I can control my urges without using drugs.",
+    question: "I can control my urges without using drugs.",
   },
   {
     id: 3,
     section: "Recovery Self-Efficacy",
-    question:
-      "I believe I can continue my recovery successfully.",
+    question: "I believe I can continue my recovery successfully.",
   },
   {
     id: 4,
@@ -335,59 +296,45 @@ const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
     question:
       "I believe I can overcome difficult situations without returning to substance use.",
   },
-
-  /* ================= SECTION B ================= */
-
   {
     id: 6,
     section: "Emotional Stability",
-    question:
-      "I can manage my emotions in healthy ways.",
+    question: "I can manage my emotions in healthy ways.",
   },
   {
     id: 7,
     section: "Emotional Stability",
-    question:
-      "I usually remain calm when facing problems.",
+    question: "I usually remain calm when facing problems.",
   },
   {
     id: 8,
     section: "Emotional Stability",
-    question:
-      "I feel hopeful about my future.",
+    question: "I feel hopeful about my future.",
   },
   {
     id: 9,
     section: "Emotional Stability",
-    question:
-      "I rarely feel overwhelmed by negative emotions.",
+    question: "I rarely feel overwhelmed by negative emotions.",
   },
   {
     id: 10,
     section: "Emotional Stability",
-    question:
-      "I believe I have control over my life.",
+    question: "I believe I have control over my life.",
   },
-
-  /* ================= SECTION C ================= */
-
   {
     id: 11,
     section: "Lifestyle Stability",
-    question:
-      "I maintain a regular daily routine.",
+    question: "I maintain a regular daily routine.",
   },
   {
     id: 12,
     section: "Lifestyle Stability",
-    question:
-      "I get enough sleep most nights.",
+    question: "I get enough sleep most nights.",
   },
   {
     id: 13,
     section: "Lifestyle Stability",
-    question:
-      "I participate in healthy daily activities.",
+    question: "I participate in healthy daily activities.",
   },
   {
     id: 14,
@@ -398,17 +345,12 @@ const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
   {
     id: 15,
     section: "Lifestyle Stability",
-    question:
-      "I spend my free time in productive activities.",
+    question: "I spend my free time in productive activities.",
   },
-
-  /* ================= SECTION D ================= */
-
   {
     id: 16,
     section: "Social Support",
-    question:
-      "My family supports my recovery.",
+    question: "My family supports my recovery.",
   },
   {
     id: 17,
@@ -419,14 +361,12 @@ const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
   {
     id: 18,
     section: "Social Support",
-    question:
-      "I know where to seek help if I need support.",
+    question: "I know where to seek help if I need support.",
   },
   {
     id: 19,
     section: "Social Support",
-    question:
-      "I feel accepted by people around me.",
+    question: "I feel accepted by people around me.",
   },
   {
     id: 20,
@@ -434,32 +374,25 @@ const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
     question:
       "I have someone I trust to discuss my problems.",
   },
-
-  /* ================= SECTION E ================= */
-
   {
     id: 21,
     section: "Career Readiness",
-    question:
-      "I believe I can perform well in a job.",
+    question: "I believe I can perform well in a job.",
   },
   {
     id: 22,
     section: "Career Readiness",
-    question:
-      "I enjoy learning new skills.",
+    question: "I enjoy learning new skills.",
   },
   {
     id: 23,
     section: "Career Readiness",
-    question:
-      "I can work responsibly with others.",
+    question: "I can work responsibly with others.",
   },
   {
     id: 24,
     section: "Career Readiness",
-    question:
-      "I am willing to attend vocational training.",
+    question: "I am willing to attend vocational training.",
   },
   {
     id: 25,
@@ -474,26 +407,11 @@ const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
 ===================================================== */
 
 const ANSWER_OPTIONS = [
-  {
-    label: "Strongly Disagree",
-    value: 1,
-  },
-  {
-    label: "Disagree",
-    value: 2,
-  },
-  {
-    label: "Neutral",
-    value: 3,
-  },
-  {
-    label: "Agree",
-    value: 4,
-  },
-  {
-    label: "Strongly Agree",
-    value: 5,
-  },
+  { label: "Strongly Disagree", value: 1 },
+  { label: "Disagree", value: 2 },
+  { label: "Neutral", value: 3 },
+  { label: "Agree", value: 4 },
+  { label: "Strongly Agree", value: 5 },
 ];
 
 /* =====================================================
@@ -501,84 +419,37 @@ const ANSWER_OPTIONS = [
 ===================================================== */
 
 export default function LifeBuildScreen() {
-  /*
-    start
-    profile
-    assessment
-    result
-  */
-
   const [screen, setScreen] = useState<
     "start" | "profile" | "assessment" | "result"
   >("start");
 
-  const [profileIndex, setProfileIndex] =
-    useState(0);
+  const [profileIndex, setProfileIndex] = useState(0);
+  const [questionIndex, setQuestionIndex] = useState(0);
 
-  const [questionIndex, setQuestionIndex] =
-    useState(0);
+  const [profileAnswers, setProfileAnswers] = useState<
+    Record<string, string>
+  >({});
+  const [multiAnswers, setMultiAnswers] = useState<
+    Record<string, string[]>
+  >({});
+  const [skillAnswers, setSkillAnswers] = useState<
+    Record<string, number>
+  >({});
+  const [recoveryAnswers, setRecoveryAnswers] = useState<
+    Record<number, number>
+  >({});
+  const [safetyScore, setSafetyScore] = useState(0);
 
-  /*
-    Normal single answers
-  */
-
-  const [profileAnswers, setProfileAnswers] =
-    useState<Record<string, string>>({});
-
-  /*
-    Multiple answers
-  */
-
-  const [multiAnswers, setMultiAnswers] =
-    useState<Record<string, string[]>>({});
-
-  /*
-    Skills rating
-
-    Example:
-
-    {
-      Communication: 4,
-      Teamwork: 5
-    }
-  */
-
-  const [skillAnswers, setSkillAnswers] =
-    useState<Record<string, number>>({});
-
-  /*
-    Recovery answers
-
-    Question ID : Score
-  */
-
-  const [recoveryAnswers, setRecoveryAnswers] =
-    useState<Record<number, number>>({});
-
-  const [safetyScore, setSafetyScore] =
-    useState(0);
+  const currentProfileQuestion = PROFILE_QUESTIONS[profileIndex];
+  const currentRecoveryQuestion = RECOVERY_QUESTIONS[questionIndex];
 
   /* =====================================================
-     CURRENT QUESTIONS
-  ===================================================== */
-
-  const currentProfileQuestion =
-    PROFILE_QUESTIONS[profileIndex];
-
-  const currentRecoveryQuestion =
-    RECOVERY_QUESTIONS[questionIndex];
-
-  /* =====================================================
-     START ASSESSMENT
+     HANDLERS
   ===================================================== */
 
   const startAssessment = () => {
     setScreen("profile");
   };
-
-  /* =====================================================
-     PROFILE ANSWERS
-  ===================================================== */
 
   const saveProfileAnswer = (value: string) => {
     setProfileAnswers((previous) => ({
@@ -587,105 +458,56 @@ export default function LifeBuildScreen() {
     }));
   };
 
-  /* =====================================================
-     MULTI SELECT
-  ===================================================== */
-
   const toggleMultiAnswer = (
     questionId: string,
     option: string,
     maxSelections?: number
   ) => {
-    const currentAnswers =
-      multiAnswers[questionId] || [];
-
-    const alreadySelected =
-      currentAnswers.includes(option);
+    const currentAnswers = multiAnswers[questionId] || [];
+    const alreadySelected = currentAnswers.includes(option);
 
     if (alreadySelected) {
       setMultiAnswers((previous) => ({
         ...previous,
-        [questionId]: currentAnswers.filter(
-          (item) => item !== option
-        ),
+        [questionId]: currentAnswers.filter((item) => item !== option),
       }));
-
       return;
     }
 
-    if (
-      maxSelections &&
-      currentAnswers.length >= maxSelections
-    ) {
+    if (maxSelections && currentAnswers.length >= maxSelections) {
       Alert.alert(
         "Maximum Selection",
         `You can select up to ${maxSelections} options.`
       );
-
       return;
     }
 
     setMultiAnswers((previous) => ({
       ...previous,
-      [questionId]: [
-        ...currentAnswers,
-        option,
-      ],
+      [questionId]: [...currentAnswers, option],
     }));
   };
 
-  /* =====================================================
-     SKILL ANSWER
-  ===================================================== */
-
-  const selectSkillRating = (
-    skill: string,
-    value: number
-  ) => {
+  const selectSkillRating = (skill: string, value: number) => {
     setSkillAnswers((previous) => ({
       ...previous,
       [skill]: value,
     }));
   };
 
-  /* =====================================================
-     PROFILE VALIDATION
-  ===================================================== */
+  const isCurrentProfileQuestionAnswered = () => {
+    if (currentProfileQuestion.type === "multiSelect") {
+      const answers = multiAnswers[currentProfileQuestion.id] || [];
+      return answers.length > 0;
+    }
 
-  const isCurrentProfileQuestionAnswered =
-    () => {
-      if (
-        currentProfileQuestion.type ===
-        "multiSelect"
-      ) {
-        const answers =
-          multiAnswers[
-            currentProfileQuestion.id
-          ] || [];
+    if (currentProfileQuestion.type === "skills") {
+      return SKILLS.every((skill) => skillAnswers[skill]);
+    }
 
-        return answers.length > 0;
-      }
-
-      if (
-        currentProfileQuestion.type ===
-        "skills"
-      ) {
-        return SKILLS.every(
-          (skill) => skillAnswers[skill]
-        );
-      }
-
-      const answer =
-        profileAnswers[
-          currentProfileQuestion.id
-        ];
-
-      return !!answer && answer.trim() !== "";
-    };
-
-  /* =====================================================
-     NEXT PROFILE QUESTION
-  ===================================================== */
+    const answer = profileAnswers[currentProfileQuestion.id];
+    return !!answer && answer.trim() !== "";
+  };
 
   const goToNextProfileQuestion = () => {
     if (!isCurrentProfileQuestionAnswered()) {
@@ -693,23 +515,15 @@ export default function LifeBuildScreen() {
         "Answer Required",
         "Please provide an answer before continuing."
       );
-
       return;
     }
 
-    if (
-      profileIndex <
-      PROFILE_QUESTIONS.length - 1
-    ) {
+    if (profileIndex < PROFILE_QUESTIONS.length - 1) {
       setProfileIndex(profileIndex + 1);
     } else {
       setScreen("assessment");
     }
   };
-
-  /* =====================================================
-     PREVIOUS PROFILE QUESTION
-  ===================================================== */
 
   const goToPreviousProfileQuestion = () => {
     if (profileIndex > 0) {
@@ -717,51 +531,30 @@ export default function LifeBuildScreen() {
     }
   };
 
-  /* =====================================================
-     RECOVERY ANSWERS
-  ===================================================== */
-
-  const selectRecoveryAnswer = (
-    value: number
-  ) => {
+  const selectRecoveryAnswer = (value: number) => {
     setRecoveryAnswers((previous) => ({
       ...previous,
       [currentRecoveryQuestion.id]: value,
     }));
   };
 
-  /* =====================================================
-     NEXT RECOVERY QUESTION
-  ===================================================== */
-
   const goToNextRecoveryQuestion = () => {
-    const answer =
-      recoveryAnswers[
-        currentRecoveryQuestion.id
-      ];
+    const answer = recoveryAnswers[currentRecoveryQuestion.id];
 
     if (!answer) {
       Alert.alert(
         "Answer Required",
         "Please select an answer before continuing."
       );
-
       return;
     }
 
-    if (
-      questionIndex <
-      RECOVERY_QUESTIONS.length - 1
-    ) {
+    if (questionIndex < RECOVERY_QUESTIONS.length - 1) {
       setQuestionIndex(questionIndex + 1);
     } else {
       calculateSafetyScore();
     }
   };
-
-  /* =====================================================
-     PREVIOUS RECOVERY QUESTION
-  ===================================================== */
 
   const goToPreviousRecoveryQuestion = () => {
     if (questionIndex > 0) {
@@ -769,43 +562,20 @@ export default function LifeBuildScreen() {
     }
   };
 
-  /* =====================================================
-     CALCULATE RECOVERY SAFETY SCORE
-
-     25 Questions
-     Maximum = 25 × 5 = 125
-
-     Percentage:
-     (Total Score / 125) × 100
-  ===================================================== */
-
   const calculateSafetyScore = () => {
     let totalScore = 0;
 
-    RECOVERY_QUESTIONS.forEach(
-      (question) => {
-        totalScore +=
-          recoveryAnswers[question.id] || 0;
-      }
-    );
+    RECOVERY_QUESTIONS.forEach((question) => {
+      totalScore += recoveryAnswers[question.id] || 0;
+    });
 
-    const maximumScore =
-      RECOVERY_QUESTIONS.length * 5;
-
-    const percentage =
-      (totalScore / maximumScore) * 100;
-
-    const finalScore =
-      Math.round(percentage);
+    const maximumScore = RECOVERY_QUESTIONS.length * 5;
+    const percentage = (totalScore / maximumScore) * 100;
+    const finalScore = Math.round(percentage);
 
     setSafetyScore(finalScore);
-
     setScreen("result");
   };
-
-  /* =====================================================
-     RISK LEVEL
-  ===================================================== */
 
   const getRiskLevel = () => {
     if (safetyScore >= 75) {
@@ -841,34 +611,21 @@ export default function LifeBuildScreen() {
   };
 
   const riskInfo = getRiskLevel();
-
-  const isEligibleForCareer =
-    safetyScore >= 50;
-
-  /* =====================================================
-     RESTART
-  ===================================================== */
+  const isEligibleForCareer = safetyScore >= 50;
 
   const restartAssessment = () => {
     setProfileIndex(0);
-
     setQuestionIndex(0);
-
     setProfileAnswers({});
-
     setMultiAnswers({});
-
     setSkillAnswers({});
-
     setRecoveryAnswers({});
-
     setSafetyScore(0);
-
     setScreen("start");
   };
 
   /* =====================================================
-     START SCREEN
+     START SCREEN  (redesigned to match reference)
   ===================================================== */
 
   if (screen === "start") {
@@ -877,748 +634,420 @@ export default function LifeBuildScreen() {
         style={lifeBuildStyles.container}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
-
+        {/* Soft Header */}
         <View style={lifeBuildStyles.header}>
-          <View
-            style={
-              lifeBuildStyles.headerCircleLarge
-            }
-          />
+          <View style={lifeBuildStyles.headerCircleLarge} />
+          <View style={lifeBuildStyles.headerCircleSmall} />
 
-          <View
-            style={
-              lifeBuildStyles.headerCircleSmall
-            }
-          />
-
-          <View
-            style={
-              lifeBuildStyles.headerContent
-            }
-          >
-            <Text
-              style={
-                lifeBuildStyles.headerSmallText
-              }
-            >
+          <View style={lifeBuildStyles.headerContent}>
+            <Text style={lifeBuildStyles.headerSmallText}>
               BUILD YOUR FUTURE
             </Text>
-
-            <Text
-              style={
-                lifeBuildStyles.headerTitle
-              }
-            >
-              LifeBuild
-            </Text>
-
-            <Text
-              style={
-                lifeBuildStyles.headerDescription
-              }
-            >
-              Your recovery journey can help you
-              build a safer and stronger future.
+            <Text style={lifeBuildStyles.headerTitle}>LifeBuild</Text>
+            <Text style={lifeBuildStyles.headerDescription}>
+              Every step you take brings you closer to a stronger,
+              healthier and brighter future.
             </Text>
           </View>
 
-          <View
-            style={
-              lifeBuildStyles.headerIcon
-            }
-          >
-            <Ionicons
-              name="rocket-outline"
-              size={42}
-              color="#fff"
-            />
+          <Image
+            source={require("../../../assets/images/hero_recovery.png")}
+            style={lifeBuildStyles.headerImage}
+            resizeMode="cover"
+          />
+
+          <View style={lifeBuildStyles.headerIcon}>
+            <Ionicons name="rocket-outline" size={42} color="#fff" />
           </View>
         </View>
 
-        <View
-          style={lifeBuildStyles.content}
-        >
-          {/* HOW LIFE BUILD WORKS */}
+        {/* Welcome Text */}
+        <View style={lifeBuildStyles.welcomeSection}>
+          <Text style={lifeBuildStyles.welcomeTitle}>
+            Welcome back,{" "}
+            <Text style={lifeBuildStyles.welcomeHighlight}>User!</Text>
+          </Text>
+          <Text style={lifeBuildStyles.welcomeSubtitle}>
+            Your recovery journey can help you build a safer and
+            stronger future.
+          </Text>
+        </View>
 
-          <View
-            style={lifeBuildStyles.card}
+        {/* Main Start Card */}
+        <View style={lifeBuildStyles.startMainCard}>
+          <Image
+            source={require("../../../assets/images/assessment_clipboard.png")}
+            style={lifeBuildStyles.startLeftImage}
+            resizeMode="contain"
+          />
+
+          <View style={lifeBuildStyles.startCenterContent}>
+            <View style={lifeBuildStyles.startIconCircle}>
+              <Ionicons name="clipboard-outline" size={32} color="#2CA6A4" />
+            </View>
+
+          <Text style={lifeBuildStyles.startMainTitle}>
+            Start Your Assessment
+          </Text>
+
+          <Text style={lifeBuildStyles.startMainDescription}>
+            Complete your personal information and Recovery Safety
+            Assessment to understand your current recovery safety level.
+          </Text>
+
+          <TouchableOpacity
+            style={lifeBuildStyles.startButton}
+            onPress={startAssessment}
+            activeOpacity={0.85}
           >
-            <View
-              style={
-                lifeBuildStyles.cardHeader
-              }
-            >
-              <View
-                style={
-                  lifeBuildStyles.cardTitle
-                }
-              >
-                <Ionicons
-                  name="information-circle-outline"
-                  size={22}
-                  color="#2CA6A4"
-                />
-
-                <Text
-                  style={
-                    lifeBuildStyles.cardTitleText
-                  }
-                >
-                  How LifeBuild Works
-                </Text>
-              </View>
-            </View>
-
-            {/* STEP 1 */}
-
-            <View
-              style={
-                lifeBuildStyles.stepRow
-              }
-            >
-              <View
-                style={
-                  lifeBuildStyles.stepNumber
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepNumberText
-                  }
-                >
-                  1
-                </Text>
-              </View>
-
-              <View
-                style={
-                  lifeBuildStyles.stepContent
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepTitle
-                  }
-                >
-                  Tell Us About Yourself
-                </Text>
-
-                <Text
-                  style={
-                    lifeBuildStyles.stepDescription
-                  }
-                >
-                  Answer 16 questions about your
-                  background, skills, interests and
-                  recovery support needs.
-                </Text>
-              </View>
-            </View>
-
-            {/* STEP 2 */}
-
-            <View
-              style={
-                lifeBuildStyles.stepRow
-              }
-            >
-              <View
-                style={
-                  lifeBuildStyles.stepNumber
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepNumberText
-                  }
-                >
-                  2
-                </Text>
-              </View>
-
-              <View
-                style={
-                  lifeBuildStyles.stepContent
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepTitle
-                  }
-                >
-                  Complete Recovery Assessment
-                </Text>
-
-                <Text
-                  style={
-                    lifeBuildStyles.stepDescription
-                  }
-                >
-                  Answer 25 Recovery Safety
-                  Assessment questions.
-                </Text>
-              </View>
-            </View>
-
-            {/* STEP 3 */}
-
-            <View
-              style={
-                lifeBuildStyles.stepRow
-              }
-            >
-              <View
-                style={
-                  lifeBuildStyles.stepNumber
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepNumberText
-                  }
-                >
-                  3
-                </Text>
-              </View>
-
-              <View
-                style={
-                  lifeBuildStyles.stepContent
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepTitle
-                  }
-                >
-                  Calculate Safety Score
-                </Text>
-
-                <Text
-                  style={
-                    lifeBuildStyles.stepDescription
-                  }
-                >
-                  Your 25 assessment answers are
-                  used to calculate your Recovery
-                  Safety Score.
-                </Text>
-              </View>
-            </View>
-
-            {/* STEP 4 */}
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "flex-start",
-              }}
-            >
-              <View
-                style={
-                  lifeBuildStyles.stepNumber
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepNumberText
-                  }
-                >
-                  4
-                </Text>
-              </View>
-
-              <View
-                style={
-                  lifeBuildStyles.stepContent
-                }
-              >
-                <Text
-                  style={
-                    lifeBuildStyles.stepTitle
-                  }
-                >
-                  Discover Your Career Path
-                </Text>
-
-                <Text
-                  style={
-                    lifeBuildStyles.stepDescription
-                  }
-                >
-                  If your Recovery Safety Score is
-                  50% or above, suitable career
-                  paths can be recommended.
-                </Text>
-              </View>
-            </View>
+            <Text style={lifeBuildStyles.startButtonText}>
+              Start Assessment
+            </Text>
+            <Ionicons name="arrow-forward" size={20} color="#fff" />
+          </TouchableOpacity>
           </View>
 
-          {/* START ASSESSMENT */}
+          <Image
+            source={require("../../../assets/images/assessment_laptop.png")}
+            style={lifeBuildStyles.startRightImage}
+            resizeMode="contain"
+          />
+        </View>
 
-          <View
-            style={lifeBuildStyles.card}
-          >
-            <View
-              style={
-                lifeBuildStyles.startIcon
-              }
-            >
-              <Ionicons
-                name="clipboard-outline"
-                size={40}
-                color="#2CA6A4"
-              />
+        {/* 2×2 Step Cards */}
+        <View style={lifeBuildStyles.stepsGrid}>
+          {/* Step 01 */}
+          <View style={lifeBuildStyles.stepCard}>
+            <View style={lifeBuildStyles.stepCardHeader}>
+              <View style={lifeBuildStyles.stepNumberBadge}>
+                <Text style={lifeBuildStyles.stepNumberText}>01</Text>
+              </View>
+              <View style={lifeBuildStyles.stepIconCircle}>
+                <Ionicons name="person-outline" size={16} color="#2CA6A4" />
+              </View>
             </View>
-
-            <Text
-              style={
-                lifeBuildStyles.startTitle
-              }
-            >
-              Start Your Assessment
+            <Text style={lifeBuildStyles.stepCardTitle}>
+              Tell Us About Yourself
             </Text>
-
-            <Text
-              style={
-                lifeBuildStyles.startDescription
-              }
-            >
-              Complete your personal information
-              and Recovery Safety Assessment to
-              understand your current recovery
-              safety level.
+            <Text style={lifeBuildStyles.stepCardDescription}>
+              Answer 16 questions about your background, skills,
+              interests and recovery support needs.
             </Text>
+            <Image source={require("../../../assets/images/profile_user.png")} style={lifeBuildStyles.stepImage} resizeMode="contain" />
+          </View>
 
-            <TouchableOpacity
-              style={
-                lifeBuildStyles.startButton
-              }
-              onPress={startAssessment}
-            >
-              <Text
-                style={
-                  lifeBuildStyles.startButtonText
-                }
-              >
-                Start Assessment
-              </Text>
+          {/* Step 02 */}
+          <View style={lifeBuildStyles.stepCard}>
+            <View style={lifeBuildStyles.stepCardHeader}>
+              <View style={lifeBuildStyles.stepNumberBadge}>
+                <Text style={lifeBuildStyles.stepNumberText}>02</Text>
+              </View>
+              <View style={lifeBuildStyles.stepIconCircle}>
+                <Ionicons name="document-text-outline" size={16} color="#2CA6A4" />
+              </View>
+            </View>
+            <Text style={lifeBuildStyles.stepCardTitle}>
+              Complete Recovery Assessment
+            </Text>
+            <Text style={lifeBuildStyles.stepCardDescription}>
+              Answer 25 Recovery Safety Assessment questions.
+            </Text>
+            <Image source={require("../../../assets/images/assessment_laptop.png")} style={lifeBuildStyles.stepImage} resizeMode="contain" />
+          </View>
 
-              <Ionicons
-                name="arrow-forward"
-                size={20}
-                color="#fff"
-              />
-            </TouchableOpacity>
+          {/* Step 03 */}
+          <View style={lifeBuildStyles.stepCard}>
+            <View style={lifeBuildStyles.stepCardHeader}>
+              <View style={lifeBuildStyles.stepNumberBadge}>
+                <Text style={lifeBuildStyles.stepNumberText}>03</Text>
+              </View>
+              <View style={lifeBuildStyles.stepIconCircle}>
+                <Ionicons name="shield-checkmark-outline" size={16} color="#2CA6A4" />
+              </View>
+            </View>
+            <Text style={lifeBuildStyles.stepCardTitle}>
+              Calculate Safety Score
+            </Text>
+            <Text style={lifeBuildStyles.stepCardDescription}>
+              Your 25 assessment answers are used to calculate your
+              Recovery Safety Score.
+            </Text>
+            <Image source={require("../../../assets/images/safety_shield.png")} style={lifeBuildStyles.stepImage} resizeMode="contain" />
+          </View>
+
+          {/* Step 04 */}
+          <View style={lifeBuildStyles.stepCard}>
+            <View style={lifeBuildStyles.stepCardHeader}>
+              <View style={lifeBuildStyles.stepNumberBadge}>
+                <Text style={lifeBuildStyles.stepNumberText}>04</Text>
+              </View>
+              <View style={lifeBuildStyles.stepIconCircle}>
+                <Ionicons name="briefcase-outline" size={16} color="#2CA6A4" />
+              </View>
+            </View>
+            <Text style={lifeBuildStyles.stepCardTitle}>
+              Discover Your Career Path
+            </Text>
+            <Text style={lifeBuildStyles.stepCardDescription}>
+              If your Recovery Safety Score is 50% or above, suitable
+              career paths can be recommended.
+            </Text>
+            <Image source={require("../../../assets/images/career_growth.png")} style={lifeBuildStyles.stepImage} resizeMode="contain" />
           </View>
         </View>
+
+        {/* Encouragement Banner */}
+        <View style={lifeBuildStyles.encourageBanner}>
+          <View style={lifeBuildStyles.encourageIconWrap}>
+            <Ionicons name="heart" size={24} color="#2CA6A4" />
+          </View>
+          <View style={lifeBuildStyles.encourageTextWrap}>
+            <Text style={lifeBuildStyles.encourageTitle}>
+              You are stronger than you think.
+            </Text>
+            <Text style={lifeBuildStyles.encourageSubtitle}>
+              We are here to support you every step of the way.
+            </Text>
+          </View>
+        </View>
+
+        {/* Feature Row */}
+        <View style={lifeBuildStyles.featureRow}>
+          <View style={lifeBuildStyles.featureItem}>
+            <View style={lifeBuildStyles.featureIconCircle}>
+              <Ionicons name="shield-checkmark" size={18} color="#2CA6A4" />
+            </View>
+            <Text style={lifeBuildStyles.featureTitle}>
+              100% Confidential
+            </Text>
+            <Text style={lifeBuildStyles.featureDescription}>
+              Your data is private and secure.
+            </Text>
+          </View>
+
+          <View style={lifeBuildStyles.featureItem}>
+            <View style={lifeBuildStyles.featureIconCircle}>
+              <Ionicons name="stats-chart" size={18} color="#2CA6A4" />
+            </View>
+            <Text style={lifeBuildStyles.featureTitle}>
+              Personalized Results
+            </Text>
+            <Text style={lifeBuildStyles.featureDescription}>
+              Get recommendations that fit you.
+            </Text>
+          </View>
+
+          <View style={lifeBuildStyles.featureItem}>
+            <View style={lifeBuildStyles.featureIconCircle}>
+              <Ionicons name="heart" size={18} color="#2CA6A4" />
+            </View>
+            <Text style={lifeBuildStyles.featureTitle}>
+              Designed for You
+            </Text>
+            <Text style={lifeBuildStyles.featureDescription}>
+              Built to support your recovery journey.
+            </Text>
+          </View>
+        </View>
+
+        {/* Extra bottom space for footer */}
+        <View style={{ height: 24 }} />
       </ScrollView>
     );
   }
 
   /* =====================================================
-     PROFILE QUESTIONS 1 - 16
+     PROFILE QUESTIONS
   ===================================================== */
 
   if (screen === "profile") {
     const savedAnswer =
-      profileAnswers[
-        currentProfileQuestion.id
-      ] || "";
-
+      profileAnswers[currentProfileQuestion.id] || "";
     const selectedMultiAnswers =
-      multiAnswers[
-        currentProfileQuestion.id
-      ] || [];
-
+      multiAnswers[currentProfileQuestion.id] || [];
     const progress =
-      ((profileIndex + 1) /
-        PROFILE_QUESTIONS.length) *
-      100;
+      ((profileIndex + 1) / PROFILE_QUESTIONS.length) * 100;
 
     return (
       <ScrollView
         style={lifeBuildStyles.container}
-        contentContainerStyle={{
-          padding: 16,
-          paddingTop: 60,
-          paddingBottom: 100,
-        }}
+        contentContainerStyle={lifeBuildStyles.screenPadding}
         showsVerticalScrollIndicator={false}
       >
-        <Text
-          style={{
-            color: "#2CA6A4",
-            fontSize: 11,
-            fontWeight: "700",
-            letterSpacing: 1,
-            marginBottom: 6,
-          }}
-        >
+        <Text style={lifeBuildStyles.sectionLabel}>
           PERSONAL & CAREER INFORMATION
         </Text>
 
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: "700",
-            color: "#1a2e2e",
-            marginBottom: 8,
-          }}
-        >
+        <Text style={lifeBuildStyles.screenTitle}>
           Tell Us About Yourself
         </Text>
 
-        <Text
-          style={{
-            fontSize: 13,
-            color: "#718181",
-            lineHeight: 20,
-            marginBottom: 20,
-          }}
-        >
-          This information helps us understand
-          your background, skills and interests
-          for future career recommendations.
+        <Text style={lifeBuildStyles.screenSubtitle}>
+          This information helps us understand your background,
+          skills and interests for future career recommendations.
         </Text>
 
-        {/* PROGRESS */}
-
-        <View
-          style={{
-            height: 8,
-            backgroundColor: "#e1f5f4",
-            borderRadius: 10,
-            overflow: "hidden",
-            marginBottom: 8,
-          }}
-        >
+        {/* Progress */}
+        <View style={lifeBuildStyles.progressTrack}>
           <View
-            style={{
-              width: `${progress}%`,
-              height: "100%",
-              backgroundColor: "#2CA6A4",
-              borderRadius: 10,
-            }}
+            style={[
+              lifeBuildStyles.progressFill,
+              { width: `${progress}%` },
+            ]}
           />
         </View>
-
-        <Text
-          style={{
-            textAlign: "right",
-            color: "#718181",
-            fontSize: 12,
-            marginBottom: 20,
-          }}
-        >
-          Question {profileIndex + 1} of{" "}
-          {PROFILE_QUESTIONS.length}
+        <Text style={lifeBuildStyles.progressText}>
+          Question {profileIndex + 1} of {PROFILE_QUESTIONS.length}
         </Text>
 
-        {/* QUESTION CARD */}
-
-        <View
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: 18,
-            padding: 18,
-            borderWidth: 1,
-            borderColor: "#e0f0ef",
-          }}
-        >
-          <Text
-            style={{
-              color: "#2CA6A4",
-              fontSize: 12,
-              fontWeight: "700",
-              marginBottom: 8,
-            }}
-          >
-            {
-              currentProfileQuestion.section
-            }
+        {/* Question Card */}
+        <View style={lifeBuildStyles.questionCard}>
+          <Text style={lifeBuildStyles.questionSection}>
+            {currentProfileQuestion.section}
           </Text>
 
-          <Text
-            style={{
-              fontSize: 17,
-              fontWeight: "700",
-              color: "#1a2e2e",
-              marginBottom: 18,
-              lineHeight: 25,
-            }}
-          >
+          <Text style={lifeBuildStyles.questionText}>
             {currentProfileQuestion.question}
           </Text>
 
           {/* TEXT / NUMBER */}
-
-          {(currentProfileQuestion.type ===
-            "text" ||
-            currentProfileQuestion.type ===
-              "number") && (
+          {(currentProfileQuestion.type === "text" ||
+            currentProfileQuestion.type === "number") && (
             <TextInput
               value={savedAnswer}
-              onChangeText={
-                saveProfileAnswer
-              }
+              onChangeText={saveProfileAnswer}
               placeholder="Enter your answer"
               keyboardType={
-                currentProfileQuestion.type ===
-                "number"
+                currentProfileQuestion.type === "number"
                   ? "numeric"
                   : "default"
               }
-              style={{
-                borderWidth: 1,
-                borderColor: "#d5eeec",
-                backgroundColor: "#f7fefe",
-                borderRadius: 12,
-                paddingHorizontal: 15,
-                paddingVertical: 14,
-                fontSize: 14,
-                color: "#1a2e2e",
-              }}
+              style={lifeBuildStyles.textInput}
             />
           )}
 
           {/* SINGLE SELECT */}
+          {currentProfileQuestion.type === "select" &&
+            currentProfileQuestion.options?.map((option) => {
+              const selected = savedAnswer === option;
 
-          {currentProfileQuestion.type ===
-            "select" &&
-            currentProfileQuestion.options?.map(
-              (option) => {
+              return (
+                <TouchableOpacity
+                  key={option}
+                  onPress={() => saveProfileAnswer(option)}
+                  style={[
+                    lifeBuildStyles.optionButton,
+                    selected && lifeBuildStyles.optionButtonSelected,
+                  ]}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      lifeBuildStyles.optionText,
+                      selected && lifeBuildStyles.optionTextSelected,
+                    ]}
+                  >
+                    {option}
+                  </Text>
+                  {selected && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={22}
+                      color="#2CA6A4"
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+
+          {/* MULTI SELECT */}
+          {currentProfileQuestion.type === "multiSelect" && (
+            <>
+              {currentProfileQuestion.maxSelections && (
+                <Text style={lifeBuildStyles.maxSelectHint}>
+                  Select up to {currentProfileQuestion.maxSelections}{" "}
+                  options
+                </Text>
+              )}
+
+              {currentProfileQuestion.options?.map((option) => {
                 const selected =
-                  savedAnswer === option;
+                  selectedMultiAnswers.includes(option);
 
                 return (
                   <TouchableOpacity
                     key={option}
                     onPress={() =>
-                      saveProfileAnswer(option)
+                      toggleMultiAnswer(
+                        currentProfileQuestion.id,
+                        option,
+                        currentProfileQuestion.maxSelections
+                      )
                     }
-                    style={{
-                      borderWidth: 1,
-                      borderColor: selected
-                        ? "#2CA6A4"
-                        : "#d5eeec",
-                      backgroundColor: selected
-                        ? "#e1f5f4"
-                        : "#f7fefe",
-                      borderRadius: 12,
-                      padding: 14,
-                      marginBottom: 10,
-                      flexDirection: "row",
-                      justifyContent:
-                        "space-between",
-                      alignItems: "center",
-                    }}
+                    style={[
+                      lifeBuildStyles.optionButton,
+                      selected && lifeBuildStyles.optionButtonSelected,
+                    ]}
+                    activeOpacity={0.7}
                   >
                     <Text
-                      style={{
-                        color: selected
-                          ? "#1a7775"
-                          : "#1a2e2e",
-                        fontWeight: selected
-                          ? "700"
-                          : "400",
-                        fontSize: 14,
-                      }}
+                      style={[
+                        lifeBuildStyles.optionText,
+                        selected && lifeBuildStyles.optionTextSelected,
+                      ]}
                     >
                       {option}
                     </Text>
-
-                    {selected && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={22}
-                        color="#2CA6A4"
-                      />
-                    )}
+                    <Ionicons
+                      name={selected ? "checkbox" : "square-outline"}
+                      size={22}
+                      color={selected ? "#2CA6A4" : "#8a9a9a"}
+                    />
                   </TouchableOpacity>
                 );
-              }
-            )}
-
-          {/* MULTI SELECT */}
-
-          {currentProfileQuestion.type ===
-            "multiSelect" && (
-            <>
-              {currentProfileQuestion.maxSelections && (
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: "#718181",
-                    marginBottom: 12,
-                  }}
-                >
-                  Select up to{" "}
-                  {
-                    currentProfileQuestion.maxSelections
-                  }{" "}
-                  options
-                </Text>
-              )}
-
-              {currentProfileQuestion.options?.map(
-                (option) => {
-                  const selected =
-                    selectedMultiAnswers.includes(
-                      option
-                    );
-
-                  return (
-                    <TouchableOpacity
-                      key={option}
-                      onPress={() =>
-                        toggleMultiAnswer(
-                          currentProfileQuestion.id,
-                          option,
-                          currentProfileQuestion.maxSelections
-                        )
-                      }
-                      style={{
-                        borderWidth: 1,
-                        borderColor: selected
-                          ? "#2CA6A4"
-                          : "#d5eeec",
-                        backgroundColor: selected
-                          ? "#e1f5f4"
-                          : "#f7fefe",
-                        borderRadius: 12,
-                        padding: 14,
-                        marginBottom: 10,
-                        flexDirection: "row",
-                        justifyContent:
-                          "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: selected
-                            ? "#1a7775"
-                            : "#1a2e2e",
-                          fontWeight: selected
-                            ? "700"
-                            : "400",
-                          fontSize: 14,
-                          flex: 1,
-                        }}
-                      >
-                        {option}
-                      </Text>
-
-                      <Ionicons
-                        name={
-                          selected
-                            ? "checkbox"
-                            : "square-outline"
-                        }
-                        size={22}
-                        color={
-                          selected
-                            ? "#2CA6A4"
-                            : "#8a9a9a"
-                        }
-                      />
-                    </TouchableOpacity>
-                  );
-                }
-              )}
+              })}
             </>
           )}
 
           {/* SKILLS */}
-
-          {currentProfileQuestion.type ===
-            "skills" && (
+          {currentProfileQuestion.type === "skills" && (
             <View>
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "#718181",
-                  marginBottom: 16,
-                }}
-              >
+              <Text style={lifeBuildStyles.maxSelectHint}>
                 Rate each skill from 1 to 5.
               </Text>
 
               {SKILLS.map((skill) => (
-                <View
-                  key={skill}
-                  style={{
-                    marginBottom: 18,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: "600",
-                      color: "#1a2e2e",
-                      marginBottom: 10,
-                    }}
-                  >
-                    {skill}
-                  </Text>
+                <View key={skill}>
+                  <Text style={lifeBuildStyles.skillLabel}>{skill}</Text>
+                  <View style={lifeBuildStyles.skillRow}>
+                    {[1, 2, 3, 4, 5].map((value) => {
+                      const selected = skillAnswers[skill] === value;
 
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      gap: 8,
-                    }}
-                  >
-                    {[1, 2, 3, 4, 5].map(
-                      (value) => {
-                        const selected =
-                          skillAnswers[skill] ===
-                          value;
-
-                        return (
-                          <TouchableOpacity
-                            key={value}
-                            onPress={() =>
-                              selectSkillRating(
-                                skill,
-                                value
-                              )
-                            }
-                            style={{
-                              width: 42,
-                              height: 42,
-                              borderRadius: 21,
-                              justifyContent:
-                                "center",
-                              alignItems:
-                                "center",
-                              backgroundColor:
-                                selected
-                                  ? "#2CA6A4"
-                                  : "#f7fefe",
-                              borderWidth: 1,
-                              borderColor:
-                                selected
-                                  ? "#2CA6A4"
-                                  : "#d5eeec",
-                            }}
+                      return (
+                        <TouchableOpacity
+                          key={value}
+                          onPress={() =>
+                            selectSkillRating(skill, value)
+                          }
+                          style={[
+                            lifeBuildStyles.skillButton,
+                            selected &&
+                              lifeBuildStyles.skillButtonSelected,
+                          ]}
+                          activeOpacity={0.7}
+                        >
+                          <Text
+                            style={[
+                              lifeBuildStyles.skillButtonText,
+                              selected &&
+                                lifeBuildStyles.skillButtonTextSelected,
+                            ]}
                           >
-                            <Text
-                              style={{
-                                color: selected
-                                  ? "#fff"
-                                  : "#1a2e2e",
-                                fontWeight:
-                                  "700",
-                              }}
-                            >
-                              {value}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      }
-                    )}
+                            {value}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 </View>
               ))}
@@ -1626,60 +1055,27 @@ export default function LifeBuildScreen() {
           )}
         </View>
 
-        {/* NAVIGATION */}
-
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 12,
-            marginTop: 20,
-          }}
-        >
+        {/* Navigation */}
+        <View style={lifeBuildStyles.navigationRow}>
           {profileIndex > 0 && (
             <TouchableOpacity
-              onPress={
-                goToPreviousProfileQuestion
-              }
-              style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: "#2CA6A4",
-                borderRadius: 14,
-                paddingVertical: 14,
-                alignItems: "center",
-              }}
+              onPress={goToPreviousProfileQuestion}
+              style={lifeBuildStyles.previousButton}
+              activeOpacity={0.7}
             >
-              <Text
-                style={{
-                  color: "#2CA6A4",
-                  fontWeight: "700",
-                }}
-              >
+              <Text style={lifeBuildStyles.previousButtonText}>
                 Back
               </Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
-            onPress={
-              goToNextProfileQuestion
-            }
-            style={{
-              flex: 1,
-              backgroundColor: "#2CA6A4",
-              borderRadius: 14,
-              paddingVertical: 14,
-              alignItems: "center",
-            }}
+            onPress={goToNextProfileQuestion}
+            style={lifeBuildStyles.nextButton}
+            activeOpacity={0.85}
           >
-            <Text
-              style={{
-                color: "#fff",
-                fontWeight: "700",
-              }}
-            >
-              {profileIndex ===
-              PROFILE_QUESTIONS.length - 1
+            <Text style={lifeBuildStyles.nextButtonText}>
+              {profileIndex === PROFILE_QUESTIONS.length - 1
                 ? "Start Recovery Assessment"
                 : "Next"}
             </Text>
@@ -1691,263 +1087,119 @@ export default function LifeBuildScreen() {
 
   /* =====================================================
      RECOVERY ASSESSMENT
-     QUESTIONS 1 - 25
   ===================================================== */
 
   if (screen === "assessment") {
     const progress =
-      ((questionIndex + 1) /
-        RECOVERY_QUESTIONS.length) *
-      100;
-
+      ((questionIndex + 1) / RECOVERY_QUESTIONS.length) * 100;
     const selectedAnswer =
-      recoveryAnswers[
-        currentRecoveryQuestion.id
-      ];
+      recoveryAnswers[currentRecoveryQuestion.id];
 
     return (
       <ScrollView
         style={lifeBuildStyles.container}
-        contentContainerStyle={{
-          padding: 16,
-          paddingTop: 60,
-          paddingBottom: 100,
-        }}
+        contentContainerStyle={lifeBuildStyles.screenPadding}
         showsVerticalScrollIndicator={false}
       >
-        <Text
-          style={{
-            color: "#2CA6A4",
-            fontSize: 11,
-            fontWeight: "700",
-            letterSpacing: 1,
-            marginBottom: 6,
-          }}
-        >
+        <Text style={lifeBuildStyles.sectionLabel}>
           RECOVERY SAFETY ASSESSMENT
         </Text>
 
-        <Text
-          style={{
-            fontSize: 25,
-            fontWeight: "700",
-            color: "#1a2e2e",
-            marginBottom: 8,
-          }}
-        >
+        <Text style={lifeBuildStyles.screenTitle}>
           Recovery Assessment
         </Text>
 
-        <Text
-          style={{
-            fontSize: 13,
-            color: "#718181",
-            lineHeight: 20,
-            marginBottom: 20,
-          }}
-        >
-          Please select the answer that best
-          describes how you currently feel.
+        <Text style={lifeBuildStyles.screenSubtitle}>
+          Please select the answer that best describes how you
+          currently feel.
         </Text>
 
-        {/* PROGRESS */}
-
-        <View
-          style={{
-            height: 8,
-            backgroundColor: "#e1f5f4",
-            borderRadius: 10,
-            overflow: "hidden",
-            marginBottom: 8,
-          }}
-        >
+        {/* Progress */}
+        <View style={lifeBuildStyles.progressTrack}>
           <View
-            style={{
-              width: `${progress}%`,
-              height: "100%",
-              backgroundColor: "#2CA6A4",
-              borderRadius: 10,
-            }}
+            style={[
+              lifeBuildStyles.progressFill,
+              { width: `${progress}%` },
+            ]}
           />
         </View>
-
-        <Text
-          style={{
-            textAlign: "right",
-            color: "#718181",
-            fontSize: 12,
-            marginBottom: 20,
-          }}
-        >
-          Question {questionIndex + 1} of{" "}
-          {RECOVERY_QUESTIONS.length}
+        <Text style={lifeBuildStyles.progressText}>
+          Question {questionIndex + 1} of {RECOVERY_QUESTIONS.length}
         </Text>
 
-        {/* QUESTION CARD */}
-
-        <View
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: 18,
-            padding: 18,
-            borderWidth: 1,
-            borderColor: "#e0f0ef",
-          }}
-        >
-          <Text
-            style={{
-              color: "#2CA6A4",
-              fontSize: 12,
-              fontWeight: "700",
-              marginBottom: 8,
-            }}
-          >
-            SECTION:{" "}
-            {currentRecoveryQuestion.section.toUpperCase()}
+        {/* Question Card */}
+        <View style={lifeBuildStyles.questionCard}>
+          <Text style={lifeBuildStyles.questionSection}>
+            SECTION: {currentRecoveryQuestion.section.toUpperCase()}
           </Text>
 
-          <Text
-            style={{
-              color: "#718181",
-              fontSize: 12,
-              marginBottom: 12,
-            }}
-          >
-            RECOVERY QUESTION{" "}
-            {currentRecoveryQuestion.id}
+          <Text style={lifeBuildStyles.questionMeta}>
+            RECOVERY QUESTION {currentRecoveryQuestion.id}
           </Text>
 
-          <Text
-            style={{
-              fontSize: 17,
-              fontWeight: "700",
-              color: "#1a2e2e",
-              lineHeight: 25,
-              marginBottom: 20,
-            }}
-          >
+          <Text style={lifeBuildStyles.questionText}>
             {currentRecoveryQuestion.question}
           </Text>
 
-          {/* LIKERT OPTIONS */}
+          {/* Likert Options */}
+          {ANSWER_OPTIONS.map((option) => {
+            const selected = selectedAnswer === option.value;
 
-          {ANSWER_OPTIONS.map(
-            (option) => {
-              const selected =
-                selectedAnswer === option.value;
-
-              return (
-                <TouchableOpacity
-                  key={option.value}
-                  onPress={() =>
-                    selectRecoveryAnswer(
-                      option.value
-                    )
-                  }
-                  style={{
-                    borderWidth: 1,
-                    borderColor: selected
-                      ? "#2CA6A4"
-                      : "#d5eeec",
-                    backgroundColor: selected
-                      ? "#e1f5f4"
-                      : "#f7fefe",
-                    borderRadius: 12,
-                    paddingVertical: 14,
-                    paddingHorizontal: 15,
-                    marginBottom: 10,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent:
-                      "space-between",
-                  }}
+            return (
+              <TouchableOpacity
+                key={option.value}
+                onPress={() => selectRecoveryAnswer(option.value)}
+                style={[
+                  lifeBuildStyles.optionButton,
+                  selected && lifeBuildStyles.optionButtonSelected,
+                ]}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    lifeBuildStyles.optionText,
+                    selected && lifeBuildStyles.optionTextSelected,
+                  ]}
                 >
-                  <Text
-                    style={{
-                      color: selected
-                        ? "#1a7775"
-                        : "#1a2e2e",
-                      fontSize: 14,
-                      fontWeight: selected
-                        ? "700"
-                        : "400",
-                    }}
-                  >
-                    {option.value}.{" "}
-                    {option.label}
-                  </Text>
-
-                  {selected && (
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={22}
-                      color="#2CA6A4"
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            }
-          )}
+                  {option.value}. {option.label}
+                </Text>
+                {selected && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={22}
+                    color="#2CA6A4"
+                  />
+                )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-        {/* NAVIGATION */}
-
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 12,
-            marginTop: 20,
-          }}
-        >
+        {/* Navigation */}
+        <View style={lifeBuildStyles.navigationRow}>
           {questionIndex > 0 && (
             <TouchableOpacity
-              onPress={
-                goToPreviousRecoveryQuestion
-              }
-              style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: "#2CA6A4",
-                borderRadius: 14,
-                paddingVertical: 14,
-                alignItems: "center",
-              }}
+              onPress={goToPreviousRecoveryQuestion}
+              style={lifeBuildStyles.previousButton}
+              activeOpacity={0.7}
             >
-              <Text
-                style={{
-                  color: "#2CA6A4",
-                  fontWeight: "700",
-                }}
-              >
+              <Text style={lifeBuildStyles.previousButtonText}>
                 Back
               </Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
-            onPress={
-              goToNextRecoveryQuestion
-            }
-            style={{
-              flex: 1,
-              backgroundColor:
-                questionIndex ===
-                RECOVERY_QUESTIONS.length - 1
-                  ? "#17a673"
-                  : "#2CA6A4",
-              borderRadius: 14,
-              paddingVertical: 14,
-              alignItems: "center",
-            }}
+            onPress={goToNextRecoveryQuestion}
+            style={[
+              lifeBuildStyles.nextButton,
+              questionIndex === RECOVERY_QUESTIONS.length - 1 &&
+                lifeBuildStyles.nextButtonSuccess,
+            ]}
+            activeOpacity={0.85}
           >
-            <Text
-              style={{
-                color: "#fff",
-                fontWeight: "700",
-              }}
-            >
-              {questionIndex ===
-              RECOVERY_QUESTIONS.length - 1
+            <Text style={lifeBuildStyles.nextButtonText}>
+              {questionIndex === RECOVERY_QUESTIONS.length - 1
                 ? "View Result"
                 : "Next"}
             </Text>
@@ -1966,352 +1218,169 @@ export default function LifeBuildScreen() {
       style={lifeBuildStyles.container}
       showsVerticalScrollIndicator={false}
     >
-      {/* HEADER */}
-
+      {/* Header */}
       <View style={lifeBuildStyles.header}>
-        <View
-          style={
-            lifeBuildStyles.headerCircleLarge
-          }
-        />
+        <View style={lifeBuildStyles.headerCircleLarge} />
+        <View style={lifeBuildStyles.headerCircleSmall} />
 
-        <View
-          style={
-            lifeBuildStyles.headerCircleSmall
-          }
-        />
-
-        <View
-          style={
-            lifeBuildStyles.headerContent
-          }
-        >
-          <Text
-            style={
-              lifeBuildStyles.headerSmallText
-            }
-          >
+        <View style={lifeBuildStyles.headerContent}>
+          <Text style={lifeBuildStyles.headerSmallText}>
             YOUR ASSESSMENT RESULT
           </Text>
-
-          <Text
-            style={
-              lifeBuildStyles.headerTitle
-            }
-          >
-            LifeBuild
-          </Text>
-
-          <Text
-            style={
-              lifeBuildStyles.headerDescription
-            }
-          >
-            Here is your current Recovery Safety
-            Score and recommended next steps.
+          <Text style={lifeBuildStyles.headerTitle}>LifeBuild</Text>
+          <Text style={lifeBuildStyles.headerDescription}>
+            Here is your current Recovery Safety Score and recommended
+            next steps.
           </Text>
         </View>
 
-        <View
-          style={
-            lifeBuildStyles.headerIcon
-          }
-        >
-          <Ionicons
-            name="trophy-outline"
-            size={40}
-            color="#fff"
-          />
+        <View style={lifeBuildStyles.headerIcon}>
+          <Ionicons name="trophy-outline" size={40} color="#fff" />
         </View>
       </View>
 
-      <View
-        style={lifeBuildStyles.content}
-      >
-        {/* SAFETY SCORE */}
-
-        <View
-          style={lifeBuildStyles.card}
-        >
-          <View
-            style={
-              lifeBuildStyles.cardHeader
-            }
-          >
-            <View
-              style={
-                lifeBuildStyles.cardTitle
-              }
-            >
-              <Ionicons
-                name="shield-checkmark"
-                size={22}
-                color="#2CA6A4"
-              />
-
-              <Text
-                style={
-                  lifeBuildStyles.cardTitleText
-                }
-              >
-                Recovery Safety Score
-              </Text>
-            </View>
+      <View style={lifeBuildStyles.content}>
+        {/* ===== Score + Status Card (side by side) ===== */}
+        <View style={lifeBuildStyles.resultScoreCard}>
+          <View style={lifeBuildStyles.resultScoreHeader}>
+            <Ionicons
+              name="shield-checkmark"
+              size={20}
+              color="#2CA6A4"
+            />
+            <Text style={lifeBuildStyles.resultScoreHeaderText}>
+              Recovery Safety Score
+            </Text>
           </View>
 
-          <View
-            style={
-              lifeBuildStyles.scoreContainer
-            }
-          >
-            <View
-              style={
-                lifeBuildStyles.scoreCircle
-              }
-            >
-              <Text
-                style={
-                  lifeBuildStyles.scoreText
-                }
-              >
-                {safetyScore}%
-              </Text>
-
-              <Text
-                style={
-                  lifeBuildStyles.scoreLabel
-                }
-              >
-                Safety Score
-              </Text>
+          <View style={lifeBuildStyles.resultScoreBody}>
+            {/* Circular Score */}
+            <View style={lifeBuildStyles.resultCircleWrap}>
+              <View style={lifeBuildStyles.resultCircleOuter}>
+                <View style={lifeBuildStyles.resultCircleInner}>
+                  <Text style={lifeBuildStyles.resultScoreValue}>
+                    {safetyScore}%
+                  </Text>
+                  <Text style={lifeBuildStyles.resultScoreLabel}>
+                    Safety Score
+                  </Text>
+                </View>
+              </View>
             </View>
-          </View>
 
-          {/* PROGRESS BAR */}
-
-          <View
-            style={[
-              lifeBuildStyles.scoreProgressTrack,
-              {
-                backgroundColor: "#e8f0f0",
-              },
-            ]}
-          >
+            {/* Status Box */}
             <View
               style={[
-                lifeBuildStyles.scoreProgressFill,
-                {
-                  width: `${safetyScore}%`,
-                  backgroundColor:
-                    riskInfo.color,
-                },
+                lifeBuildStyles.resultStatusBox,
+                { backgroundColor: riskInfo.background },
               ]}
-            />
-          </View>
-
-          {/* STATUS */}
-
-          <View
-            style={[
-              lifeBuildStyles.statusBox,
-              {
-                backgroundColor:
-                  riskInfo.background,
-                borderLeftColor:
-                  riskInfo.color,
-              },
-            ]}
-          >
-            <Ionicons
-              name={
-                riskInfo.icon as any
-              }
-              size={25}
-              color={riskInfo.color}
-            />
-
-            <View style={{ flex: 1 }}>
-              <Text
-                style={[
-                  lifeBuildStyles.statusTitle,
-                  {
-                    color: riskInfo.color,
-                  },
-                ]}
-              >
-                {riskInfo.level}
-              </Text>
-
-              <Text
-                style={
-                  lifeBuildStyles.statusDescription
-                }
-              >
+            >
+              <View style={lifeBuildStyles.resultStatusIconRow}>
+                <Ionicons
+                  name={riskInfo.icon as any}
+                  size={20}
+                  color={riskInfo.color}
+                />
+                <Text
+                  style={[
+                    lifeBuildStyles.resultStatusTitle,
+                    { color: riskInfo.color },
+                  ]}
+                >
+                  {riskInfo.level}
+                </Text>
+              </View>
+              <Text style={lifeBuildStyles.resultStatusDesc}>
                 {riskInfo.description}
               </Text>
             </View>
           </View>
+
+          {/* Progress bar under the score */}
+          <View style={lifeBuildStyles.resultProgressTrack}>
+            <View
+              style={[
+                lifeBuildStyles.resultProgressFill,
+                {
+                  width: `${safetyScore}%`,
+                  backgroundColor: riskInfo.color,
+                },
+              ]}
+            />
+          </View>
         </View>
 
-        {/* CAREER RECOMMENDATION */}
-
+        {/* ===== Career Paths or Support ===== */}
         {isEligibleForCareer ? (
-          <View
-            style={lifeBuildStyles.card}
-          >
-            <View
-              style={
-                lifeBuildStyles.cardHeader
-              }
-            >
-              <View
-                style={
-                  lifeBuildStyles.cardTitle
-                }
-              >
-                <Ionicons
-                  name="briefcase"
-                  size={22}
-                  color="#17a673"
-                />
-
-                <Text
-                  style={
-                    lifeBuildStyles.cardTitleText
-                  }
-                >
-                  Recommended Career Paths
-                </Text>
-              </View>
+          <View style={lifeBuildStyles.resultCareerCard}>
+            <View style={lifeBuildStyles.resultCareerHeader}>
+              <Ionicons name="briefcase" size={20} color="#2CA6A4" />
+              <Text style={lifeBuildStyles.resultCareerHeaderText}>
+                Recommended Career Paths
+              </Text>
             </View>
 
-            <Text
-              style={
-                lifeBuildStyles.sectionDescription
-              }
-            >
-              Based on your recovery safety
-              score, skills, interests and
-              background, these career paths may
-              be suitable for your current
-              recovery journey.
+            <Text style={lifeBuildStyles.resultCareerDesc}>
+              Based on your recovery safety score, skills, interests
+              and background, these career paths may be suitable for
+              your current recovery journey.
             </Text>
 
-            {CAREER_PATHS.map(
-              (career) => (
-                <TouchableOpacity
-                  key={career.id}
-                  style={
-                    lifeBuildStyles.careerCard
-                  }
-                >
-                  <View
-                    style={
-                      lifeBuildStyles.careerIcon
-                    }
-                  >
-                    <Ionicons
-                      name={
-                        career.icon as any
-                      }
-                      size={25}
-                      color="#2CA6A4"
-                    />
-                  </View>
-
-                  <View
-                    style={
-                      lifeBuildStyles.careerContent
-                    }
-                  >
-                    <Text
-                      style={
-                        lifeBuildStyles.careerTitle
-                      }
-                    >
-                      {career.title}
-                    </Text>
-
-                    <Text
-                      style={
-                        lifeBuildStyles.careerDescription
-                      }
-                    >
-                      {career.description}
-                    </Text>
-                  </View>
-
+            {CAREER_PATHS.map((career) => (
+              <TouchableOpacity
+                key={career.id}
+                style={lifeBuildStyles.resultCareerItem}
+                activeOpacity={0.7}
+              >
+                <View style={lifeBuildStyles.resultCareerIcon}>
                   <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#8a9a9a"
+                    name={career.icon as any}
+                    size={22}
+                    color="#2CA6A4"
                   />
-                </TouchableOpacity>
-              )
-            )}
+                </View>
+
+                <View style={lifeBuildStyles.resultCareerContent}>
+                  <Text style={lifeBuildStyles.resultCareerTitle}>
+                    {career.title}
+                  </Text>
+                  <Text style={lifeBuildStyles.resultCareerText}>
+                    {career.description}
+                  </Text>
+                </View>
+
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color="#8a9a9a"
+                />
+              </TouchableOpacity>
+            ))}
           </View>
         ) : (
-          <View
-            style={
-              lifeBuildStyles.supportCard
-            }
-          >
-            <View
-              style={
-                lifeBuildStyles.supportIcon
-              }
-            >
-              <Ionicons
-                name="heart-outline"
-                size={30}
-                color="#e0362e"
-              />
+          <View style={lifeBuildStyles.supportCard}>
+            <View style={lifeBuildStyles.supportIcon}>
+              <Ionicons name="heart-outline" size={30} color="#e0362e" />
             </View>
-
-            <Text
-              style={
-                lifeBuildStyles.supportTitle
-              }
-            >
+            <Text style={lifeBuildStyles.supportTitle}>
               Focus on Your Recovery
             </Text>
-
-            <Text
-              style={
-                lifeBuildStyles.supportDescription
-              }
-            >
-              Your Recovery Safety Score is
-              currently below 50%. Continue
-              focusing on your recovery and
-              support activities. Career
-              recommendations will become
-              available when your score reaches
-              50% or above.
+            <Text style={lifeBuildStyles.supportDescription}>
+              Your Recovery Safety Score is currently below 50%.
+              Continue focusing on your recovery and support
+              activities. Career recommendations will become available
+              when your score reaches 50% or above.
             </Text>
           </View>
         )}
 
-        {/* RESTART */}
-
+        {/* Restart */}
         <TouchableOpacity
           onPress={restartAssessment}
-          style={{
-            borderWidth: 1,
-            borderColor: "#2CA6A4",
-            borderRadius: 14,
-            paddingVertical: 14,
-            alignItems: "center",
-            marginBottom: 20,
-          }}
+          style={lifeBuildStyles.restartButton}
+          activeOpacity={0.7}
         >
-          <Text
-            style={{
-              color: "#2CA6A4",
-              fontSize: 14,
-              fontWeight: "700",
-            }}
-          >
+          <Text style={lifeBuildStyles.restartButtonText}>
             Take Assessment Again
           </Text>
         </TouchableOpacity>
