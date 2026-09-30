@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from "lottie-react-native";
 import { ngrokFetch } from "@/utill/ngrokFetch";
 import { useLanguage } from "@/i18n/LanguageContext";
+import YoutubePlayer from "react-native-youtube-iframe";
 
 const LEVEL_ORDER = [
   "Level 1 - No Risk",
@@ -34,6 +35,31 @@ type Task = {
   status: string;
   family_status: string;
   date: string;
+  youtubeUrl:string;
+};
+
+const getYouTubeVideoId = (url?: string): string | null => {
+  if (!url?.trim()) return null;
+  try {
+    const parsedUrl = new URL(url.trim());
+    const hostname = parsedUrl.hostname.toLowerCase();
+
+    if (
+      hostname === "youtube.com" ||
+      hostname === "www.youtube.com" ||
+      hostname === "m.youtube.com"
+    ) {
+      return parsedUrl.searchParams.get("v") || null;
+    }
+
+    if (hostname === "youtu.be" || hostname === "www.youtu.be") {
+      return parsedUrl.pathname.split("/")[1] || null;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 };
 
 const ProgressBar = ({ value, color }: { value: number; color: string }) => (
@@ -69,7 +95,12 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const levelIndex = LEVEL_ORDER.indexOf(level);
   const levelColor = levelIndex >= 0 ? LEVEL_COLORS[levelIndex] : "#c96a00";
   const levelInfo = levelIndex >= 0 ? home.levels[levelIndex] : null;
-  
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+
+  const toggleExpand = (id: string) =>
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
 
   const resetInviteForm = () => {
     setFamilyName("");
@@ -464,48 +495,86 @@ const getTasks = async () => {
 
         ) : (
 
-          tasks.map((task)=>(
-    <View key={task._id} style={homeStyles.taskItem}>
-      <TouchableOpacity
-        onPress={() => toggleTaskStatus(task._id, task.status)}
-        disabled={updatingId === task._id}
-        style={[
-          homeStyles.checkbox,
-          task.status === "completed" && homeStyles.checkboxDone,
-        ]}
-      >
-        {updatingId === task._id ? (
-          <ActivityIndicator size="small" color="#17db1a" />
-        ) : (
-          task.status === "completed" && (
-            <Ionicons name="checkmark" size={14} color="#fff" />
-          )
-        )}
-      </TouchableOpacity>
+            tasks.map((task) => {
+              const isExpanded = expandedIds.includes(task._id);
+              const videoId = getYouTubeVideoId(task.youtubeUrl);
+              const hasDetails = !!task.description?.trim() || !!videoId;
 
-      <View>
-        <Text
-          style={[
-            homeStyles.taskLabel,
-            task.status === "completed" && homeStyles.taskLabelDone,
-          ]}
-        >
-          {task.title}
-        </Text>
+              return (
+                <View key={task._id} style={homeStyles.taskItem}>
+                  {/* Header row: checkbox + title (+ chevron) */}
+                  <View style={homeStyles.taskHeaderRow}>
+                    <TouchableOpacity
+                      onPress={() => toggleTaskStatus(task._id, task.status)}
+                      disabled={updatingId === task._id}
+                      style={[
+                        homeStyles.checkbox,
+                        task.status === "completed" && homeStyles.checkboxDone,
+                      ]}
+                    >
+                      {updatingId === task._id ? (
+                        <ActivityIndicator size="small" color="#17db1a" />
+                      ) : (
+                        task.status === "completed" && (
+                          <Ionicons name="checkmark" size={14} color="#fff" />
+                        )
+                      )}
+                    </TouchableOpacity>
 
-        <Text>{task.description}</Text>
+                    <TouchableOpacity
+                      style={homeStyles.taskTitleTouch}
+                      onPress={() => hasDetails && toggleExpand(task._id)}
+                      activeOpacity={hasDetails ? 0.7 : 1}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={[
+                            homeStyles.taskLabel,
+                            task.status === "completed" && homeStyles.taskLabelDone,
+                          ]}
+                        >
+                          {task.title}
+                        </Text>
 
-        {task.status === "completed" && (
-          
-          <Text style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
-            {home.familyReview(task.family_status)}
-          </Text>
-        )}
-      </View>
-    </View>
-          ))
+                        {task.status === "completed" && (
+                          <Text style={{ fontSize: 12, color: "#888", marginTop: 2 }}>
+                            {home.familyReview(task.family_status)}
+                          </Text>
+                        )}
+                      </View>
 
-        )}
+                      {hasDetails && (
+                        <Ionicons
+                          name={isExpanded ? "chevron-up" : "chevron-down"}
+                          size={18}
+                          color="#2CA6A4"
+                        />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Collapsible details */}
+                  {isExpanded && (
+                    <View style={homeStyles.taskDetails}>
+                      {!!task.description?.trim() && (
+                        <Text style={homeStyles.taskDescription}>{task.description}</Text>
+                      )}
+
+                      {videoId && (
+                        <View style={homeStyles.youtubeContainer}>
+                          <YoutubePlayer
+                            height={200}
+                            videoId={videoId}
+                            webViewProps={{ allowsInlineMediaPlayback: true }}
+                          />
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </View>
+              );
+            })
+          )}
 
       </View>
             {/* Task Status Breakdown */}
