@@ -24,6 +24,7 @@ import adminRouter from "./src/routes/adminRoutes.js";
 import Booking from "./src/models/Booking.js";
 import ChatMessage from "./src/models/ChatMessage.js";
 
+import lifeBuildRouter from "./src/routes/LifeBuildRouter.js";
 import aiCounselingRoutes from "./src/routes/aiCounselingRoutes.js";
 
 
@@ -173,6 +174,11 @@ app.use(
 app.use(
   "/api/chat",
   chatRoutes
+);
+
+app.use(
+  "/api/lifebuild",
+  lifeBuildRouter
 );
 
 
