@@ -29,6 +29,7 @@ export const createWeeklyTasks = async (req, res) => {
                         description: task.description || "",
                         date : day.date,
                         status: "pending",
+                        youtubeUrl: task.youtubeUrl || "",
                         family_status: "pending_confirmation",
                     });
 
@@ -73,7 +74,7 @@ export const getTasksById = async (req, res) => {
 
         const today = new Date().toISOString().split("T")[0];
        
-        const tasks = await Task.find({userId, date:today}, "title description status date family_status");
+        const tasks = await Task.find({userId, date:today}, "title description status date family_status youtubeUrl");
 
         res.status(200).json({success: true, tasks})
     } catch (error) {
