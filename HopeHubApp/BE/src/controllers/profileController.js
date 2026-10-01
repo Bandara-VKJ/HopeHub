@@ -20,6 +20,7 @@ export const getProfile = async (req, res) => {
         levelSource: user.counselorLevel ? "counselor" : "model",
         predictedLevel: user.predictedLevel,
         counselorLevel: user.counselorLevel,
+        language: user.language,
       },
     });
   } catch (error) {
@@ -29,42 +30,77 @@ export const getProfile = async (req, res) => {
 };
 
 // UPDATE PROFILE
-export const updateProfile = async(req, res) =>{
-try {
-    const { userId, firstName, lastName } = req.body;
-    if (!userId){
-      return res.status(400).json({message:"userId is required" })
+export const updateProfile = async (req, res) => {
+  try {
+    const {
+      userId,
+      firstName,
+      lastName,
+      language,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "userId is required",
+      });
     }
 
-    let profilePic = undefined;
-
-    if(req.file){
-      profilePic = `/uploads/${req.file.filename}`
+    if (language && !["en", "si"].includes(language)) {
+      return res.status(400).json({
+        message: "Invalid language. Use 'en' or 'si'.",
+      });
     }
 
-    const  updatedata = {firstName, lastName }
+    let profilePic;
 
-    if(profilePic)
-    {
-      updatedata.profilePic = profilePic
+    if (req.file) {
+      profilePic = `/uploads/${req.file.filename}`;
     }
+
+    const updatedata = {
+      firstName,
+      lastName,
+    };
+
+    if (language) {
+      updatedata.language = language;
+    }
+
+    if (profilePic) {
+      updatedata.profilePic = profilePic;
+    }
+    
     const user = await User.findByIdAndUpdate(
       userId,
-    updatedata,
-    {new : true}
+      updatedata,
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
-    if(!user)
-    {
-      return res.status(400).json({message: "User not found"});
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
-      res.status(200).json({message: "Profile saved successfully",profile: {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      profilePic: user.profilePic,
-    }});
-} catch (error) {
-   console.log("updateProfile error:", error);
-    res.status(500).json({ message: "Error saving profile" });
-}
-}
+
+    res.status(200).json({
+      message: "Profile saved successfully",
+
+      profile: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePic: user.profilePic,
+        language: user.language,
+      },
+    });
+
+  } catch (error) {
+    console.log("updateProfile error:", error);
+
+    res.status(500).json({
+      message: "Error saving profile",
+    });
+  }
+};

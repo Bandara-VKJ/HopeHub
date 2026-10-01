@@ -19,7 +19,8 @@ export default function Profile() {
   const [last, setLast] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const [selectedLanguage, setSelectedLanguage] = useState<'en' | 'si'>('en');
   const profile = t.profile;
 
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function Profile() {
           setFirst(data.profile.firstName || '');
           setLast(data.profile.lastName || '');
           setPicture(data.profile.profilePic || null);
+          setSelectedLanguage(data.profile.language || 'en');
         }
       } catch (error) {
         console.log("Load error:", error);
@@ -87,6 +89,7 @@ export default function Profile() {
       formData.append("userId", userId!);
       formData.append("firstName", first);
       formData.append("lastName", last);
+      formData.append("language", selectedLanguage);
 
       if (picture && picture.startsWith("file://")) {
         formData.append("profilePic", {
@@ -107,6 +110,8 @@ export default function Profile() {
         alert(data.message || profile.saveFailed);
         return;
       }
+
+      await setLanguage(selectedLanguage);
 
       if (data.profile?.profilePic) {
         setPicture(data.profile.profilePic);
@@ -191,7 +196,49 @@ export default function Profile() {
               style={profileStyles.input}
             />
           </View>
+          <Text style={profileStyles.label}>
+            {language === 'si' ? 'භාෂාව' : 'Language'}
+          </Text>
 
+          <View style={profileStyles.languageContainer}>
+            <TouchableOpacity
+              style={[
+                profileStyles.languageButton,
+                selectedLanguage === 'en' &&
+                  profileStyles.languageButtonSelected,
+              ]}
+              onPress={() => setSelectedLanguage('en')}
+            >
+              <Text
+                style={[
+                  profileStyles.languageText,
+                  selectedLanguage === 'en' &&
+                    profileStyles.languageTextSelected,
+                ]}
+              >
+                English
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                profileStyles.languageButton,
+                selectedLanguage === 'si' &&
+                  profileStyles.languageButtonSelected,
+              ]}
+              onPress={() => setSelectedLanguage('si')}
+            >
+              <Text
+                style={[
+                  profileStyles.languageText,
+                  selectedLanguage === 'si' &&
+                    profileStyles.languageTextSelected,
+                ]}
+              >
+                සිංහල
+              </Text>
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
             style={[profileStyles.save, saving && profileStyles.saveDisabled]}
             onPress={handleSaveProfile}

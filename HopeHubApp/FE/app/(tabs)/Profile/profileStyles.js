@@ -140,4 +140,34 @@ export const profileStyles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
+  languageContainer: {
+  flexDirection: 'row',
+  gap: 10,
+  marginBottom: 20,
+},
+
+languageButton: {
+  flex: 1,
+  paddingVertical: 12,
+  borderWidth: 1,
+  borderColor: '#D0DEDC',
+  borderRadius: 10,
+  alignItems: 'center',
+  backgroundColor: '#fff',
+},
+languageButtonSelected: {
+  backgroundColor: '#2CA6A4',
+  borderColor: '#2CA6A4',
+},
+
+languageText: {
+  fontSize: 14,
+  color: '#526967',
+  fontWeight: '500',
+},
+
+languageTextSelected: {
+  color: '#fff',
+  fontWeight: '600',
+},
 });

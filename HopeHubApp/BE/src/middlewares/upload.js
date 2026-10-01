@@ -1,14 +1,12 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { profile } from "console";
 
 const uploadDir = "uploads"
 
 //Create upload folder
-if(!fs.existsSync(uploadDir))
-{
-  fs.existsSync(uploadDir);
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 //Configuring Multer Storage
