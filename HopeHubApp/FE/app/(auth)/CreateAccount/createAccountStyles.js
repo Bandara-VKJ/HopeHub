@@ -3,122 +3,123 @@ import { StyleSheet } from "react-native";
 export const accountCreateStyles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#F4F9F9",
+    backgroundColor: "#F4FAFA",
   },
 
-  pageContent: {
-    paddingBottom: 40,
-  },
   hero: {
-    height: 300,
-    backgroundColor: "#2CA6A4",
-
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    overflow: "hidden",
     position: "relative",
+    minHeight: 240,
+    backgroundColor: "#DFF5F4",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 30,
+    paddingBottom: 25,
+    overflow: "hidden",
   },
+
   heroAnimation: {
-    position: "absolute",
-    width: 380,
-    height: 380,
-    alignSelf: "center",
-    top: -35,
-    opacity: 0.9,
+    width: 190,
+    height: 150,
   },
+
   heroContent: {
-    position: "absolute",
-    left: 22,
-    bottom: 105,
-    zIndex: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -10,
   },
 
   smallTitle: {
-    color: "#DFF7F6",
-    fontSize: 16,
+    fontSize: 15,
+    color: "#557979",
     fontWeight: "500",
-    textShadowColor: "rgba(0, 0, 0, 0.6)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 6,
+    marginBottom: 3,
   },
 
   brand: {
-    color: "#fff",
-    fontSize: 38,
-    fontWeight: "900",
-    marginTop: 2,
-    textShadowColor: "rgba(0, 0, 0, 0.6)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 7,
-  },
-
-  subtitle: {
-    color: "#EAFDFC",
-    fontSize: 13,
-    marginTop: 6,
-    width: 230,
-    lineHeight: 19,
-    textShadowColor: "rgba(0, 0, 0, 0.6)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
+    fontSize: 32,
+    color: "#2CA6A4",
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
 
   roleSwitch: {
     flexDirection: "row",
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: -100,
-    borderRadius: 18,
-    padding: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
-    zIndex: 5,
+    alignSelf: "center",
+    width: "88%",
+    backgroundColor: "#E8F1F1",
+    borderRadius: 12,
+    padding: 4,
+    marginTop: 22,
+    marginBottom: 15,
   },
 
   roleBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 14,
+    paddingVertical: 11,
     alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 9,
   },
 
   roleBtnActive: {
     backgroundColor: "#2CA6A4",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 
   roleText: {
-    color: "#7A9A9A",
-    fontWeight: "700",
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#617777",
   },
 
   roleTextActive: {
-    color: "#fff",
+    color: "#FFFFFF",
   },
 
   card: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 35,
-    padding: 22,
-    borderRadius: 24,
+    width: "90%",
+    alignSelf: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingHorizontal: 20,
+    paddingTop: 22,
+    paddingBottom: 28,
+    marginBottom: 40,
     shadowColor: "#000",
-    shadowOpacity: 0.10,
-    shadowRadius: 12,
-    elevation: 5,
-    zIndex: 4,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
   },
 
   cardTitle: {
-    fontSize: 24,
-    fontWeight: "800",
-    color: "#1A3A3A",
+    fontSize: 21,
+    fontWeight: "700",
+    color: "#254747",
     marginBottom: 20,
+  },
 
-    textAlign: "center",
+  sectionLabel: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#385E5E",
+    marginBottom: 13,
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#E5EEEE",
+    marginVertical: 17,
   },
 
   row: {
@@ -127,129 +128,60 @@ export const accountCreateStyles = StyleSheet.create({
   },
 
   inputWrapper: {
-    minHeight: 54,
-    backgroundColor: "rgba(244, 249, 249, 0.85)",
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    marginBottom: 12,
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#F8FBFB",
     borderWidth: 1,
-    borderColor: "#DDEEEE",
-    gap: 10,
+    borderColor: "#D8E7E7",
+    borderRadius: 11,
+    paddingHorizontal: 13,
+    minHeight: 52,
+    marginBottom: 13,
   },
 
+  // IMPORTANT:
+  // Do NOT add outlineStyle: "none" here.
   input: {
     flex: 1,
-    fontSize: 14,
-    color: "#1A3A3A",
-    paddingVertical: 0,
-    outlineStyle: "none",
-  },
-  sectionLabel: {
-    fontSize: 14,
-    color: "#2CA6A4",
-    fontWeight: "800",
-    marginBottom: 10,
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: "#E6F1F1",
-    marginVertical: 12,
+    fontSize: 15,
+    color: "#263D3D",
+    paddingVertical: 10,
+    marginLeft: 8,
   },
 
   button: {
-    height: 56,
-    borderRadius: 18,
+    width: "100%",
+    minHeight: 52,
     backgroundColor: "#2CA6A4",
-    justifyContent: "center",
+    borderRadius: 11,
     alignItems: "center",
-    marginTop: 8,
+    justifyContent: "center",
+    marginTop: 10,
     shadowColor: "#2CA6A4",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
   },
 
   buttonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: "800",
+    fontWeight: "700",
   },
 
   bottomText: {
     textAlign: "center",
-    marginTop: 18,
-    color: "#7A9A9A",
+    marginTop: 19,
+    fontSize: 14,
+    color: "#718585",
   },
 
   loginText: {
     color: "#2CA6A4",
-    fontWeight: "800",
+    fontWeight: "700",
   },
-  modalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0, 0, 0, 0.5)",
-  justifyContent: "center",
-  alignItems: "center",
-},
-
-languageModal: {
-  width: "85%",
-  backgroundColor: "#FFFFFF",
-  borderRadius: 20,
-  padding: 25,
-  alignItems: "center",
-},
-
-modalTitle: {
-  fontSize: 24,
-  fontWeight: "bold",
-  color: "#234B4B",
-  marginBottom: 8,
-},
-
-modalSubtitle: {
-  fontSize: 16,
-  color: "#7A9A9A",
-  marginBottom: 25,
-},
-
-languageButton: {
-  width: "100%",
-  padding: 15,
-  borderWidth: 1,
-  borderColor: "#D5E2E2",
-  borderRadius: 12,
-  marginBottom: 12,
-  alignItems: "center",
-},
-
-languageButtonSelected: {
-  borderColor: "#4F8A8A",
-  backgroundColor: "#E8F4F4",
-},
-
-languageText: {
-  fontSize: 17,
-  color: "#234B4B",
-  fontWeight: "500",
-},
-
-continueButton: {
-  width: "100%",
-  padding: 15,
-  borderRadius: 12,
-  backgroundColor: "#4F8A8A",
-  alignItems: "center",
-  marginTop: 15,
-},
-
-continueButtonText: {
-  fontSize: 17,
-  fontWeight: "bold",
-  color: "#FFFFFF",
-},
 });
-export default {};

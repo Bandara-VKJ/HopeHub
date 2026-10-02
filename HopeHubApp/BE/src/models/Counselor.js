@@ -95,8 +95,33 @@ const counselorSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    // =========================================================
+    // SYSTEM APPROVAL
+    // =========================================================
+
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+
+    approvedAt: {
+      type: Date,
+      default: null,
+    },
+
+    rejectedAt: {
+      type: Date,
+      default: null,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-export default mongoose.model("Counselor", counselorSchema);
+export default mongoose.model(
+  "Counselor",
+  counselorSchema
+);
