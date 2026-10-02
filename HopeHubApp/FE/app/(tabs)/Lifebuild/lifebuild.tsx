@@ -8,7 +8,7 @@ import {
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { lifeBuildStyles } from "./lifebuildStyles";
 import JobPage from "../../(lifepages)/jobpage";
@@ -167,6 +167,60 @@ export default function LifeBuildScreen() {
   const [safetyScore, setSafetyScore] = useState(0);
   const [obtainedScore, setObtainedScore] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [scoreCompleted, setScoreCompleted] = useState(false);
+  const [loadingScore, setLoadingScore] = useState(true);
+
+  useEffect(() => {
+    loadLifeBuildScore();
+  }, []);
+
+  const loadLifeBuildScore = async () => {
+    try {
+      setLoadingScore(true);
+
+      const userId = await AsyncStorage.getItem("userId");
+
+      if (!userId) {
+        return;
+      }
+
+      const response = await ngrokFetch(
+        `${BASE_URL}/api/lifeBuild/score/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const json = await response.json();
+
+      if (response.status === 404) {
+        setScoreCompleted(false);
+        return;
+      }
+
+      if (!response.ok || !json.success) {
+        console.error("Failed to get LifeBuild score:", json.message);
+        return;
+      }
+
+      const score = json.data;
+
+      setSafetyScore(score.percentage ?? 0);
+      setObtainedScore(score.obtainedScore ?? 0);
+      setScoreCompleted(score.scoreCompleted === true);
+
+      if (score.scoreCompleted === true) {
+        setScreen("score");
+      }
+    } catch (error) {
+      console.error("Failed to load LifeBuild score:", error);
+    } finally {
+      setLoadingScore(false);
+    }
+  };
 
   const currentProfileQuestion = PROFILE_QUESTIONS[profileIndex];
   const currentRecoveryQuestion = RECOVERY_QUESTIONS[questionIndex];
@@ -312,9 +366,14 @@ export default function LifeBuildScreen() {
 
     try {
       setSubmitting(true);
+
       const saved = await submitToServer();
-      setSafetyScore(saved.safetyScore);
-      setScreen("result");
+
+      setObtainedScore(saved.obtainedScore);
+      setSafetyScore(saved.percentage);
+      setScoreCompleted(saved.scoreCompleted === true);
+
+      setScreen("score");
     } catch (error: any) {
       Alert.alert(
         "Could Not Save",
@@ -348,6 +407,8 @@ export default function LifeBuildScreen() {
 
       setObtainedScore(saved.obtainedScore);
       setSafetyScore(saved.percentage);
+      setScoreCompleted(saved.scoreCompleted === true);
+
 
       setScreen("score");
     } catch (error: any) {
@@ -373,8 +434,36 @@ export default function LifeBuildScreen() {
     setRecoveryAnswers({});
     setSafetyScore(0);
     setObtainedScore(0);
+    setScoreCompleted(false);
     setScreen("start");
   };
+
+  if (loadingScore) {
+    return (
+      <View
+        style={[
+          lifeBuildStyles.container,
+          {
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <Ionicons name="hourglass-outline" size={42} color="#2CA6A4" />
+
+        <Text
+          style={{
+            marginTop: 16,
+            fontSize: 16,
+            color: "#4a5a5a",
+          }}
+        >
+          Checking your assessment...
+        </Text>
+      </View>
+    );
+  }
 
   if (screen === "start") {
     return (
@@ -827,16 +916,24 @@ export default function LifeBuildScreen() {
             <Text style={lifeBuildStyles.previousButtonText}>Review Answers</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+         <TouchableOpacity
             onPress={() => {
-              setProfileIndex(0);
-              setScreen("profile");
+              setScreen("result");
             }}
             style={lifeBuildStyles.nextButton}
             activeOpacity={0.85}
           >
-            <Text style={lifeBuildStyles.nextButtonText}>Continue</Text>
+            <Text style={lifeBuildStyles.nextButtonText}>
+              Let's Find a Job
+            </Text>
+
+            <Ionicons
+              name="arrow-forward"
+              size={20}
+              color="#fff"
+            />
           </TouchableOpacity>
+
         </View>
       </ScrollView>
     );

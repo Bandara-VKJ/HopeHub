@@ -26,6 +26,11 @@ const lifeBuildScoreSchema = new mongoose.Schema(
       required: true,
       min: 0,
       max: 100,
+    },  
+    
+   scoreCompleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {
