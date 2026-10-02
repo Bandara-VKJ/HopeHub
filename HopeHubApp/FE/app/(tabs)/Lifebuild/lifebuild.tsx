@@ -9,8 +9,12 @@ import {
 
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { lifeBuildStyles } from "./lifebuildStyles";
 import JobPage from "../../(lifepages)/jobpage";
+import { ngrokFetch } from "@/utill/ngrokFetch";
+
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 type ProfileQuestionType =
   | "text"
@@ -52,88 +56,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
     options: ["No formal education", "Primary", "Secondary", "Diploma", "Degree or higher"],
   },
   {
-    id: "substance",
-    question: "What type of substance did you previously use?",
-    type: "text",
-    section: "Substance Use Background",
-  },
-  {
-    id: "firstUseAge",
-    question: "At what age did you first use drugs?",
-    type: "number",
-    section: "Substance Use Background",
-  },
-  {
-    id: "substanceDuration",
-    question: "What was the duration of substance use?",
-    type: "select",
-    section: "Substance Use Background",
-    options: [
-      "1-2 months",
-      "3-6 months",
-      "6 months - 1 year",
-      "1-2 years",
-      "More than 3 years",
-      "4-6 years",
-      "Other",
-    ],
-  },
-  {
-    id: "treatmentReferral",
-    question: "How were you referred for treatment?",
-    type: "select",
-    section: "Substance Use Background",
-    options: [
-      "Family member recommendation",
-      "Psychiatrist / Counsellor recommendation",
-      "Self-referred",
-    ],
-  },
-  {
-    id: "receivedTreatment",
-    question: "What treatment have you received?",
-    type: "multiSelect",
-    section: "Substance Use Background",
-    options: ["Medicine", "Counselling", "Mindfulness / Meditation", "Physical Activities"],
-  },
-  {
-    id: "stressFrequency",
-    question: "How often do you experience stress?",
-    type: "select",
-    section: "Psychological & Environmental Factors",
-    options: ["Never", "Rarely", "Sometimes", "Often", "Always"],
-  },
-  {
-    id: "emotionalTriggers",
-    question: "How much do emotional triggers affect you?",
-    type: "select",
-    section: "Psychological & Environmental Factors",
-    options: ["Not at all", "Slightly", "Moderately", "Significantly"],
-  },
-  {
-    id: "recoveryFactors",
-    question: "Which factors affect your recovery?",
-    type: "multiSelect",
-    section: "Psychological & Environmental Factors",
-    options: [
-      "Stress",
-      "Social",
-      "Financial",
-      "Family",
-      "Mental health",
-      "ADHD",
-      "Autism",
-      "Personal Disorders (Dyslexia, Dysgraphia)",
-      "Others",
-    ],
-  },
-  {
-    id: "skills",
-    question: "Rate your confidence in each skill.",
-    type: "skills",
-    section: "Skills, Interests & Reintegration",
-  },
-  {
     id: "jobInterest",
     question: "Which activities do you enjoy most? Select up to three.",
     type: "multiSelect",
@@ -154,27 +76,6 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Working outdoors",
     ],
   },
-  {
-    id: "willingToLearn",
-    question: "Are you willing to learn new skills?",
-    type: "select",
-    section: "Skills, Interests & Reintegration",
-    options: ["Yes", "No"],
-  },
-  {
-    id: "supportNeeded",
-    question: "What type of support do you need?",
-    type: "multiSelect",
-    section: "Skills, Interests & Reintegration",
-    options: ["Jobs", "Training", "Counselling", "Financial", "Other"],
-  },
-  {
-    id: "recoveryStatus",
-    question: "What is your current recovery status?",
-    type: "select",
-    section: "Skills, Interests & Reintegration",
-    options: ["In program", "Not in program"],
-  },
 ];
 
 const SKILLS = [
@@ -193,28 +94,25 @@ const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
   { id: 2, section: "Recovery Self-Efficacy", question: "I can control my urges without using drugs." },
   { id: 3, section: "Recovery Self-Efficacy", question: "I believe I can continue my recovery successfully." },
   { id: 4, section: "Recovery Self-Efficacy", question: "I can refuse drugs even if someone offers them to me." },
-  { id: 5, section: "Recovery Self-Efficacy", question: "I believe I can overcome difficult situations without returning to substance use." },
-  { id: 6, section: "Emotional Stability", question: "I can manage my emotions in healthy ways." },
-  { id: 7, section: "Emotional Stability", question: "I usually remain calm when facing problems." },
-  { id: 8, section: "Emotional Stability", question: "I feel hopeful about my future." },
-  { id: 9, section: "Emotional Stability", question: "I rarely feel overwhelmed by negative emotions." },
-  { id: 10, section: "Emotional Stability", question: "I believe I have control over my life." },
-  { id: 11, section: "Lifestyle Stability", question: "I maintain a regular daily routine." },
-  { id: 12, section: "Lifestyle Stability", question: "I get enough sleep most nights." },
-  { id: 13, section: "Lifestyle Stability", question: "I participate in healthy daily activities." },
-  { id: 14, section: "Lifestyle Stability", question: "I avoid places or people that encourage drug use." },
-  { id: 15, section: "Lifestyle Stability", question: "I spend my free time in productive activities." },
-  { id: 16, section: "Social Support", question: "My family supports my recovery." },
-  { id: 17, section: "Social Support", question: "I have friends who encourage me to stay drug-free." },
-  { id: 18, section: "Social Support", question: "I know where to seek help if I need support." },
-  { id: 19, section: "Social Support", question: "I feel accepted by people around me." },
-  { id: 20, section: "Social Support", question: "I have someone I trust to discuss my problems." },
-  { id: 21, section: "Career Readiness", question: "I believe I can perform well in a job." },
-  { id: 22, section: "Career Readiness", question: "I enjoy learning new skills." },
-  { id: 23, section: "Career Readiness", question: "I can work responsibly with others." },
-  { id: 24, section: "Career Readiness", question: "I am willing to attend vocational training." },
-  { id: 25, section: "Career Readiness", question: "I believe having a career will help me maintain recovery." },
+  { id: 5, section: "Emotional Stability", question: "I can manage my emotions in healthy ways." },
+  { id: 6, section: "Emotional Stability", question: "I usually remain calm when facing problems." },
+  { id: 7, section: "Emotional Stability", question: "I feel hopeful about my future." },
+  { id: 8, section: "Emotional Stability", question: "I believe I have control over my life." },
+  { id: 9, section: "Lifestyle Stability", question: "I maintain a regular daily routine." },
+  { id: 10, section: "Lifestyle Stability", question: "I get enough sleep most nights." },
+  { id: 11, section: "Lifestyle Stability", question: "I avoid places or people that encourage drug use." },
+  { id: 12, section: "Lifestyle Stability", question: "I spend my free time in productive activities." },
+  { id: 13, section: "Social Support", question: "My family supports my recovery." },
+  { id: 14, section: "Social Support", question: "I have friends who encourage me to stay drug-free." },
+  { id: 15, section: "Social Support", question: "I know where to seek help if I need support." },
+  { id: 16, section: "Social Support", question: "I have someone I trust to discuss my problems." },
+  { id: 17, section: "Career Readiness", question: "I believe I can perform well in a job." },
+  { id: 18, section: "Career Readiness", question: "I can work responsibly with others." },
+  { id: 19, section: "Career Readiness", question: "I am willing to attend vocational training." },
+  { id: 20, section: "Career Readiness", question: "I believe having a career will help me maintain recovery." },
 ];
+
+const MAX_SCORE = RECOVERY_QUESTIONS.length * 5;
 
 const ANSWER_OPTIONS = [
   { label: "Strongly Disagree", value: 1 },
@@ -227,23 +125,23 @@ const ANSWER_OPTIONS = [
 const STEP_CARDS = [
   {
     number: "01",
+    icon: "document-text-outline",
+    title: "Complete Recovery Assessment",
+    description: "Answer 20 Recovery Safety Assessment questions and submit.",
+  },
+  {
+    number: "02",
+    icon: "shield-checkmark-outline",
+    title: "See Your Safety Score",
+    description:
+      "Your score is calculated from your 20 answers and shown right away.",
+  },
+  {
+    number: "03",
     icon: "person-outline",
     title: "Tell Us About Yourself",
     description:
       "Answer 16 questions about your background, skills, interests and recovery support needs.",
-  },
-  {
-    number: "02",
-    icon: "document-text-outline",
-    title: "Complete Recovery Assessment",
-    description: "Answer 25 Recovery Safety Assessment questions.",
-  },
-  {
-    number: "03",
-    icon: "shield-checkmark-outline",
-    title: "Calculate Safety Score",
-    description:
-      "Your 25 assessment answers are used to calculate your Recovery Safety Score.",
   },
   {
     number: "04",
@@ -256,7 +154,7 @@ const STEP_CARDS = [
 
 export default function LifeBuildScreen() {
   const [screen, setScreen] = useState<
-    "start" | "profile" | "assessment" | "result"
+    "start" | "profile" | "assessment" | "score" | "result"
   >("start");
 
   const [profileIndex, setProfileIndex] = useState(0);
@@ -267,12 +165,13 @@ export default function LifeBuildScreen() {
   const [skillAnswers, setSkillAnswers] = useState<Record<string, number>>({});
   const [recoveryAnswers, setRecoveryAnswers] = useState<Record<number, number>>({});
   const [safetyScore, setSafetyScore] = useState(0);
+  const [obtainedScore, setObtainedScore] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
   const currentProfileQuestion = PROFILE_QUESTIONS[profileIndex];
   const currentRecoveryQuestion = RECOVERY_QUESTIONS[questionIndex];
 
-
-  const startAssessment = () => setScreen("profile");
+  const startAssessment = () => setScreen("assessment");
 
   const saveProfileAnswer = (value: string) => {
     setProfileAnswers((previous) => ({
@@ -325,6 +224,61 @@ export default function LifeBuildScreen() {
     return !!answer && answer.trim() !== "";
   };
 
+  const buildProfilePayload = () => {
+    const answers: Record<string, any> = {};
+
+    PROFILE_QUESTIONS.forEach((question) => {
+      if (question.type === "multiSelect") {
+        answers[question.id] = multiAnswers[question.id] || [];
+      } else if (question.type === "skills") {
+        answers[question.id] = skillAnswers;
+      } else if (question.type === "number") {
+        answers[question.id] = Number(profileAnswers[question.id]);
+      } else {
+        answers[question.id] = (profileAnswers[question.id] || "").trim();
+      }
+    });
+
+    return answers;
+  };
+
+  const buildRecoveryPayload = () => {
+    const answers: Record<string, number> = {};
+
+    RECOVERY_QUESTIONS.forEach((question) => {
+      answers[`q${question.id}`] = recoveryAnswers[question.id];
+    });
+
+    return answers;
+  };
+
+   const submitToServer = async () => {
+      const userId = await AsyncStorage.getItem("userId");
+
+      if (!userId) {
+        throw new Error("User not logged in");
+      }
+
+      const response = await ngrokFetch(`${BASE_URL}/api/lifeBuild/assessment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          answers: buildRecoveryPayload(),
+        }),
+      });
+
+      const json = await response.json();
+
+      if (!response.ok || !json.success) {
+        throw new Error(json.message || "Failed to save assessment");
+      }
+
+      return json.data;
+  };
+
   const goToNextProfileQuestion = () => {
     if (!isCurrentProfileQuestionAnswered()) {
       Alert.alert("Answer Required", "Please provide an answer before continuing.");
@@ -334,12 +288,16 @@ export default function LifeBuildScreen() {
     if (profileIndex < PROFILE_QUESTIONS.length - 1) {
       setProfileIndex(profileIndex + 1);
     } else {
-      setScreen("assessment");
+      submitAssessment();
     }
   };
 
   const goToPreviousProfileQuestion = () => {
-    if (profileIndex > 0) setProfileIndex(profileIndex - 1);
+    if (profileIndex > 0) {
+      setProfileIndex(profileIndex - 1);
+    } else {
+      setScreen("score");
+    }
   };
 
   const selectRecoveryAnswer = (value: number) => {
@@ -349,15 +307,22 @@ export default function LifeBuildScreen() {
     }));
   };
 
-  const calculateSafetyScore = () => {
-    let totalScore = 0;
-    RECOVERY_QUESTIONS.forEach((question) => {
-      totalScore += recoveryAnswers[question.id] || 0;
-    });
+  const submitAssessment = async () => {
+    if (submitting) return;
 
-    const maximumScore = RECOVERY_QUESTIONS.length * 5;
-    setSafetyScore(Math.round((totalScore / maximumScore) * 100));
-    setScreen("result");
+    try {
+      setSubmitting(true);
+      const saved = await submitToServer();
+      setSafetyScore(saved.safetyScore);
+      setScreen("result");
+    } catch (error: any) {
+      Alert.alert(
+        "Could Not Save",
+        error?.message || "Could not save your answers. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const goToNextRecoveryQuestion = () => {
@@ -369,7 +334,29 @@ export default function LifeBuildScreen() {
     if (questionIndex < RECOVERY_QUESTIONS.length - 1) {
       setQuestionIndex(questionIndex + 1);
     } else {
-      calculateSafetyScore();
+      submitRecoveryAnswers();
+    }
+  };
+
+  const submitRecoveryAnswers = async () => {
+    if (submitting) return;
+
+    try {
+      setSubmitting(true);
+
+      const saved = await submitToServer();
+
+      setObtainedScore(saved.obtainedScore);
+      setSafetyScore(saved.percentage);
+
+      setScreen("score");
+    } catch (error: any) {
+      Alert.alert(
+        "Could Not Save",
+        error?.message || "Could not save your answers. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -385,6 +372,7 @@ export default function LifeBuildScreen() {
     setSkillAnswers({});
     setRecoveryAnswers({});
     setSafetyScore(0);
+    setObtainedScore(0);
     setScreen("start");
   };
 
@@ -405,26 +393,13 @@ export default function LifeBuildScreen() {
             </Text>
           </View>
 
-
           <View style={lifeBuildStyles.headerIcon}>
             <Ionicons name="rocket-outline" size={42} color="#fff" />
           </View>
         </View>
 
-        {/* Welcome */}
-        <View style={lifeBuildStyles.welcomeSection}>
-          <Text style={lifeBuildStyles.welcomeTitle}>
-            Welcome back,{" "}
-            <Text style={lifeBuildStyles.welcomeHighlight}>User!</Text>
-          </Text>
-          <Text style={lifeBuildStyles.welcomeSubtitle}>
-            Your recovery journey can help you build a safer and stronger future.
-          </Text>
-        </View>
-
         {/* Main Start Card */}
         <View style={lifeBuildStyles.startMainCard}>
-
           <View style={lifeBuildStyles.startCenterContent}>
             <View style={lifeBuildStyles.startIconCircle}>
               <Ionicons name="clipboard-outline" size={32} color="#2CA6A4" />
@@ -446,7 +421,6 @@ export default function LifeBuildScreen() {
               <Ionicons name="arrow-forward" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
-
         </View>
 
         {/* 2x2 Step Cards */}
@@ -468,39 +442,6 @@ export default function LifeBuildScreen() {
             </View>
           ))}
         </View>
-
-        {/* Encouragement Banner */}
-        <View style={lifeBuildStyles.encourageBanner}>
-          <View style={lifeBuildStyles.encourageIconWrap}>
-            <Ionicons name="heart" size={24} color="#2CA6A4" />
-          </View>
-          <View style={lifeBuildStyles.encourageTextWrap}>
-            <Text style={lifeBuildStyles.encourageTitle}>
-              You are stronger than you think.
-            </Text>
-            <Text style={lifeBuildStyles.encourageSubtitle}>
-              We are here to support you every step of the way.
-            </Text>
-          </View>
-        </View>
-
-        {/* Feature Row */}
-        <View style={lifeBuildStyles.featureRow}>
-          {[
-            { icon: "shield-checkmark", title: "100% Confidential", desc: "Your data is private and secure." },
-            { icon: "stats-chart", title: "Personalized Results", desc: "Get recommendations that fit you." },
-            { icon: "heart", title: "Designed for You", desc: "Built to support your recovery journey." },
-          ].map((f) => (
-            <View key={f.title} style={lifeBuildStyles.featureItem}>
-              <View style={lifeBuildStyles.featureIconCircle}>
-                <Ionicons name={f.icon as any} size={18} color="#2CA6A4" />
-              </View>
-              <Text style={lifeBuildStyles.featureTitle}>{f.title}</Text>
-              <Text style={lifeBuildStyles.featureDescription}>{f.desc}</Text>
-            </View>
-          ))}
-        </View>
-
         <View style={{ height: 24 }} />
       </ScrollView>
     );
@@ -510,6 +451,7 @@ export default function LifeBuildScreen() {
     const savedAnswer = profileAnswers[currentProfileQuestion.id] || "";
     const selectedMultiAnswers = multiAnswers[currentProfileQuestion.id] || [];
     const progress = ((profileIndex + 1) / PROFILE_QUESTIONS.length) * 100;
+    const isLastProfileQuestion = profileIndex === PROFILE_QUESTIONS.length - 1;
 
     return (
       <ScrollView
@@ -670,25 +612,27 @@ export default function LifeBuildScreen() {
         </View>
 
         <View style={lifeBuildStyles.navigationRow}>
-          {profileIndex > 0 && (
-            <TouchableOpacity
-              onPress={goToPreviousProfileQuestion}
-              style={lifeBuildStyles.previousButton}
-              activeOpacity={0.7}
-            >
-              <Text style={lifeBuildStyles.previousButtonText}>Back</Text>
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            onPress={goToPreviousProfileQuestion}
+            disabled={submitting}
+            style={lifeBuildStyles.previousButton}
+            activeOpacity={0.7}
+          >
+            <Text style={lifeBuildStyles.previousButtonText}>Back</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={goToNextProfileQuestion}
-            style={lifeBuildStyles.nextButton}
+            disabled={submitting}
+            style={[
+              lifeBuildStyles.nextButton,
+              isLastProfileQuestion && lifeBuildStyles.nextButtonSuccess,
+              submitting && { opacity: 0.6 },
+            ]}
             activeOpacity={0.85}
           >
             <Text style={lifeBuildStyles.nextButtonText}>
-              {profileIndex === PROFILE_QUESTIONS.length - 1
-                ? "Start Recovery Assessment"
-                : "Next"}
+              {submitting ? "Saving..." : isLastProfileQuestion ? "View Result" : "Next"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -771,20 +715,132 @@ export default function LifeBuildScreen() {
           )}
 
           <TouchableOpacity
-            onPress={goToNextRecoveryQuestion}
-            style={[
-              lifeBuildStyles.nextButton,
-              isLast && lifeBuildStyles.nextButtonSuccess,
-            ]}
+          onPress={goToNextRecoveryQuestion}
+          disabled={submitting}
+          style={[
+            lifeBuildStyles.nextButton,
+            isLast && lifeBuildStyles.nextButtonSuccess,
+            submitting && { opacity: 0.6 },
+          ]}
+          activeOpacity={0.85}
+        >
+          <Text style={lifeBuildStyles.nextButtonText}>
+            {submitting ? "Saving..." : isLast ? "Submit" : "Next"}
+          </Text>
+        </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  if (screen === "score") {
+    const passed = safetyScore >= 50;
+    const accent = passed ? "#2CA6A4" : "#E67E22";
+    const sectionNames = Array.from(
+      new Set(RECOVERY_QUESTIONS.map((question) => question.section))
+    );
+
+    return (
+      <ScrollView
+        style={lifeBuildStyles.container}
+        contentContainerStyle={lifeBuildStyles.screenPadding}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={lifeBuildStyles.sectionLabel}>RECOVERY SAFETY SCORE</Text>
+        <Text style={lifeBuildStyles.screenTitle}>Your Results</Text>
+        <Text style={lifeBuildStyles.screenSubtitle}>
+          This score is calculated from your {RECOVERY_QUESTIONS.length} answers.
+        </Text>
+
+      <View style={[lifeBuildStyles.questionCard, lifeBuildStyles.scoreContainer]}>
+      <Text
+        style={[lifeBuildStyles.scorePercentage,{ color: accent },]} >
+        {safetyScore}%
+        </Text>
+        <Text style={lifeBuildStyles.scoreObtained}>
+          Your Score: {obtainedScore} / {MAX_SCORE}
+        </Text>
+        <Text style={lifeBuildStyles.scoreDescription}>
+          Your Recovery Safety Assessment score.
+        </Text>
+      </View>
+
+       <View style={lifeBuildStyles.questionCard}>
+          <Text style={lifeBuildStyles.questionSection}>SCORE BY SECTION</Text>
+
+          {sectionNames.map((name) => {
+            const sectionQuestions = RECOVERY_QUESTIONS.filter(
+              (question) => question.section === name
+            );
+            const sectionObtained = sectionQuestions.reduce(
+              (sum, question) => sum + (recoveryAnswers[question.id] || 0),
+              0
+            );
+            const sectionMax = sectionQuestions.length * 5;
+            const sectionPercent = (sectionObtained / sectionMax) * 100;
+
+            return (
+              <View key={name} style={lifeBuildStyles.sectionScoreRow}>
+              <View style={lifeBuildStyles.sectionScoreHeader}>
+                <Text style={lifeBuildStyles.sectionScoreName}>
+                  {name}
+                </Text>
+
+                <Text style={lifeBuildStyles.sectionScoreValue}>
+                  {sectionObtained} / {sectionMax}
+                </Text>
+              </View>
+
+              <View style={lifeBuildStyles.sectionProgressTrack}>
+                <View
+                  style={[
+                    lifeBuildStyles.sectionProgressFill,
+                    { width: `${sectionPercent}%` },
+                  ]}
+                />
+              </View>
+            </View>
+            );
+          })}
+        </View>
+
+        <Text
+          style={{
+            fontSize: 14,
+            color: "#4a5a5a",
+            textAlign: "center",
+            marginBottom: 16,
+            lineHeight: 20,
+          }}
+        >
+          {passed
+            ? "Great work! Answer a few personal questions so we can recommend suitable career paths."
+            : "Your score is below 50%, so career recommendations are not available yet. You can still continue and tell us about yourself so we can understand how best to support you."}
+        </Text>
+
+        <View style={lifeBuildStyles.navigationRow}>
+          <TouchableOpacity
+            onPress={() => setScreen("assessment")}
+            style={lifeBuildStyles.previousButton}
+            activeOpacity={0.7}
+          >
+            <Text style={lifeBuildStyles.previousButtonText}>Review Answers</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              setProfileIndex(0);
+              setScreen("profile");
+            }}
+            style={lifeBuildStyles.nextButton}
             activeOpacity={0.85}
           >
-            <Text style={lifeBuildStyles.nextButtonText}>
-              {isLast ? "View Result" : "Next"}
-            </Text>
+            <Text style={lifeBuildStyles.nextButtonText}>Continue</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
     );
   }
+
   return <JobPage safetyScore={safetyScore} onRestart={restartAssessment} />;
 }
