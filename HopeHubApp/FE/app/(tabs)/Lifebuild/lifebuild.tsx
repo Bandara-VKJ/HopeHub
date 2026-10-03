@@ -212,9 +212,6 @@ export default function LifeBuildScreen() {
       setObtainedScore(score.obtainedScore ?? 0);
       setScoreCompleted(score.scoreCompleted === true);
 
-      if (score.scoreCompleted === true) {
-        setScreen("score");
-      }
     } catch (error) {
       console.error("Failed to load LifeBuild score:", error);
     } finally {
@@ -373,7 +370,7 @@ export default function LifeBuildScreen() {
       setSafetyScore(saved.percentage);
       setScoreCompleted(saved.scoreCompleted === true);
 
-      setScreen("score");
+      setScreen("start");
     } catch (error: any) {
       Alert.alert(
         "Could Not Save",
@@ -409,8 +406,7 @@ export default function LifeBuildScreen() {
       setSafetyScore(saved.percentage);
       setScoreCompleted(saved.scoreCompleted === true);
 
-
-      setScreen("score");
+      setScreen("start");
     } catch (error: any) {
       Alert.alert(
         "Could Not Save",
@@ -487,31 +483,76 @@ export default function LifeBuildScreen() {
           </View>
         </View>
 
-        {/* Main Start Card */}
-        <View style={lifeBuildStyles.startMainCard}>
-          <View style={lifeBuildStyles.startCenterContent}>
-            <View style={lifeBuildStyles.startIconCircle}>
-              <Ionicons name="clipboard-outline" size={32} color="#2CA6A4" />
-            </View>
-
-            <Text style={lifeBuildStyles.startMainTitle}>Start Your Assessment</Text>
-
-            <Text style={lifeBuildStyles.startMainDescription}>
-              Complete your personal information and Recovery Safety Assessment to
-              understand your current recovery safety level.
-            </Text>
-
-            <TouchableOpacity
-              style={lifeBuildStyles.startButton}
-              onPress={startAssessment}
-              activeOpacity={0.85}
-            >
-              <Text style={lifeBuildStyles.startButtonText}>Start Assessment</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
-            </TouchableOpacity>
+       {/* Main Start Card */}
+      <View style={lifeBuildStyles.startMainCard}>
+        <View style={lifeBuildStyles.startCenterContent}>
+          <View style={lifeBuildStyles.startIconCircle}>
+            <Ionicons
+              name={scoreCompleted ? "shield-checkmark-outline" : "clipboard-outline"}
+              size={32}
+              color={safetyScore >= 50 || !scoreCompleted ? "#2CA6A4" : "#E67E22"}
+            />
           </View>
-        </View>
 
+          {scoreCompleted ? (
+            <>
+              <Text style={lifeBuildStyles.startMainTitle}>Your Recovery Safety Score</Text>
+
+              <Text
+                style={{
+                  fontSize: 48,
+                  fontWeight: "800",
+                  marginVertical: 8,
+                  color: safetyScore >= 50 ? "#2CA6A4" : "#E67E22",
+                }}
+              >
+                {Math.round(safetyScore)}%
+              </Text>
+
+              <Text style={{ fontSize: 14, color: "#4a5a5a", marginBottom: 6 }}>
+                {obtainedScore} / {MAX_SCORE} points
+              </Text>
+
+              <Text style={lifeBuildStyles.startMainDescription}>
+                {safetyScore >= 50
+                  ? "Great progress! You're ready to explore career paths that suit you."
+                  : "Your score is below 50%. Keep building your recovery support, then retake the assessment to unlock career recommendations."}
+              </Text>
+
+              <TouchableOpacity
+                style={lifeBuildStyles.startButton}
+                onPress={() => setScreen("score")}
+                activeOpacity={0.85}
+              >
+                <Text style={lifeBuildStyles.startButtonText}>Let's Find Job</Text>
+                <Ionicons name="briefcase-outline" size={20} color="#fff" />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={restartAssessment} style={{ marginTop: 14 }}>
+                <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>Retake Assessment</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={lifeBuildStyles.startMainTitle}>Start Your Assessment</Text>
+
+              <Text style={lifeBuildStyles.startMainDescription}>
+                Complete your personal information and Recovery Safety Assessment to
+                understand your current recovery safety level.
+              </Text>
+
+              <TouchableOpacity
+                style={lifeBuildStyles.startButton}
+                onPress={startAssessment}
+                activeOpacity={0.85}
+              >
+                <Text style={lifeBuildStyles.startButtonText}>Start Assessment</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </View>
         {/* 2x2 Step Cards */}
         <View style={lifeBuildStyles.stepsGrid}>
           {STEP_CARDS.map((step) => (
@@ -823,121 +864,8 @@ export default function LifeBuildScreen() {
   }
 
   if (screen === "score") {
-    const passed = safetyScore >= 50;
-    const accent = passed ? "#2CA6A4" : "#E67E22";
-    const sectionNames = Array.from(
-      new Set(RECOVERY_QUESTIONS.map((question) => question.section))
-    );
-
-    return (
-      <ScrollView
-        style={lifeBuildStyles.container}
-        contentContainerStyle={lifeBuildStyles.screenPadding}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={lifeBuildStyles.sectionLabel}>RECOVERY SAFETY SCORE</Text>
-        <Text style={lifeBuildStyles.screenTitle}>Your Results</Text>
-        <Text style={lifeBuildStyles.screenSubtitle}>
-          This score is calculated from your {RECOVERY_QUESTIONS.length} answers.
-        </Text>
-
-      <View style={[lifeBuildStyles.questionCard, lifeBuildStyles.scoreContainer]}>
-      <Text
-        style={[lifeBuildStyles.scorePercentage,{ color: accent },]} >
-        {safetyScore}%
-        </Text>
-        <Text style={lifeBuildStyles.scoreObtained}>
-          Your Score: {obtainedScore} / {MAX_SCORE}
-        </Text>
-        <Text style={lifeBuildStyles.scoreDescription}>
-          Your Recovery Safety Assessment score.
-        </Text>
-      </View>
-
-       <View style={lifeBuildStyles.questionCard}>
-          <Text style={lifeBuildStyles.questionSection}>SCORE BY SECTION</Text>
-
-          {sectionNames.map((name) => {
-            const sectionQuestions = RECOVERY_QUESTIONS.filter(
-              (question) => question.section === name
-            );
-            const sectionObtained = sectionQuestions.reduce(
-              (sum, question) => sum + (recoveryAnswers[question.id] || 0),
-              0
-            );
-            const sectionMax = sectionQuestions.length * 5;
-            const sectionPercent = (sectionObtained / sectionMax) * 100;
-
-            return (
-              <View key={name} style={lifeBuildStyles.sectionScoreRow}>
-              <View style={lifeBuildStyles.sectionScoreHeader}>
-                <Text style={lifeBuildStyles.sectionScoreName}>
-                  {name}
-                </Text>
-
-                <Text style={lifeBuildStyles.sectionScoreValue}>
-                  {sectionObtained} / {sectionMax}
-                </Text>
-              </View>
-
-              <View style={lifeBuildStyles.sectionProgressTrack}>
-                <View
-                  style={[
-                    lifeBuildStyles.sectionProgressFill,
-                    { width: `${sectionPercent}%` },
-                  ]}
-                />
-              </View>
-            </View>
-            );
-          })}
-        </View>
-
-        <Text
-          style={{
-            fontSize: 14,
-            color: "#4a5a5a",
-            textAlign: "center",
-            marginBottom: 16,
-            lineHeight: 20,
-          }}
-        >
-          {passed
-            ? "Great work! Answer a few personal questions so we can recommend suitable career paths."
-            : "Your score is below 50%, so career recommendations are not available yet. You can still continue and tell us about yourself so we can understand how best to support you."}
-        </Text>
-
-        <View style={lifeBuildStyles.navigationRow}>
-          <TouchableOpacity
-            onPress={() => setScreen("assessment")}
-            style={lifeBuildStyles.previousButton}
-            activeOpacity={0.7}
-          >
-            <Text style={lifeBuildStyles.previousButtonText}>Review Answers</Text>
-          </TouchableOpacity>
-
-         <TouchableOpacity
-            onPress={() => {
-              setScreen("result");
-            }}
-            style={lifeBuildStyles.nextButton}
-            activeOpacity={0.85}
-          >
-            <Text style={lifeBuildStyles.nextButtonText}>
-              Let's Find a Job
-            </Text>
-
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color="#fff"
-            />
-          </TouchableOpacity>
-
-        </View>
-      </ScrollView>
-    );
+    return <JobPage safetyScore={safetyScore} onRestart={restartAssessment} />;
   }
 
-  return <JobPage safetyScore={safetyScore} onRestart={restartAssessment} />;
+  return null;
 }
