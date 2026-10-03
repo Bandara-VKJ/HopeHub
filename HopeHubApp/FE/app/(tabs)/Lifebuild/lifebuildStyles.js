@@ -73,31 +73,6 @@ export const lifeBuildStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
-  welcomeSection: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-
-  welcomeTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#1a2e2e",
-    marginBottom: 6,
-  },
-
-  welcomeHighlight: {
-    color: "#2CA6A4",
-  },
-
-  welcomeSubtitle: {
-    fontSize: 14,
-    color: "#718181",
-    lineHeight: 21,
-    marginBottom: 4,
-  },
-
   startMainCard: {
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -229,90 +204,6 @@ export const lifeBuildStyles = StyleSheet.create({
     color: "#718181",
     lineHeight: 16,
   },
-
-  encourageBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#e8f7f6",
-    borderRadius: 16,
-    padding: 14,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#d0efed",
-  },
-
-  encourageIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#d4f0ee",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-
-  encourageTextWrap: {
-    flex: 1,
-  },
-
-  encourageTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#1a2e2e",
-    marginBottom: 3,
-  },
-
-  encourageSubtitle: {
-    fontSize: 12,
-    color: "#5a7a7a",
-    lineHeight: 17,
-  },
-
-  featureRow: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
-    gap: 8,
-  },
-
-  featureItem: {
-    flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 6,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e0f0ef",
-  },
-
-  featureIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: "#e1f5f4",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-
-  featureTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#1a2e2e",
-    textAlign: "center",
-    marginBottom: 3,
-  },
-
-  featureDescription: {
-    fontSize: 10,
-    color: "#718181",
-    textAlign: "center",
-    lineHeight: 14,
-  },
-
   screenPadding: {
     padding: 16,
     paddingTop: 60,
@@ -515,4 +406,63 @@ export const lifeBuildStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
+  scoreContainer: {
+  alignItems: "center",
+},
+
+scorePercentage: {
+  fontSize: 56,
+  fontWeight: "800",
+  color: "#2CA6A4",
+},
+
+scoreObtained: {
+  fontSize: 18,
+  fontWeight: "700",
+  color: "#1f2d2d",
+  marginTop: 4,
+},
+
+scoreDescription: {
+  fontSize: 13,
+  color: "#6b7b7b",
+  textAlign: "center",
+  marginTop: 10,
+  lineHeight: 19,
+},
+
+sectionScoreRow: {
+  marginTop: 12,
+},
+
+sectionScoreHeader: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+},
+
+sectionScoreName: {
+  fontSize: 14,
+  color: "#1f2d2d",
+  flex: 1,
+},
+
+sectionScoreValue: {
+  fontSize: 14,
+  fontWeight: "700",
+  color: "#1f2d2d",
+},
+
+sectionProgressTrack: {
+  height: 8,
+  borderRadius: 4,
+  backgroundColor: "#E3ECEC",
+  marginTop: 6,
+  overflow: "hidden",
+},
+
+sectionProgressFill: {
+  height: "100%",
+  backgroundColor: "#2CA6A4",
+},
+
 });
