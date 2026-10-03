@@ -169,60 +169,115 @@ export default function LifeBuildScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [scoreCompleted, setScoreCompleted] = useState(false);
   const [loadingScore, setLoadingScore] = useState(true);
+  const [profileCompleted, setProfileCompleted] = useState(false);
+
+  /* ---------------------------- LOAD FROM BE ---------------------------- */
 
   useEffect(() => {
-    loadLifeBuildScore();
+    loadAll();
   }, []);
 
-  const loadLifeBuildScore = async () => {
+  const loadAll = async () => {
+    setLoadingScore(true);
+
+    const [scoreDone, profileDone] = await Promise.all([
+      loadLifeBuildScore(),
+      loadProfileStatus(),
+    ]);
+
+    // Profile already completed before -> go directly to the job page
+    if (scoreDone && profileDone) {
+      setScreen("score");
+    }
+
+    setLoadingScore(false);
+  };
+
+  // returns true if the recovery assessment is completed
+  const loadLifeBuildScore = async (): Promise<boolean> => {
     try {
-      setLoadingScore(true);
-
       const userId = await AsyncStorage.getItem("userId");
-
-      if (!userId) {
-        return;
-      }
+      if (!userId) return false;
 
       const response = await ngrokFetch(
         `${BASE_URL}/api/lifeBuild/score/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+        { method: "GET" }
       );
-
-      const json = await response.json();
 
       if (response.status === 404) {
         setScoreCompleted(false);
-        return;
+        return false;
       }
+
+      const json = await response.json();
 
       if (!response.ok || !json.success) {
         console.error("Failed to get LifeBuild score:", json.message);
-        return;
+        return false;
       }
 
       const score = json.data;
+      const completed = score.scoreCompleted === true;
 
       setSafetyScore(score.percentage ?? 0);
       setObtainedScore(score.obtainedScore ?? 0);
-      setScoreCompleted(score.scoreCompleted === true);
+      setScoreCompleted(completed);
 
+      return completed;
     } catch (error) {
       console.error("Failed to load LifeBuild score:", error);
-    } finally {
-      setLoadingScore(false);
+      return false;
     }
   };
+
+  // returns true if the profile questionnaire is completed
+  const loadProfileStatus = async (): Promise<boolean> => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return false;
+
+      const response = await ngrokFetch(
+        `${BASE_URL}/api/lifeBuild/profile/${userId}`,
+        { method: "GET" }
+      );
+
+      if (response.status === 404) {
+        setProfileCompleted(false);
+        return false;
+      }
+
+      const json = await response.json();
+
+      if (!response.ok || !json.success) {
+        console.error("Failed to get profile:", json.message);
+        return false;
+      }
+
+      const completed = json.data?.jobCompleted === true;
+      setProfileCompleted(completed);
+
+      return completed;
+    } catch (error) {
+      console.error("Failed to load profile status:", error);
+      return false;
+    }
+  };
+
+  /* ------------------------------ HELPERS ------------------------------- */
 
   const currentProfileQuestion = PROFILE_QUESTIONS[profileIndex];
   const currentRecoveryQuestion = RECOVERY_QUESTIONS[questionIndex];
 
   const startAssessment = () => setScreen("assessment");
+
+  const handleFindJob = () => {
+    if (profileCompleted) {
+      setScreen("score"); // straight to <JobPage />
+    } else {
+      setProfileIndex(0);
+      setScreen("profile");
+    }
+  };
 
   const saveProfileAnswer = (value: string) => {
     setProfileAnswers((previous) => ({
@@ -303,74 +358,55 @@ export default function LifeBuildScreen() {
     return answers;
   };
 
-   const submitToServer = async () => {
-      const userId = await AsyncStorage.getItem("userId");
+  /* ----------------------------- SUBMIT TO BE --------------------------- */
 
-      if (!userId) {
-        throw new Error("User not logged in");
-      }
+  const submitToServer = async () => {
+    const userId = await AsyncStorage.getItem("userId");
 
-      const response = await ngrokFetch(`${BASE_URL}/api/lifeBuild/assessment`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId,
-          answers: buildRecoveryPayload(),
-        }),
-      });
-
-      const json = await response.json();
-
-      if (!response.ok || !json.success) {
-        throw new Error(json.message || "Failed to save assessment");
-      }
-
-      return json.data;
-  };
-
-  const goToNextProfileQuestion = () => {
-    if (!isCurrentProfileQuestionAnswered()) {
-      Alert.alert("Answer Required", "Please provide an answer before continuing.");
-      return;
+    if (!userId) {
+      throw new Error("User not logged in");
     }
 
-    if (profileIndex < PROFILE_QUESTIONS.length - 1) {
-      setProfileIndex(profileIndex + 1);
-    } else {
-      submitAssessment();
+    const response = await ngrokFetch(`${BASE_URL}/api/lifeBuild/assessment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        answers: buildRecoveryPayload(),
+      }),
+    });
+
+    const json = await response.json();
+
+    if (!response.ok || !json.success) {
+      throw new Error(json.message || "Failed to save assessment");
     }
+
+    return json.data;
   };
 
-  const goToPreviousProfileQuestion = () => {
-    if (profileIndex > 0) {
-      setProfileIndex(profileIndex - 1);
-    } else {
-      setScreen("score");
-    }
-  };
-
-  const selectRecoveryAnswer = (value: number) => {
-    setRecoveryAnswers((previous) => ({
-      ...previous,
-      [currentRecoveryQuestion.id]: value,
-    }));
-  };
-
-  const submitAssessment = async () => {
+  const submitProfile = async () => {
     if (submitting) return;
 
     try {
       setSubmitting(true);
 
-      const saved = await submitToServer();
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) throw new Error("User not logged in");
 
-      setObtainedScore(saved.obtainedScore);
-      setSafetyScore(saved.percentage);
-      setScoreCompleted(saved.scoreCompleted === true);
+      const response = await ngrokFetch(`${BASE_URL}/api/lifeBuild/profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, answers: buildProfilePayload() }),
+      });
 
-      setScreen("start");
+      const json = await response.json();
+      if (!response.ok || !json.success) {
+        throw new Error(json.message || "Failed to save profile");
+      }
+
+      setProfileCompleted(true);
+      setScreen("score"); // opens <JobPage />
     } catch (error: any) {
       Alert.alert(
         "Could Not Save",
@@ -378,19 +414,6 @@ export default function LifeBuildScreen() {
       );
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const goToNextRecoveryQuestion = () => {
-    if (!recoveryAnswers[currentRecoveryQuestion.id]) {
-      Alert.alert("Answer Required", "Please select an answer before continuing.");
-      return;
-    }
-
-    if (questionIndex < RECOVERY_QUESTIONS.length - 1) {
-      setQuestionIndex(questionIndex + 1);
-    } else {
-      submitRecoveryAnswers();
     }
   };
 
@@ -414,6 +437,49 @@ export default function LifeBuildScreen() {
       );
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  /* ----------------------------- NAVIGATION ----------------------------- */
+
+  const goToNextProfileQuestion = () => {
+    if (!isCurrentProfileQuestionAnswered()) {
+      Alert.alert("Answer Required", "Please provide an answer before continuing.");
+      return;
+    }
+
+    if (profileIndex < PROFILE_QUESTIONS.length - 1) {
+      setProfileIndex(profileIndex + 1);
+    } else {
+      submitProfile();
+    }
+  };
+
+  const goToPreviousProfileQuestion = () => {
+    if (profileIndex > 0) {
+      setProfileIndex(profileIndex - 1);
+    } else {
+      setScreen("start");
+    }
+  };
+
+  const selectRecoveryAnswer = (value: number) => {
+    setRecoveryAnswers((previous) => ({
+      ...previous,
+      [currentRecoveryQuestion.id]: value,
+    }));
+  };
+
+  const goToNextRecoveryQuestion = () => {
+    if (!recoveryAnswers[currentRecoveryQuestion.id]) {
+      Alert.alert("Answer Required", "Please select an answer before continuing.");
+      return;
+    }
+
+    if (questionIndex < RECOVERY_QUESTIONS.length - 1) {
+      setQuestionIndex(questionIndex + 1);
+    } else {
+      submitRecoveryAnswers();
     }
   };
 
@@ -483,76 +549,77 @@ export default function LifeBuildScreen() {
           </View>
         </View>
 
-       {/* Main Start Card */}
-      <View style={lifeBuildStyles.startMainCard}>
-        <View style={lifeBuildStyles.startCenterContent}>
-          <View style={lifeBuildStyles.startIconCircle}>
-            <Ionicons
-              name={scoreCompleted ? "shield-checkmark-outline" : "clipboard-outline"}
-              size={32}
-              color={safetyScore >= 50 || !scoreCompleted ? "#2CA6A4" : "#E67E22"}
-            />
+        {/* Main Start Card */}
+        <View style={lifeBuildStyles.startMainCard}>
+          <View style={lifeBuildStyles.startCenterContent}>
+            <View style={lifeBuildStyles.startIconCircle}>
+              <Ionicons
+                name={scoreCompleted ? "shield-checkmark-outline" : "clipboard-outline"}
+                size={32}
+                color={safetyScore >= 50 || !scoreCompleted ? "#2CA6A4" : "#E67E22"}
+              />
+            </View>
+
+            {scoreCompleted ? (
+              <>
+                <Text style={lifeBuildStyles.startMainTitle}>Your Recovery Safety Score</Text>
+
+                <Text
+                  style={{
+                    fontSize: 48,
+                    fontWeight: "800",
+                    marginVertical: 8,
+                    color: safetyScore >= 50 ? "#2CA6A4" : "#E67E22",
+                  }}
+                >
+                  {Math.round(safetyScore)}%
+                </Text>
+
+                <Text style={{ fontSize: 14, color: "#4a5a5a", marginBottom: 6 }}>
+                  {obtainedScore} / {MAX_SCORE} points
+                </Text>
+
+                <Text style={lifeBuildStyles.startMainDescription}>
+                  {safetyScore >= 50
+                    ? "Great progress! You're ready to explore career paths that suit you."
+                    : "Your score is below 50%. Keep building your recovery support, then retake the assessment to unlock career recommendations."}
+                </Text>
+
+                <TouchableOpacity
+                  style={lifeBuildStyles.startButton}
+                  onPress={handleFindJob}
+                  activeOpacity={0.85}
+                >
+                  <Text style={lifeBuildStyles.startButtonText}>Let's Find Job</Text>
+                  <Ionicons name="briefcase-outline" size={20} color="#fff" />
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={restartAssessment} style={{ marginTop: 14 }}>
+                  <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>Retake Assessment</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={lifeBuildStyles.startMainTitle}>Start Your Assessment</Text>
+
+                <Text style={lifeBuildStyles.startMainDescription}>
+                  Complete your personal information and Recovery Safety Assessment to
+                  understand your current recovery safety level.
+                </Text>
+
+                <TouchableOpacity
+                  style={lifeBuildStyles.startButton}
+                  onPress={startAssessment}
+                  activeOpacity={0.85}
+                >
+                  <Text style={lifeBuildStyles.startButtonText}>Start Assessment</Text>
+                  <Ionicons name="arrow-forward" size={20} color="#fff" />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
-
-          {scoreCompleted ? (
-            <>
-              <Text style={lifeBuildStyles.startMainTitle}>Your Recovery Safety Score</Text>
-
-              <Text
-                style={{
-                  fontSize: 48,
-                  fontWeight: "800",
-                  marginVertical: 8,
-                  color: safetyScore >= 50 ? "#2CA6A4" : "#E67E22",
-                }}
-              >
-                {Math.round(safetyScore)}%
-              </Text>
-
-              <Text style={{ fontSize: 14, color: "#4a5a5a", marginBottom: 6 }}>
-                {obtainedScore} / {MAX_SCORE} points
-              </Text>
-
-              <Text style={lifeBuildStyles.startMainDescription}>
-                {safetyScore >= 50
-                  ? "Great progress! You're ready to explore career paths that suit you."
-                  : "Your score is below 50%. Keep building your recovery support, then retake the assessment to unlock career recommendations."}
-              </Text>
-
-              <TouchableOpacity
-                style={lifeBuildStyles.startButton}
-                onPress={() => setScreen("score")}
-                activeOpacity={0.85}
-              >
-                <Text style={lifeBuildStyles.startButtonText}>Let's Find Job</Text>
-                <Ionicons name="briefcase-outline" size={20} color="#fff" />
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={restartAssessment} style={{ marginTop: 14 }}>
-                <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>Retake Assessment</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <Text style={lifeBuildStyles.startMainTitle}>Start Your Assessment</Text>
-
-              <Text style={lifeBuildStyles.startMainDescription}>
-                Complete your personal information and Recovery Safety Assessment to
-                understand your current recovery safety level.
-              </Text>
-
-              <TouchableOpacity
-                style={lifeBuildStyles.startButton}
-                onPress={startAssessment}
-                activeOpacity={0.85}
-              >
-                <Text style={lifeBuildStyles.startButtonText}>Start Assessment</Text>
-                <Ionicons name="arrow-forward" size={20} color="#fff" />
-              </TouchableOpacity>
-            </>
-          )}
         </View>
-      </View>
+
         {/* 2x2 Step Cards */}
         <View style={lifeBuildStyles.stepsGrid}>
           {STEP_CARDS.map((step) => (
@@ -762,7 +829,7 @@ export default function LifeBuildScreen() {
             activeOpacity={0.85}
           >
             <Text style={lifeBuildStyles.nextButtonText}>
-              {submitting ? "Saving..." : isLastProfileQuestion ? "View Result" : "Next"}
+              {submitting ? "Saving..." : isLastProfileQuestion ? "Find Jobs" : "Next"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -845,19 +912,19 @@ export default function LifeBuildScreen() {
           )}
 
           <TouchableOpacity
-          onPress={goToNextRecoveryQuestion}
-          disabled={submitting}
-          style={[
-            lifeBuildStyles.nextButton,
-            isLast && lifeBuildStyles.nextButtonSuccess,
-            submitting && { opacity: 0.6 },
-          ]}
-          activeOpacity={0.85}
-        >
-          <Text style={lifeBuildStyles.nextButtonText}>
-            {submitting ? "Saving..." : isLast ? "Submit" : "Next"}
-          </Text>
-        </TouchableOpacity>
+            onPress={goToNextRecoveryQuestion}
+            disabled={submitting}
+            style={[
+              lifeBuildStyles.nextButton,
+              isLast && lifeBuildStyles.nextButtonSuccess,
+              submitting && { opacity: 0.6 },
+            ]}
+            activeOpacity={0.85}
+          >
+            <Text style={lifeBuildStyles.nextButtonText}>
+              {submitting ? "Saving..." : isLast ? "Submit" : "Next"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     );
