@@ -1,5 +1,25 @@
 import { StyleSheet } from 'react-native';
 
+// Shared colours used by the screen for good / bad states.
+export const COLORS = {
+  good: '#3DB87C',
+  bad: '#E5624A',
+  goodSoft: '#EBF8F2',
+  badSoft: '#FEF0ED',
+  goodText: '#1B7A50',
+  badText: '#B03D2A',
+};
+
+// Styles that depend on a value at render time (a colour from the emotion, a percentage, ...).
+// Use them next to a static style, e.g. style={[badgeStyles.container, dynamicStyles.tint(color)]}
+export const dynamicStyles = {
+  bg: (color) => ({ backgroundColor: color }),
+  textColor: (color) => ({ color }),
+  tint: (color) => ({ backgroundColor: `${color}1A` }),
+  barFill: (pct, color) => ({ height: `${pct}%`, backgroundColor: color }),
+  flexFill: (flex, color) => ({ flex, backgroundColor: color }),
+};
+
 export const chartStyles = StyleSheet.create({
   wrapper: {
     backgroundColor: '#FFFFFF',
@@ -111,6 +131,10 @@ export const cardStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
+  rowCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   moodDot: {
     width: 10,
     height: 10,
@@ -135,6 +159,26 @@ export const cardStyles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginRight: 8,
+  },
+  quickTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 10,
+    backgroundColor: '#F3F4F6',
+    gap: 3,
+  },
+  quickTagText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#6B7280',
+  },
   content: {
     marginTop: 12,
     fontSize: 14,
@@ -143,6 +187,27 @@ export const cardStyles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F3F5F7',
     paddingTop: 12,
+  },
+});
+
+// Small emotion badge on each entry card (dominant emotion only).
+export const badgeStyles = StyleSheet.create({
+  container: {
+    marginLeft: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  emoji: {
+    fontSize: 11,
+    marginRight: 3,
+  },
+  text: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
 });
 
@@ -222,6 +287,12 @@ export const modalStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#9EA5B0',
   },
+  moodTextGood: {
+    color: '#1B7A50',
+  },
+  moodTextBad: {
+    color: '#B03D2A',
+  },
   textArea: {
     height: 160,
     borderWidth: 1.5,
@@ -236,6 +307,9 @@ export const modalStyles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     gap: 10,
+  },
+  actionsTop: {
+    marginTop: 8,
   },
   cancelBtn: {
     flex: 1,
@@ -266,6 +340,167 @@ export const modalStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  btnIcon: {
+    marginRight: 6,
+  },
+});
+
+// "Write a diary" nudge card.
+export const nudgeStyles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#EBF8F2',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  icon: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  body: {
+    flex: 1,
+  },
+  text: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#1B7A50',
+    fontWeight: '500',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 6,
+  },
+  buttonText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1B7A50',
+  },
+});
+
+// "How do you want to check in?" sheet.
+export const choiceStyles = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    backgroundColor: '#FFFFFF',
+  },
+  icon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  iconGreen: {
+    backgroundColor: '#EBF8F2',
+  },
+  iconIndigo: {
+    backgroundColor: '#EEF2FF',
+  },
+  body: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  sub: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+});
+
+// Quick check-in questionnaire and its result.
+export const quizStyles = StyleSheet.create({
+  scrollQuestions: {
+    maxHeight: 400,
+  },
+  scrollResult: {
+    maxHeight: 460,
+  },
+  question: {
+    marginBottom: 16,
+  },
+  questionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  questionHint: {
+    fontSize: 12,
+    color: '#9EA5B0',
+    marginBottom: 6,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 6,
+  },
+  chip: {
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+  },
+  chipActive: {
+    borderColor: '#3DB87C',
+    backgroundColor: '#EBF8F2',
+  },
+  chipText: {
+    fontSize: 14,
+    color: '#4B5563',
+    fontWeight: '500',
+  },
+  chipTextActive: {
+    color: '#1B7A50',
+    fontWeight: '700',
+  },
+  chipSub: {
+    fontSize: 11,
+    color: '#9EA5B0',
+    marginTop: 1,
+  },
+  resultTop: {
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  resultEmoji: {
+    fontSize: 56,
+  },
+  resultName: {
+    fontSize: 24,
+    fontWeight: '800',
+    textTransform: 'capitalize',
+    marginTop: 6,
+  },
+  resultSub: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  estimateNote: {
+    fontSize: 11,
+    color: '#9EA5B0',
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 14,
   },
 });
 
@@ -318,6 +553,11 @@ export const screenStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#B03D2A',
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   list: {
     paddingTop: 10,
