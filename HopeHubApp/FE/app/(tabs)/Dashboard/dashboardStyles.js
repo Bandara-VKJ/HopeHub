@@ -1,6 +1,5 @@
 import { StyleSheet } from 'react-native';
 
-// Shared colours used by the screen for good / bad states.
 export const COLORS = {
   good: '#3DB87C',
   bad: '#E5624A',
@@ -10,13 +9,23 @@ export const COLORS = {
   badText: '#B03D2A',
 };
 
-// Styles that depend on a value at render time (a colour from the emotion, a percentage, ...).
-// Use them next to a static style, e.g. style={[badgeStyles.container, dynamicStyles.tint(color)]}
 export const dynamicStyles = {
+  /** @param {string} color @returns {import('react-native').ViewStyle} */
   bg: (color) => ({ backgroundColor: color }),
+
+  /** @param {string} color @returns {import('react-native').TextStyle} */
   textColor: (color) => ({ color }),
+
+  /** @param {string} color @returns {import('react-native').ViewStyle} */
   tint: (color) => ({ backgroundColor: `${color}1A` }),
-  barFill: (pct, color) => ({ height: `${pct}%`, backgroundColor: color }),
+
+  /** @param {number} pct @param {string} color @returns {import('react-native').ViewStyle} */
+  barFill: (pct, color) => ({
+    height: /** @type {import('react-native').DimensionValue} */ (`${pct}%`),
+    backgroundColor: color,
+  }),
+
+  /** @param {number} flex @param {string} color @returns {import('react-native').ViewStyle} */
   flexFill: (flex, color) => ({ flex, backgroundColor: color }),
 };
 
@@ -190,7 +199,6 @@ export const cardStyles = StyleSheet.create({
   },
 });
 
-// Small emotion badge on each entry card (dominant emotion only).
 export const badgeStyles = StyleSheet.create({
   container: {
     marginLeft: 8,
@@ -346,7 +354,6 @@ export const modalStyles = StyleSheet.create({
   },
 });
 
-// "Write a diary" nudge card.
 export const nudgeStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
@@ -382,7 +389,6 @@ export const nudgeStyles = StyleSheet.create({
   },
 });
 
-// "How do you want to check in?" sheet.
 export const choiceStyles = StyleSheet.create({
   card: {
     flexDirection: 'row',
@@ -423,7 +429,7 @@ export const choiceStyles = StyleSheet.create({
   },
 });
 
-// Quick check-in questionnaire and its result.
+
 export const quizStyles = StyleSheet.create({
   scrollQuestions: {
     maxHeight: 400,
