@@ -1,33 +1,38 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export const homeStyles = StyleSheet.create({
-   container: { flex: 1, backgroundColor: "#f2f8f8" },
+  container: { flex: 1, backgroundColor: "#f2f8f8" },
 
- header: {
-  position: "relative",
-  minHeight: 220,             
-  backgroundColor: "#2CA6A4",
-  paddingTop: 56,
-  paddingBottom: 28,
-  paddingHorizontal: 24,
-  overflow: "hidden",
-},
-
-headerLottie: {
-  ...StyleSheet.absoluteFillObject,
-  width: "100%",
-  height: "100%",
-  pointerEvents: "none",
-},
+  header: {
+    position: "relative",
+    minHeight: 220,
+    backgroundColor: "#2CA6A4",
+    paddingTop: 56,
+    paddingBottom: 28,
+    paddingHorizontal: 24,
+    overflow: "hidden",
+  },
+  headerLottie: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%",
+    pointerEvents: "none",
+  },
   headerCircleLarge: {
-    position: "absolute", top: -40, right: -40,
-    width: 160, height: 160,
+    position: "absolute",
+    top: -40,
+    right: -40,
+    width: 160,
+    height: 160,
     backgroundColor: "rgba(255,255,255,0.08)",
     borderRadius: 80,
   },
   headerCircleSmall: {
-    position: "absolute", top: 24, right: 40,
-    width: 80, height: 80,
+    position: "absolute",
+    top: 24,
+    right: 40,
+    width: 80,
+    height: 80,
     backgroundColor: "rgba(255,255,255,0.06)",
     borderRadius: 40,
   },
@@ -45,7 +50,8 @@ headerLottie: {
     padding: 14,
   },
   streakIconWrap: {
-    width: 44, height: 44,
+    width: 44,
+    height: 44,
     backgroundColor: "rgba(255,255,255,0.2)",
     borderRadius: 12,
     justifyContent: "center",
@@ -54,7 +60,6 @@ headerLottie: {
   streakLabel: { color: "rgba(255,255,255,0.7)", fontSize: 11, letterSpacing: 0.5 },
   streakValue: { color: "#fff", fontSize: 20, fontWeight: "700" },
 
-  // Layout
   content: { padding: 16, gap: 14 },
   card_task: {
     backgroundColor: "#fff",
@@ -79,7 +84,7 @@ headerLottie: {
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 2,
-    marginBottom: 100
+    marginBottom: 100,
   },
   cardHeader: {
     flexDirection: "row",
@@ -97,7 +102,6 @@ headerLottie: {
   },
   badgeText: { fontSize: 11, color: "#0f6e56", fontWeight: "600" },
 
-
   riskCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -109,7 +113,8 @@ headerLottie: {
     padding: 16,
   },
   riskIconWrap: {
-    width: 44, height: 44,
+    width: 44,
+    height: 44,
     backgroundColor: "#fff0cc",
     borderRadius: 12,
     justifyContent: "center",
@@ -121,31 +126,77 @@ headerLottie: {
   riskSub: { color: "#9a7a40", fontSize: 11, marginTop: 2 },
 
   mailCard: {
-  backgroundColor: "#f7fefe",
-  borderRadius: 12,
-  padding: 16,
-  borderWidth: 1,
-  borderColor: "#d5eeec",
-},
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#e0f0ef",
+    shadowColor: "#2CA6A4",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  inviteRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  inviteTitleWrap: { flexDirection: "row", alignItems: "center", gap: 10 },
+  inviteIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "#e1f5f4",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  inviteBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#2CA6A4",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  inviteBtnText: { color: "#fff", fontWeight: "600", fontSize: 13 },
 
-inviteRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-},
-
-inviteBtn: {
-  backgroundColor: "#2a9f9f",
-  borderRadius: 20,
-  paddingHorizontal: 16,
-  paddingVertical: 8,
-},
-
-inviteBtnText: {
-  color: "#fff",
-  fontWeight: "600",
-},
-input: {
+  formWrap: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#e8f0f0",
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#4a5e5e",
+    marginBottom: 6,
+    marginLeft: 2,
+  },
+  inputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: "#e3eded",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    backgroundColor: "#f7fefe",
+    marginBottom: 14,
+  },
+  inputWrapFocused: {
+    borderColor: "#2CA6A4",
+    backgroundColor: "#fff",
+  },
+  inputInner: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: "#1a2e2e",
+  },
+  input: {
     borderWidth: 1,
     borderColor: "#e0e0e0",
     borderRadius: 10,
@@ -155,72 +206,72 @@ input: {
     color: "#222",
     backgroundColor: "#fafafa",
   },
+
   actionsRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    marginTop: 16,
+    marginTop: 4,
     gap: 10,
   },
   cancelBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: "#f0f0f0",
+    paddingVertical: 11,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    backgroundColor: "#f0f4f4",
   },
-  cancelBtnText: {
-    color: "#555",
-    fontWeight: "600",
-  },
+  cancelBtnText: { color: "#556", fontWeight: "600" },
   submitBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 11,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    backgroundColor: "#2CA6A4",
+  },
+  submitBtnText: { color: "#fff", fontWeight: "700" },
+
+  taskItem: {
+    padding: 11,
+    borderRadius: 12,
+    backgroundColor: "#f7fefe",
+    borderWidth: 1,
+    borderColor: "#d5eeec",
+    marginBottom: 8,
+  },
+  taskHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  taskTitleTouch: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  taskDescription: {
+    fontSize: 13,
+    color: "#4a5e5e",
+    lineHeight: 18,
+  },
+  youtubeContainer: {
+    marginTop: 10,
     borderRadius: 10,
-    backgroundColor: "#17db1a",
+    overflow: "hidden",
+    backgroundColor: "#000",
   },
-  submitBtnText: {
-    color: "#fff",
-    fontWeight: "700",
+  taskDetails: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#d5eeec",
   },
- taskItem: {
-  padding: 11,
-  borderRadius: 12,
-  backgroundColor: "#f7fefe",
-  borderWidth: 1,
-  borderColor: "#d5eeec",
-  marginBottom: 8,
-},
-taskHeaderRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-},
-taskTitleTouch: {
-  flex: 1,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 8,
-},
-taskDescription: {
-  fontSize: 13,
-  color: "#4a5e5e",
-  lineHeight: 18,
-},
-youtubeContainer: {
-  marginTop: 10,
-  borderRadius: 10,
-  overflow: "hidden",
-  backgroundColor: "#000",
-},
-taskDetails: {
-  marginTop: 10,
-  paddingTop: 10,
-  borderTopWidth: 1,
-  borderTopColor: "#d5eeec",
-},
   taskItemDone: { backgroundColor: "#f0faf9", borderColor: "#b8e4e1" },
   checkbox: {
-    width: 22, height: 22,
+    width: 22,
+    height: 22,
     borderRadius: 6,
     borderWidth: 2,
     borderColor: "#ccc",
@@ -231,12 +282,16 @@ taskDetails: {
   taskLabel: { fontSize: 13, color: "#1a2e2e", flex: 1 },
   taskLabelDone: { color: "#999", textDecorationLine: "line-through" },
 
+
   progressRow: { marginBottom: 12 },
   progressMeta: { flexDirection: "row", justifyContent: "space-between", marginBottom: 5 },
   progressLabel: { fontSize: 12, color: "#4a5e5e", fontWeight: "500" },
   progressPct: { fontSize: 11, color: "#888" },
   progressTrack: {
-    height: 7, backgroundColor: "#e8f0f0", borderRadius: 10, overflow: "hidden",
+    height: 7,
+    backgroundColor: "#e8f0f0",
+    borderRadius: 10,
+    overflow: "hidden",
   },
   progressFill: { height: "100%", borderRadius: 10 },
 });
