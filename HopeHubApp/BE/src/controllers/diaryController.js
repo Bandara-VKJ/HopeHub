@@ -214,3 +214,96 @@ export const deleteDiary = async (req, res) => {
         });
     }
 };
+
+const WEEK_DAYS = 7;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const lastWeekKeys = (now = new Date()) =>
+    Array.from({ length: WEEK_DAYS }, (_, i) =>
+        new Date(now.getTime() - (WEEK_DAYS - 1 - i) * DAY_MS)
+            .toISOString()
+            .split("T")[0]
+    );
+
+
+const buildWeekEmotions = (diaries, now = new Date()) => {
+    const keys = lastWeekKeys(now);
+    const byDay = new Map(
+        keys.map((key) => [key, { entryCount: 0, analysed: 0, totals: {} }])
+    );
+
+    for (const diary of diaries) {
+        const day = byDay.get(diary.date);
+        if (!day) continue;
+
+        day.entryCount += 1;
+
+        const percentages = diary.emotionAnalysis?.emotionPercentages;
+        if (!percentages) continue;
+
+        day.analysed += 1;
+        for (const [emotion, pct] of Object.entries(percentages)) {
+            day.totals[emotion] = (day.totals[emotion] || 0) + (Number(pct) || 0);
+        }
+    }
+
+    return keys.map((date) => {
+        const { entryCount, analysed, totals } = byDay.get(date);
+
+        // highest first; ties are broken alphabetically so the result is stable
+        const ranked = Object.entries(totals).sort(
+            (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+        );
+
+        if (analysed === 0 || ranked.length === 0) {
+            return { date, dominantEmotion: null, percentage: 0, entryCount };
+        }
+
+        const [dominantEmotion, total] = ranked[0];
+        return {
+            date,
+            dominantEmotion,
+            percentage: Math.round(total / analysed),
+            entryCount
+        };
+    });
+};
+
+export const weekDiary = async (req, res) => {
+    try {
+        const { counselorId, userId } = req.params;
+ 
+        if (!counselorId) {
+            return res.status(401).json({ message: "counselor Id is required" });
+        }
+ 
+        if (!userId) {
+            return res.status(400).json({ message: "userId is required" });
+        }
+ 
+        const now = new Date();
+        const keys = lastWeekKeys(now);
+ 
+        const diaries = await Diary.find({
+            userId,
+            date: {
+                $gte: keys[0],
+                $lte: keys[keys.length - 1]
+            }
+        })
+            .select("date emotionAnalysis")
+            .lean();
+ 
+        return res.status(200).json({
+            message: "Weekly emotions retrieved successfully",
+            days: buildWeekEmotions(diaries, now)
+        });
+ 
+    } catch (error) {
+        console.log("error:", error);
+ 
+        return res.status(500).json({
+            message: "Failed to retrieve weekly emotions"
+        });
+    }
+};
