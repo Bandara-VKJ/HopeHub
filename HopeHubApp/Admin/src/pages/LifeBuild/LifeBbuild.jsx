@@ -1,9 +1,8 @@
-
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./LifeBbuild.css";
 
+const BASE_URL = "http://localhost:5000";
 const EMPTY_FORM = {
-  image: "",
   title: "",
   company: "",
   location: "",
@@ -13,15 +12,58 @@ const EMPTY_FORM = {
   description: "",
 };
 
+function getImageUrl(image) {
+  if (!image) return "";
+  if (image.startsWith("http") || image.startsWith("data:")) return image;
+  return `${BASE_URL}${image}`;
+}
+
 function JobOpportunities() {
   const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
 
+
+  async function fetchJobs() {
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${BASE_URL}/api/job/all-jobs`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to load jobs");
+      }
+
+      setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+    } catch (error) {
+      console.error("Fetch jobs error:", error);
+      window.alert(error.message || "Failed to load jobs");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+
   function openModal() {
     setForm(EMPTY_FORM);
+    setImageFile(null);
     setPreview("");
     setIsOpen(true);
   }
@@ -46,21 +88,47 @@ function JobOpportunities() {
   function handleImageChange(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPreview(reader.result);
-      setForm((prev) => ({ ...prev, image: reader.result }));
-    };
-    reader.readAsDataURL(file);
-  }
 
-  function handleSubmit(e) {
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  }
+  async function handleSubmit(e) {
     e.preventDefault();
+
     if (!form.title.trim() || !form.company.trim()) return;
 
-    const newJob = { ...form, id: Date.now() };
-    setJobs((prev) => [newJob, ...prev]);
-    setIsOpen(false);
+    try {
+      setSubmitting(true);
+
+      const body = new FormData();
+
+      Object.entries(form).forEach(([key, value]) => {
+        body.append(key, value);
+      });
+
+      if (imageFile) {
+        body.append("image", imageFile);
+      }
+
+      const response = await fetch(`${BASE_URL}/api/job/add-job`, {
+        method: "POST",
+        body,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to post job");
+      }
+
+      setJobs((prev) => [data.job, ...prev]);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Post job error:", error);
+      window.alert(error.message || "Failed to post job");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -76,7 +144,11 @@ function JobOpportunities() {
       </header>
 
       <section className="page-body">
-        {jobs.length === 0 ? (
+        {loading ? (
+          <div className="empty-state">
+            <p>Loading jobs...</p>
+          </div>
+        ) : jobs.length === 0 ? (
           <div className="empty-state">
             <p>No jobs posted yet.</p>
             <span>Use "Post a job" to add the first opportunity.</span>
@@ -85,7 +157,7 @@ function JobOpportunities() {
           <div className="job-grid">
             {jobs.map((job) => (
               <article
-                key={job.id}
+                key={job._id}
                 className="job-card"
                 onClick={() => openDetails(job)}
                 role="button"
@@ -206,11 +278,16 @@ function JobOpportunities() {
               </label>
 
               <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={closeModal}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={closeModal}
+                  disabled={submitting}
+                >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  Post job
+                <button type="submit" className="btn-primary" disabled={submitting}>
+                  {submitting ? "Posting..." : "Post job"}
                 </button>
               </div>
             </form>
@@ -230,7 +307,7 @@ function JobOpportunities() {
 
             {selectedJob.image && (
               <img
-                src={selectedJob.image}
+                src={getImageUrl(selectedJob.image)}
                 alt={selectedJob.title}
                 className="job-detail-image"
               />
