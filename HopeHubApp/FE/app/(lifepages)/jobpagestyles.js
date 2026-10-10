@@ -205,6 +205,11 @@ export const jobPageStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    overflow: "hidden",
+  },
+  resultCareerImage: {
+    width: 42,
+    height: 42,
   },
   resultCareerContent: {
     flex: 1,
@@ -249,7 +254,6 @@ export const jobPageStyles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 19,
   },
-
   restartButton: {
     borderWidth: 1,
     borderColor: "#2CA6A4",
@@ -262,5 +266,69 @@ export const jobPageStyles = StyleSheet.create({
     color: "#2CA6A4",
     fontSize: 14,
     fontWeight: "700",
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: "85%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  title: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1f2d2d",
+    marginRight: 12,
+  },
+  image: {
+    width: "100%",
+    height: 180,
+    borderRadius: 14,
+    marginBottom: 14,
+  },
+  company: {
+    fontSize: 15,
+    color: "#5b6b6b",
+    marginBottom: 10,
+  },
+  tags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 14,
+  },
+  tag: {
+    backgroundColor: "#e6f6f5",
+    color: "#2CA6A4",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+    fontSize: 13,
+    overflow: "hidden",
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1f2d2d",
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  body: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#4a5a5a",
+    marginBottom: 10,
   },
 });
