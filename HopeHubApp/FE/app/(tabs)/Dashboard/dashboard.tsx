@@ -79,10 +79,6 @@ const formatDisplayDate = (dateStr: string) => {
 };
 
 
-// ---------------------------------------------------------------------------
-// Quick Recovery Questionnaire
-// ---------------------------------------------------------------------------
-
 type QuizKey = 'feeling' | 'sleep' | 'craving' | 'stress' | 'trigger';
 type QuizAnswers = Partial<Record<QuizKey, string>>;
 
@@ -273,15 +269,14 @@ function MoodChart({ entries }: { entries: DiaryEntry[] }) {
 // Compact badge shown on the card: the day's main emotion + its %.
 function DominantEmotionBadge({ analysis }: { analysis: DiaryEntry['emotionAnalysis'] }) {
   if (!analysis) return null;
-  const { dominantEmotion, emotionPercentages } = analysis;
-  const pct = emotionPercentages?.[dominantEmotion] ?? 0;
+  const { dominantEmotion } = analysis;
   const meta = emotionMeta(dominantEmotion);
 
   return (
     <View style={[badgeStyles.container, dynamicStyles.tint(meta.color)]}>
       <Text style={badgeStyles.emoji}>{meta.emoji}</Text>
       <Text style={[badgeStyles.text, dynamicStyles.textColor(meta.color)]}>
-        {dominantEmotion} {Math.round(pct)}%
+        {dominantEmotion}
       </Text>
     </View>
   );

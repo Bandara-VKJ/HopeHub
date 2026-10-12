@@ -6,11 +6,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Optional
+from scipy.sparse import hstack
+
+import pickle
+import re
+import unicodedata
+from pathlib import Path
 
 
-# ============================================================
-# LOAD SAVED MODEL COMPONENTS
-# ============================================================
 
 model = joblib.load(
     "addiction_rf_model.pkl"
@@ -42,10 +45,6 @@ DRUG_FREQ_MAP = {
     "Very Often": 6,
 }
 
-
-# ============================================================
-# KEYWORD BANKS FOR FREE-TEXT → PERSONALITY SCORE
-# ============================================================
 
 TRAIT_KEYWORDS = {
 
@@ -313,9 +312,6 @@ TRAIT_KEYWORDS = {
 }
 
 
-# ============================================================
-# PERSONALITY SCORE
-# ============================================================
 
 def text_to_personality_score(
     answer_text: str,
@@ -381,9 +377,6 @@ def text_to_personality_score(
     return 0.0
 
 
-# ============================================================
-# AVERAGE TRAIT SCORE
-# ============================================================
 
 def average_trait_score(
     ans_a: str,
@@ -408,9 +401,6 @@ def average_trait_score(
     )
 
 
-# ============================================================
-# ADDICTION PREDICTION
-# ============================================================
 
 def predict_addiction_from_questionnaire(
     answers: dict,
@@ -738,129 +728,58 @@ def predict_addiction_from_questionnaire(
 # MULTI-EMOTION DIARY PREDICTION
 # ============================================================
 
-def predict_diary_emotions(
-    text: str
-) -> dict:
 
-    """
-    Run the existing multi-emotion diary model
-    and return percentage breakdown across all
-    emotion classes plus the dominant emotion.
-    """
-
-    vec = tfidf_vectorizer.transform(
-        [text]
-    )
+DIARY_MODEL_DIR = Path(__file__).parent
+_SINHALA_RANGE = "\u0D80-\u0DFF"
 
 
-    probabilities = (
-        emotion_classifier
-        .predict_proba(
-            vec
-        )[0]
-    )
+def _load_pickle(name: str):
+    with open(DIARY_MODEL_DIR / name, "rb") as f:
+        return pickle.load(f)
 
 
-    if hasattr(
-        label_classes,
-        "inverse_transform"
-    ):
-
-        classes = (
-            label_classes.classes_
-        )
-
-    else:
-
-        classes = label_classes
+diary_model = _load_pickle("diary_emotion_model.pkl")
+diary_word_vec = _load_pickle("diary_emotion_word_vectorizer.pkl")
+diary_char_vec = _load_pickle("diary_emotion_char_vectorizer.pkl")
 
 
-    percentages = {
-
-        classes[i]:
-            round(
-                float(p) * 100,
-                2
-            )
-
-        for i, p in enumerate(
-            probabilities
-        )
-
-    }
-
-
-    percentages = dict(
-        sorted(
-            percentages.items(),
-            key=lambda kv: -kv[1]
-        )
-    )
-
-
-    dominant_emotion = next(
-        iter(percentages)
-    )
-
-
-    return {
-
-        "dominant_emotion":
-            dominant_emotion,
-
-        "emotion_percentages":
-            percentages,
-
-    }
+# Must stay identical to clean_text in the notebook (cell 4)
+def diary_clean_text(text: str) -> str:
+    text = unicodedata.normalize("NFC", str(text)).lower()
+    text = text.replace("\u200c", "")
+    text = re.sub(rf"[^a-z{_SINHALA_RANGE}\u200d\s']", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def predict_diary_emotions(text: str) -> dict:
-    """Run the new multi-emotion diary model and return a percentage
-    breakdown across all emotion classes plus the dominant one."""
-    vec = tfidf_vectorizer.transform([text])
-    probabilities = emotion_classifier.predict_proba(vec)[0]
+    """Return the percentage breakdown across all emotion classes plus the dominant one."""
+    cleaned = diary_clean_text(text)
+    if not cleaned:
+        raise HTTPException(status_code=400, detail="Diary text is empty")
 
+    vec = hstack([
+        diary_word_vec.transform([cleaned]),
+        diary_char_vec.transform([cleaned]),
+    ]).tocsr()
 
-    if hasattr(label_classes, "inverse_transform"):
-        classes = label_classes.classes_
-    else:
-        classes = label_classes
+    probabilities = diary_model.predict_proba(vec)[0]
+    ranked = sorted(zip(diary_model.classes_, probabilities), key=lambda x: -x[1])
 
-    percentages = {
-        classes[i]: round(float(p) * 100, 2)
-        for i, p in enumerate(probabilities)
-    }
-    # sort highest first
-    percentages = dict(sorted(percentages.items(), key=lambda kv: -kv[1]))
-    dominant_emotion = next(iter(percentages))
-
+    percentages = {str(e): round(float(p) * 100, 2) for e, p in ranked}
     return {
-        "dominant_emotion": dominant_emotion,
+        "dominant_emotion": next(iter(percentages)),
         "emotion_percentages": percentages,
     }
 
 
 app = FastAPI(title="HopeHub ML Service")
 
-
 app.add_middleware(
-
     CORSMiddleware,
-
-    allow_origins=[
-        "*"
-    ],
-
-    allow_methods=[
-        "*"
-    ],
-
-    allow_headers=[
-        "*"
-    ],
-
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
 
 # ============================================================
 # AI COUNSELING RAG SERVICE
