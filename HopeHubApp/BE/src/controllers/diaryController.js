@@ -1,12 +1,58 @@
 import Diary from '../models/Diary.js';
 import axios from "axios";
 
-const ML_DIARY_ENDPOINT = "http://127.0.0.1:8000/api/diary/predict";
+const ML_DIARY_ENDPOINT =
+    process.env.ML_DIARY_ENDPOINT || "http://127.0.0.1:8000/api/diary/predict";
+const ML_TIMEOUT_MS = 8000;
+
+
+const toEmotionAnalysis = (prediction) => {
+    if (!prediction?.dominant_emotion || !prediction?.emotion_percentages) return null;
+    return {
+        dominantEmotion: prediction.dominant_emotion,
+        emotionPercentages: prediction.emotion_percentages
+    };
+};
+
+const predictEmotion = async (userId, text) => {
+    try {
+        const { data } = await axios.post(
+            ML_DIARY_ENDPOINT,
+            { userId, text },
+            { timeout: ML_TIMEOUT_MS }
+        );
+        console.log("ML Result:", data);
+        return toEmotionAnalysis(data);
+    } catch (error) {
+        console.log("ML prediction failed:", error.message);
+        return null;
+    }
+};
+
+
+const cleanClientAnalysis = (analysis) => {
+    if (!analysis || typeof analysis.dominantEmotion !== "string") return null;
+    const pcts = analysis.emotionPercentages;
+    if (!pcts || typeof pcts !== "object" || Array.isArray(pcts)) return null;
+
+    const cleaned = {};
+    for (const [emotion, value] of Object.entries(pcts)) {
+        const n = Number(value);
+        if (Number.isFinite(n) && n >= 0 && n <= 100) cleaned[emotion] = n;
+    }
+    if (!(analysis.dominantEmotion in cleaned)) return null;
+
+    return { dominantEmotion: analysis.dominantEmotion, emotionPercentages: cleaned };
+};
+
 
 export const addDiary = async (req, res) => {
     try {
 
-        const { userId, date, mood, content } = req.body;
+        const {
+            userId, date, mood, content,
+            source, questionnaire, emotionAnalysis: clientAnalysis
+        } = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -20,28 +66,21 @@ export const addDiary = async (req, res) => {
             });
         }
 
-        const mlResponse = await axios.post(
-            ML_DIARY_ENDPOINT,
-            {
-                userId,
-                text: content
-            }
-        );
+        const isQuick = source === "questionnaire";
 
-        const prediction = mlResponse.data;
-
-        console.log("ML Result:", prediction);
+        let emotionAnalysis = isQuick ? cleanClientAnalysis(clientAnalysis) : null;
+        if (!emotionAnalysis) {
+            emotionAnalysis = await predictEmotion(userId, content);
+        }
 
         const diary = new Diary({
             userId,
             date,
             mood,
             content,
-
-            emotionAnalysis: {
-                dominantEmotion: prediction.dominant_emotion,
-                emotionPercentages: prediction.emotion_percentages
-            }
+            source: isQuick ? "questionnaire" : "diary",
+            ...(isQuick && questionnaire ? { questionnaire } : {}),
+            ...(emotionAnalysis ? { emotionAnalysis } : {})
         });
 
         await diary.save();
@@ -129,35 +168,25 @@ export const editDiary = async (req, res) => {
             });
         }
 
+        if (diary.source === "questionnaire") {
+            return res.status(403).json({
+                message: "Quick check-ins cannot be edited"
+            });
+        }
+
         if (!mood || !content) {
             return res.status(400).json({
                 message: "Mood and content are required"
             });
         }
 
-        let prediction = null;
-        try {
-            const mlResponse = await axios.post(
-                ML_DIARY_ENDPOINT,
-                {
-                    userId,
-                    text: content
-                }
-            );
-            prediction = mlResponse.data;
-            console.log("Updated ML Result:", prediction);
-        } catch (mlError) {
-            console.log("ML prediction failed during edit:", mlError.message);
-        }
+        const emotionAnalysis = await predictEmotion(userId, content);
 
         diary.mood = mood;
         diary.content = content;
 
-        if (prediction) {
-            diary.emotionAnalysis = {
-                dominantEmotion: prediction.dominant_emotion,
-                emotionPercentages: prediction.emotion_percentages
-            };
+        if (emotionAnalysis) {
+            diary.emotionAnalysis = emotionAnalysis;
         }
 
         await diary.save();
