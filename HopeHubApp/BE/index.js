@@ -20,6 +20,7 @@ import chatRoutes from "./src/routes/chatRoutes.js";
 import adminRouter from "./src/routes/adminRoutes.js";
 import aiCounselingRoutes from "./src/routes/aiCounselingRoutes.js";
 import lifeBuildScoreRouter from "./src/routes/lifeBuildScoreRouter.js"
+import callRoutes from "./src/routes/callRoutes.js";
 
 import Booking from "./src/models/Booking.js";
 import ChatMessage from "./src/models/ChatMessage.js";
@@ -55,6 +56,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/chat", chatRoutes);
 app.use("/api/ai-counseling", aiCounselingRoutes);
 app.use("/api/lifeBuild", lifeBuildScoreRouter);
+app.use("/api/calls", callRoutes);
 
 const server = http.createServer(app);
 

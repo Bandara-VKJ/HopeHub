@@ -1515,6 +1515,304 @@ const ProfileInfoRow = ({
 };
 
 
+
+// ============================================================
+// SESSION COUNTDOWN
+// ============================================================
+
+const getSessionDateTime = (
+  sessionDate: string,
+  sessionTime: string
+) => {
+  const dateMatch = sessionDate.match(
+    /^(\d{4})-(\d{2})-(\d{2})$/
+  );
+
+  const timeMatch = sessionTime
+    .trim()
+    .toUpperCase()
+    .match(
+      /^(\d{1,2}):(\d{2})\s*(AM|PM)$/
+    );
+
+  if (!dateMatch || !timeMatch) {
+    return null;
+  }
+
+  const year = Number(dateMatch[1]);
+  const month = Number(dateMatch[2]);
+  const day = Number(dateMatch[3]);
+
+  let hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+  const period = timeMatch[3];
+
+  if (period === "AM" && hour === 12) {
+    hour = 0;
+  }
+
+  if (period === "PM" && hour !== 12) {
+    hour += 12;
+  }
+
+  const sessionDateTime = new Date(
+    year,
+    month - 1,
+    day,
+    hour,
+    minute,
+    0,
+    0
+  );
+
+  return Number.isNaN(
+    sessionDateTime.getTime()
+  )
+    ? null
+    : sessionDateTime;
+};
+
+
+// ============================================================
+// SESSION ENDS FOR BOOKING UI 5 MINUTES AFTER START TIME
+// Chat remains available after this point.
+// ============================================================
+
+const isSessionPastFiveMinutes = (
+  booking: Booking,
+  now: number = Date.now()
+) => {
+  if (booking.status !== "confirmed") {
+    return false;
+  }
+
+  const sessionDateTime =
+    getSessionDateTime(
+      booking.sessionDate,
+      booking.sessionTime
+    );
+
+  if (!sessionDateTime) {
+    return false;
+  }
+
+  return (
+    now >=
+    sessionDateTime.getTime() +
+      5 * 60 * 1000
+  );
+};
+
+
+const SessionCountdown = ({
+  sessionDate,
+  sessionTime,
+}: {
+  sessionDate: string;
+  sessionTime: string;
+}) => {
+  const getRemainingTime = () => {
+    const sessionDateTime =
+      getSessionDateTime(
+        sessionDate,
+        sessionTime
+      );
+
+    if (!sessionDateTime) {
+      return null;
+    }
+
+    return Math.max(
+      sessionDateTime.getTime() -
+        Date.now(),
+      0
+    );
+  };
+
+  const [
+    remainingTime,
+    setRemainingTime,
+  ] = useState<number | null>(
+    getRemainingTime()
+  );
+
+  useEffect(() => {
+    setRemainingTime(
+      getRemainingTime()
+    );
+
+    const interval =
+      setInterval(() => {
+        setRemainingTime(
+          getRemainingTime()
+        );
+      }, 1000);
+
+    return () =>
+      clearInterval(interval);
+  }, [
+    sessionDate,
+    sessionTime,
+  ]);
+
+  if (remainingTime === null) {
+    return null;
+  }
+
+  if (remainingTime <= 0) {
+    return (
+      <View
+        style={
+          styles.countdownContainer
+        }
+      >
+        <Ionicons
+          name="videocam-outline"
+          size={24}
+          color="#16A34A"
+        />
+
+        <Text
+          style={
+            styles.countdownStartedText
+          }
+        >
+          Session time has arrived
+        </Text>
+      </View>
+    );
+  }
+
+  const totalSeconds =
+    Math.floor(
+      remainingTime / 1000
+    );
+
+  const hours =
+    Math.floor(
+      totalSeconds / 3600
+    );
+
+  const minutes =
+    Math.floor(
+      (totalSeconds % 3600) /
+        60
+    );
+
+  const seconds =
+    totalSeconds % 60;
+
+  const formatNumber = (
+    value: number
+  ) =>
+    String(value).padStart(
+      2,
+      "0"
+    );
+
+  return (
+    <View
+      style={
+        styles.countdownContainer
+      }
+    >
+      <Text
+        style={
+          styles.countdownTitle
+        }
+      >
+        SESSION STARTS IN
+      </Text>
+
+      <View
+        style={
+          styles.countdownRow
+        }
+      >
+        <View
+          style={
+            styles.countdownItem
+          }
+        >
+          <Text
+            style={
+              styles.countdownNumber
+            }
+          >
+            {formatNumber(hours)}
+          </Text>
+          <Text
+            style={
+              styles.countdownLabel
+            }
+          >
+            HR
+          </Text>
+        </View>
+
+        <Text
+          style={
+            styles.countdownSeparator
+          }
+        >
+          :
+        </Text>
+
+        <View
+          style={
+            styles.countdownItem
+          }
+        >
+          <Text
+            style={
+              styles.countdownNumber
+            }
+          >
+            {formatNumber(minutes)}
+          </Text>
+          <Text
+            style={
+              styles.countdownLabel
+            }
+          >
+            MIN
+          </Text>
+        </View>
+
+        <Text
+          style={
+            styles.countdownSeparator
+          }
+        >
+          :
+        </Text>
+
+        <View
+          style={
+            styles.countdownItem
+          }
+        >
+          <Text
+            style={
+              styles.countdownNumber
+            }
+          >
+            {formatNumber(seconds)}
+          </Text>
+          <Text
+            style={
+              styles.countdownLabel
+            }
+          >
+            SEC
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+
 // ============================================================
 // COUNSELOR CARD
 // ============================================================
@@ -1555,10 +1853,47 @@ const CounselorCard = ({
     "#2CA6A4";
 
 
+  // Keep this card updated automatically so the session
+  // changes to the post-session state exactly 5 minutes
+  // after the booked start time.
+  const [
+    now,
+    setNow,
+  ] = useState(Date.now());
+
+
+  useEffect(() => {
+    const timer =
+      setInterval(() => {
+        setNow(Date.now());
+      }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+
+  const sessionPastFiveMinutes =
+    !!booking &&
+    isSessionPastFiveMinutes(
+      booking,
+      now
+    );
+
+
   const hasBooking =
     !!booking &&
     booking.status !==
-      "cancelled";
+      "cancelled" &&
+    !sessionPastFiveMinutes;
+
+
+  const canUsePreviousChat =
+    !!booking &&
+    booking.status ===
+      "confirmed" &&
+    sessionPastFiveMinutes;
 
 
   return (
@@ -1877,20 +2212,18 @@ const CounselorCard = ({
 
             {booking.status ===
               "confirmed" && (
+              <>
+                <SessionCountdown
+                  sessionDate={
+                    booking.sessionDate
+                  }
+                  sessionTime={
+                    booking.sessionTime
+                  }
+                />
 
-              <Text
-                style={[
-                  styles.pendingMessage,
-                  {
-                    color:
-                      "#16A34A",
-                  },
-                ]}
-              >
-                Your session has
-                been confirmed.
-              </Text>
 
+              </>
             )}
 
           </View>
@@ -1905,9 +2238,103 @@ const CounselorCard = ({
       />
 
 
-      {/* NO ACTIVE BOOKING */}
+      {/* SESSION / POST-SESSION ACTIONS */}
 
-      {!hasBooking ? (
+      {hasBooking ? (
+
+        <View
+          style={
+            styles.cardActions
+          }
+        >
+
+          <ActionButton
+            icon="chatbubble-outline"
+            label="Chat"
+            primary
+            disabled={
+              booking?.status !==
+              "confirmed"
+            }
+            onPress={() =>
+              onCommunication(
+                "Chat",
+                booking?._id
+              )
+            }
+          />
+
+
+          <ActionButton
+            icon="mic-outline"
+            label="Voice"
+            disabled={
+              booking?.status !==
+              "confirmed"
+            }
+            onPress={() =>
+              onCommunication(
+                "Voice",
+                booking?._id
+              )
+            }
+          />
+
+
+          <ActionButton
+            icon="videocam-outline"
+            label="Video"
+            disabled={
+              booking?.status !==
+              "confirmed"
+            }
+            onPress={() =>
+              onCommunication(
+                "Video",
+                booking?._id
+              )
+            }
+          />
+
+        </View>
+
+      ) : canUsePreviousChat ? (
+
+        <View
+          style={
+            styles.cardActions
+          }
+        >
+
+          <ActionButton
+            icon="calendar-outline"
+            label={
+              counselor.available
+                ? "Book Session"
+                : "Currently Busy"
+            }
+            primary
+            disabled={
+              !counselor.available
+            }
+            onPress={onBook}
+          />
+
+
+          <ActionButton
+            icon="chatbubble-outline"
+            label="Chat"
+            onPress={() =>
+              onCommunication(
+                "Chat",
+                booking?._id
+              )
+            }
+          />
+
+        </View>
+
+      ) : (
 
         <TouchableOpacity
           style={
@@ -1938,64 +2365,6 @@ const CounselorCard = ({
           </Text>
 
         </TouchableOpacity>
-
-      ) : (
-
-        <View
-          style={
-            styles.cardActions
-          }
-        >
-
-          <ActionButton
-            icon="chatbubble-outline"
-            label="Chat"
-            primary
-            disabled={
-              booking?.status !==
-              "confirmed"
-            }
-            onPress={() =>
-              onCommunication(
-                "Chat",
-                booking?._id
-              )
-            }
-          />
-
-
-          <ActionButton
-            icon="videocam-outline"
-            label="Video"
-            disabled={
-              booking?.status !==
-              "confirmed"
-            }
-            onPress={() =>
-              onCommunication(
-                "Video",
-                booking?._id
-              )
-            }
-          />
-
-
-          <ActionButton
-            icon="mic-outline"
-            label="Voice"
-            disabled={
-              booking?.status !==
-              "confirmed"
-            }
-            onPress={() =>
-              onCommunication(
-                "Voice",
-                booking?._id
-              )
-            }
-          />
-
-        </View>
 
       )}
 
@@ -2776,14 +3145,21 @@ export default function SupportScreen() {
         );
 
 
-      // Prefer active bookings
+      // Prefer a booking that is still active.
+      // A confirmed session stops blocking a new booking
+      // 5 minutes after its booked start time.
       const active =
         matches.find(
           (booking) =>
             booking.status ===
               "pending" ||
-            booking.status ===
-              "confirmed"
+            (
+              booking.status ===
+                "confirmed" &&
+              !isSessionPastFiveMinutes(
+                booking
+              )
+            )
         );
 
 
@@ -2792,9 +3168,9 @@ export default function SupportScreen() {
       }
 
 
-      // Return cancelled only if
-      // there are no active bookings.
-      return matches[0];
+      // Old confirmed/cancelled bookings are history only.
+      // They must not prevent the user from booking again.
+      return undefined;
     };
 
 
@@ -2947,15 +3323,7 @@ export default function SupportScreen() {
           );
 
 
-        if (
-          existingBooking &&
-          (
-            existingBooking.status ===
-              "pending" ||
-            existingBooking.status ===
-              "confirmed"
-          )
-        ) {
+        if (existingBooking) {
 
           Alert.alert(
             "Existing Booking",
@@ -3323,7 +3691,7 @@ export default function SupportScreen() {
     ) => {
       if (!bookingId) {
         Alert.alert(
-          "Chat Unavailable",
+          "Session Unavailable",
           "The booking ID could not be found. Please refresh the Support page and try again."
         );
         return;
@@ -3339,10 +3707,27 @@ export default function SupportScreen() {
         return;
       }
 
-      Alert.alert(
-        `${type} Session`,
-        `${type} communication will be available for your confirmed counseling session.`
-      );
+      if (type === "Voice") {
+        router.push({
+          pathname: "/voice/voice" as any,
+          params: {
+            bookingId: String(bookingId),
+            role: "user",
+          },
+        });
+        return;
+      }
+
+      if (type === "Video") {
+  router.push({
+    pathname: "/video/video" as any,
+    params: {
+      bookingId: String(bookingId),
+      role: "user",
+    },
+  });
+  return;
+}
     };
 
 
@@ -3380,7 +3765,10 @@ export default function SupportScreen() {
 
 
       // ------------------------------------------------------
-      // Prefer pending/confirmed
+      // Prefer a currently active booking.
+      // After a confirmed session is 5 minutes past its
+      // start time, keep the old confirmed booking available
+      // only so the Chat option can still use its booking ID.
       // ------------------------------------------------------
 
       const activeBooking =
@@ -3388,8 +3776,13 @@ export default function SupportScreen() {
           (booking) =>
             booking.status ===
               "pending" ||
-            booking.status ===
-              "confirmed"
+            (
+              booking.status ===
+                "confirmed" &&
+              !isSessionPastFiveMinutes(
+                booking
+              )
+            )
         );
 
 
@@ -3398,16 +3791,134 @@ export default function SupportScreen() {
       }
 
 
+      const previousConfirmed =
+        counselorBookings.find(
+          (booking) =>
+            booking.status ===
+              "confirmed"
+        );
+
+
+      if (previousConfirmed) {
+        return previousConfirmed;
+      }
+
+
       return counselorBookings[0];
     };
+
+
+  // ==========================================================
+  // SELECTED / CURRENT COUNSELORS
+  // ==========================================================
+
+  /*
+    Show ALL counselors who currently have an active booking
+    with this user.
+
+    - pending booking -> counselor appears in Your Counselors
+    - confirmed booking -> counselor appears in Your Counselors
+    - after session/countdown + 5 min -> counselor STILL remains
+      in Your Counselors, but the old Your Session card disappears
+    - Book Session becomes available again
+    - Chat remains available using the previous confirmed booking
+    - cancelled booking -> counselor does not appear
+  */
+
+  // Keep counselors with confirmed/completed sessions
+  // inside "Your Counselors" as well.
+  //
+  // pending   -> shown in Your Counselors
+  // confirmed -> shown in Your Counselors before/during session
+  // completed -> still shown in Your Counselors after the
+  //              countdown + 5 minute session UI period
+  // cancelled -> not shown
+  //
+  // CounselorCard separately decides whether to show:
+  // - active session UI, or
+  // - Book Session + Chat after the session has ended.
+  const activeBookings =
+    bookings.filter(
+      (booking) =>
+        booking.status ===
+          "pending" ||
+        booking.status ===
+          "confirmed"
+    );
+
+
+  const selectedCounselorIds =
+    Array.from(
+      new Set(
+        activeBookings
+          .map((booking) =>
+            typeof booking.counselor ===
+            "string"
+              ? booking.counselor
+              : booking.counselor?._id
+          )
+          .filter(
+            (id): id is string =>
+              Boolean(id)
+          )
+          .map(String)
+      )
+    );
+
+
+  const selectedCounselors =
+    selectedCounselorIds
+      .map((counselorId) =>
+        counselors.find(
+          (counselor) =>
+            String(
+              counselor._id
+            ) ===
+            String(
+              counselorId
+            )
+        )
+      )
+      .filter(
+        (
+          counselor
+        ): counselor is Counselor =>
+          Boolean(counselor)
+      );
 
 
   // ==========================================================
   // FILTER
   // ==========================================================
 
-  const filteredCounselors =
+  /*
+    All active selected counselors are displayed separately
+    above the filter buttons.
+
+    The list below contains only counselors who are not
+    currently in the Your Counselors section.
+  */
+
+  const selectedCounselorIdSet =
+    new Set(
+      selectedCounselors.map(
+        (counselor) =>
+          String(counselor._id)
+      )
+    );
+
+
+  const otherCounselors =
     counselors.filter(
+      (counselor) =>
+        !selectedCounselorIdSet.has(
+          String(counselor._id)
+        )
+    );
+
+
+  const filteredCounselors =
+    otherCounselors.filter(
       (counselor) => {
 
         if (
@@ -3692,6 +4203,217 @@ export default function SupportScreen() {
 
 
         {/* ====================================================
+            SELECTED / CURRENT COUNSELORS
+        ==================================================== */}
+
+        {selectedCounselors.length > 0 && (
+
+          <View
+            style={
+              styles.selectedCounselorSection
+            }
+          >
+
+            <View
+              style={
+                styles.selectedCounselorHeader
+              }
+            >
+
+              <View
+                style={
+                  styles.selectedCounselorTitleRow
+                }
+              >
+
+                <View
+                  style={
+                    styles.selectedCounselorIcon
+                  }
+                >
+
+                  <Ionicons
+                    name="heart"
+                    size={21}
+                    color="#2CA6A4"
+                  />
+
+                </View>
+
+
+                <View
+                  style={{
+                    flex: 1,
+                  }}
+                >
+
+                  <Text
+                    style={
+                      styles.selectedCounselorTitle
+                    }
+                  >
+                    Your Counselors
+                  </Text>
+
+
+                  <Text
+                    style={
+                      styles.selectedCounselorSubtitle
+                    }
+                  >
+                    Your selected recovery support counselors
+                  </Text>
+
+                </View>
+
+              </View>
+
+
+              <View
+                style={
+                  styles.selectedBadge
+                }
+              >
+
+                <View
+                  style={
+                    styles.selectedBadgeDot
+                  }
+                />
+
+
+                <Text
+                  style={
+                    styles.selectedBadgeText
+                  }
+                >
+                  {selectedCounselors.length} SELECTED
+                </Text>
+
+              </View>
+
+            </View>
+
+
+            {selectedCounselors.map(
+              (
+                counselor,
+                index
+              ) => (
+
+                <View
+                  key={
+                    counselor._id
+                  }
+                  style={[
+                    styles.selectedCounselorCardWrapper,
+                    index > 0 && {
+                      marginTop: 14,
+                    },
+                  ]}
+                >
+
+                  <View
+                    style={
+                      styles.selectedTopLabel
+                    }
+                  >
+
+                    <Ionicons
+                      name="shield-checkmark"
+                      size={15}
+                      color="#2CA6A4"
+                    />
+
+
+                    <Text
+                      style={
+                        styles.selectedTopLabelText
+                      }
+                    >
+                      YOUR COUNSELING SUPPORT
+                    </Text>
+
+                  </View>
+
+
+                  <CounselorCard
+                    counselor={
+                      counselor
+                    }
+
+                    booking={
+                      getCounselorBooking(
+                        counselor._id
+                      )
+                    }
+
+                    onViewProfile={() =>
+                      openProfile(
+                        counselor
+                      )
+                    }
+
+                    onBook={() =>
+                      openBooking(
+                        counselor
+                      )
+                    }
+
+                    onCommunication={
+                      handleCommunication
+                    }
+                  />
+
+                </View>
+
+              )
+            )}
+
+          </View>
+
+        )}
+
+
+        {/* ====================================================
+            BROWSE OTHER COUNSELORS
+        ==================================================== */}
+
+        <View
+          style={
+            styles.browseCounselorSection
+          }
+        >
+
+          <View
+            style={
+              styles.browseCounselorHeader
+            }
+          >
+
+            <Text
+              style={
+                styles.browseCounselorTitle
+              }
+            >
+              Explore Other Counselors
+            </Text>
+
+
+            <Text
+              style={
+                styles.browseCounselorSubtitle
+              }
+            >
+              Find another counselor who matches your support needs.
+            </Text>
+
+          </View>
+
+        </View>
+
+
+        {/* ====================================================
             FILTERS
         ==================================================== */}
 
@@ -3755,7 +4477,7 @@ export default function SupportScreen() {
 
           {filteredCounselors.length}{" "}
 
-          counselor
+          other counselor
           {filteredCounselors.length !==
           1
             ? "s"
@@ -3770,7 +4492,7 @@ export default function SupportScreen() {
             COUNSELOR LIST
         ==================================================== */}
 
-        <View
+         <View
           style={
             styles.cardList
           }
@@ -3863,7 +4585,6 @@ export default function SupportScreen() {
           )}
 
         </View>
-
 
         {/* ====================================================
             EMERGENCY
