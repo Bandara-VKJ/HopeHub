@@ -1,10 +1,6 @@
 import { StyleSheet } from "react-native";
 
-/*
-|--------------------------------------------------------------------------
-| STYLES
-|--------------------------------------------------------------------------
-*/
+
 
 export const styles = StyleSheet.create({
   loadingContainer: {
@@ -90,6 +86,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 18,
     gap: 8,
+    justifyContent: "center",
+    flexWrap: "wrap",
   },
 
   filterBtn: {
@@ -304,6 +302,135 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+ 
+
+  selectedCounselorSection: {
+    marginHorizontal: 16,
+    marginTop: 22,
+    marginBottom: 10,
+  },
+
+  selectedCounselorHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+
+  selectedCounselorTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    marginRight: 8,
+  },
+
+  selectedCounselorIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#F0E9FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+
+  selectedCounselorTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#163D3D",
+  },
+
+  selectedCounselorSubtitle: {
+    fontSize: 11,
+    color: "#6E8E8E",
+    marginTop: 2,
+    lineHeight: 15,
+  },
+
+  selectedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#EDE9FE",
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#DDD6FE",
+  },
+
+  selectedBadgeDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: "#8B5CF6",
+    marginRight: 5,
+  },
+
+  selectedBadgeText: {
+    fontSize: 9,
+    fontWeight: "900",
+    color: "#6D28D9",
+    letterSpacing: 0.3,
+  },
+
+  selectedCounselorCardWrapper: {
+    backgroundColor: "#F7F3FF",
+    borderRadius: 24,
+    padding: 4,
+    borderWidth: 2,
+    borderColor: "#8B5CF6",
+    shadowColor: "#8B5CF6",
+    shadowOffset: {
+      width: 0,
+      height: 7,
+    },
+    shadowOpacity: 0.16,
+    shadowRadius: 14,
+    elevation: 7,
+  },
+
+  selectedTopLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 9,
+  },
+
+  selectedTopLabelText: {
+    marginLeft: 6,
+    fontSize: 10,
+    fontWeight: "900",
+    color: "#7C3AED",
+    letterSpacing: 0.7,
+  },
+
+  
+
+  browseCounselorSection: {
+    marginTop: 24,
+  },
+
+  browseCounselorHeader: {
+    marginHorizontal: 20,
+    marginBottom: 6,
+    alignItems: "center",
+  },
+
+  browseCounselorTitle: {
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#163D3D",
+    textAlign: "center",
+  },
+
+  browseCounselorSubtitle: {
+    fontSize: 12,
+    color: "#789393",
+    marginTop: 3,
+    lineHeight: 17,
+    textAlign: "center",
+  },
+
   emptyCard: {
     backgroundColor: "#fff",
     borderRadius: 18,
@@ -356,11 +483,7 @@ export const styles = StyleSheet.create({
     color: "#e26d36",
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | MODAL
-  |--------------------------------------------------------------------------
-  */
+  
 
   modalContainer: {
     flex: 1,
@@ -399,11 +522,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | PROFILE
-  |--------------------------------------------------------------------------
-  */
+  
 
   profileHero: {
     backgroundColor: "#2CA6A4",
@@ -562,11 +681,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | BOOKING
-  |--------------------------------------------------------------------------
-  */
+  
 
   bookingSection: {
     marginHorizontal: 16,
@@ -746,11 +861,7 @@ export const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | BOOKING STATUS CARD
-  |--------------------------------------------------------------------------
-  */
+  
 
   existingBookingCard: {
     marginTop: 15,
@@ -794,6 +905,68 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
+
+  countdownContainer: {
+    marginTop: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: "#F0FAF7",
+    borderWidth: 1,
+    borderColor: "#CDEDE3",
+    alignItems: "center",
+  },
+
+  countdownTitle: {
+    fontSize: 11,
+    fontWeight: "900",
+    color: "#2CA6A4",
+    letterSpacing: 1.2,
+    marginBottom: 10,
+  },
+
+  countdownRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+
+  countdownItem: {
+    minWidth: 58,
+    alignItems: "center",
+  },
+
+  countdownNumber: {
+    fontSize: 25,
+    lineHeight: 30,
+    fontWeight: "900",
+    color: "#1A3A3A",
+  },
+
+  countdownLabel: {
+    marginTop: 2,
+    fontSize: 9,
+    fontWeight: "800",
+    color: "#789090",
+    letterSpacing: 0.8,
+  },
+
+  countdownSeparator: {
+    marginHorizontal: 5,
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: "900",
+    color: "#2CA6A4",
+  },
+
+  countdownStartedText: {
+    marginTop: 7,
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#16A34A",
+    textAlign: "center",
+  },
+
   bookingStatus: {
     flexDirection: "row",
     alignItems: "center",
@@ -825,11 +998,7 @@ export const styles = StyleSheet.create({
   },
 });
 
-/*
-|--------------------------------------------------------------------------
-| AI STYLES
-|--------------------------------------------------------------------------
-*/
+
 
 export const aiStyles = StyleSheet.create({
   fab: {

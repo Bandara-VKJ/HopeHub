@@ -1,16 +1,31 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, router } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import { useFonts } from 'expo-font';
-import { useEffect, useState } from 'react';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { View, ActivityIndicator } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LanguageProvider } from '@/i18n/LanguageContext';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { Stack, router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import "react-native-reanimated";
+
+import { useFonts } from "expo-font";
+import { useEffect, useState } from "react";
+import {
+  View,
+  ActivityIndicator,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { LanguageProvider } from "@/i18n/LanguageContext";
+
+
+import { registerGlobals } from "@livekit/react-native";
+
+
+registerGlobals();
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: "(tabs)",
 };
 
 export default function RootLayout() {
@@ -23,33 +38,52 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+
   const [fontLoard] = useFonts({
-    Kavoon: require('../assets/fonts/Kavoon-Regular.ttf'),
-    Koulen: require('../assets/fonts/Koulen-Regular.ttf')
+    Kavoon: require("../assets/fonts/Kavoon-Regular.ttf"),
+    Koulen: require("../assets/fonts/Koulen-Regular.ttf"),
   });
 
-   const [userId, setUserId] = useState<string | null>(null);
-   const [loading, setLoading] = useState(true);
-   const [completed, setCompleted] = useState(false);
-   const [checkingStatus, setCheckingStatus] = useState(true);
-   const [role, setRole] = useState<'user' | 'counselor' | 'family' | null>(null);
-   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [completed, setCompleted] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
+
+  const [role, setRole] = useState<
+    "user" | "counselor" | "family" | null
+  >(null);
+
+  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+  
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const storedUserId = await AsyncStorage.getItem("userId");
-        const storedRole = await AsyncStorage.getItem("role");
+        const storedUserId =
+          await AsyncStorage.getItem("userId");
+
+        const storedRole =
+          await AsyncStorage.getItem("role");
 
         if (storedUserId) {
           setUserId(storedUserId);
-          setRole(storedRole as 'user' | 'counselor' | 'family');
+
+          setRole(
+            storedRole as
+              | "user"
+              | "counselor"
+              | "family"
+          );
         } else {
           setUserId(null);
           setRole(null);
         }
       } catch (error) {
-        console.error("Auth check error:", error);
+        console.error(
+          "Auth check error:",
+          error
+        );
       } finally {
         setLoading(false);
       }
@@ -58,25 +92,33 @@ function RootLayoutNav() {
     checkAuth();
   }, []);
 
+  
+
   useEffect(() => {
     if (loading) return;
 
     const checkStatus = async () => {
       try {
-        if (userId && role === 'user') {
+        if (userId && role === "user") {
           const res = await fetch(
             `${BASE_URL}/api/questionnaire/status/${userId}`,
             {
               headers: {
-                "ngrok-skip-browser-warning": "true",
+                "ngrok-skip-browser-warning":
+                  "true",
               },
             }
           );
+
           const data = await res.json();
+
           setCompleted(data.completed);
         }
       } catch (error) {
-        console.log("Status error:", error);
+        console.log(
+          "Status error:",
+          error
+        );
       } finally {
         setCheckingStatus(false);
       }
@@ -87,50 +129,114 @@ function RootLayoutNav() {
     } else {
       setCheckingStatus(false);
     }
-  }, [userId, role, loading]);
-  
+  }, [
+    userId,
+    role,
+    loading,
+    BASE_URL,
+  ]);
+
+
+
   useEffect(() => {
-      if (loading || checkingStatus) return;
+    if (loading || checkingStatus) {
+      return;
+    }
 
-      if (!userId) {
-        router.replace('/(auth)/Login/login');
-        return;
-      }
+    // Not logged in
+    if (!userId) {
+      router.replace(
+        "/(auth)/Login/login"
+      );
 
-      if (role === 'counselor') {
-        router.replace('/(counselor)/counselor');
-        return;
-      }
+      return;
+    }
 
-      if (role === 'family') {
-        router.replace('/(family)/familyDash');
-        return;
-      }
+    // Counselor
+    if (role === "counselor") {
+      router.replace(
+        "/(counselor)/counselor"
+      );
 
-      if (!completed) {
-        router.replace('/(questionnaire)/questionnaire');
-        return;
-      }
+      return;
+    }
 
-      router.replace('/(tabs)/Home/home');
+    // Family
+    if (role === "family") {
+      router.replace(
+        "/(family)/familyDash"
+      );
 
-  }, [userId, loading, checkingStatus, completed, role]);
+      return;
+    }
 
-  if(!fontLoard || loading || checkingStatus)
-  {
-    return(
-      <View style={{ flex:1,justifyContent:'center',alignItems:'center'}}>
-        <ActivityIndicator size="large"/>
+    if (!completed) {
+      router.replace(
+        "/(questionnaire)/questionnaire"
+      );
+
+      return;
+    }
+
+    // Normal user
+    router.replace(
+      "/(tabs)/Home/home"
+    );
+  }, [
+    userId,
+    loading,
+    checkingStatus,
+    completed,
+    role,
+  ]);
+
+  
+
+  if (
+    !fontLoard ||
+    loading ||
+    checkingStatus
+  ) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" />
       </View>
-    )
+    );
   }
 
+
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider
+      value={
+        colorScheme === "dark"
+          ? DarkTheme
+          : DefaultTheme
+      }
+    >
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="modal"
+          options={{
+            presentation: "modal",
+            title: "Modal",
+          }}
+        />
       </Stack>
+
       <StatusBar style="auto" />
     </ThemeProvider>
   );

@@ -893,8 +893,60 @@ export default function CounselorScreen() {
       });
     };
 
-  const toggleAvailability =
-    async () => {
+  const openPatientVoice = async (booking: Booking) => {
+  if (booking.status !== "confirmed") {
+    Alert.alert(
+      "Voice Unavailable",
+      "You can start a voice session only after confirming the booking."
+    );
+    return;
+  }
+
+  if (!booking._id) {
+    Alert.alert(
+      "Voice Error",
+      "Booking ID is missing."
+    );
+    return;
+  }
+
+  router.push({
+    pathname: "/voice/voice" as any,
+    params: {
+      bookingId: String(booking._id),
+      role: "counselor",
+    },
+  });
+};
+
+const openPatientVideo = async (booking: Booking) => {
+  if (booking.status !== "confirmed") {
+    Alert.alert(
+      "Video Unavailable",
+      "You can start a video session only after confirming the booking."
+    );
+    return;
+  }
+
+  if (!booking._id) {
+    Alert.alert(
+      "Video Error",
+      "Booking ID is missing."
+    );
+    return;
+  }
+
+  router.push({
+    pathname: "/video/video" as any,
+    params: {
+      bookingId: String(booking._id),
+      role: "counselor",
+    },
+  });
+};
+
+const toggleAvailability =
+  async () => {
 
       if (
         !counselor ||
@@ -2058,6 +2110,51 @@ export default function CounselorScreen() {
                             Chat with Patient
                           </Text>
 
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.chatWithPatientButton,
+                            { marginTop: 10 },
+                          ]}
+                          onPress={() =>
+                            openPatientVoice(booking)
+                          }
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons
+                            name="mic-outline"
+                            size={19}
+                            color="#FFFFFF"
+                          />
+
+                          <Text
+                            style={styles.chatWithPatientButtonText}
+                          >
+                            Voice Call
+                          </Text>
+                        </TouchableOpacity>
+
+                        {/* Video call for confirmed bookings */}
+                        <TouchableOpacity
+                          style={[
+                            styles.chatWithPatientButton,
+                            {
+                              marginTop: 10,
+                              backgroundColor: "#6366F1",
+                            },
+                          ]}
+                          onPress={() => openPatientVideo(booking)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons
+                            name="videocam-outline"
+                            size={19}
+                            color="#FFFFFF"
+                          />
+                          <Text style={styles.chatWithPatientButtonText}>
+                            Video Call
+                          </Text>
                         </TouchableOpacity>
 
                       </View>
