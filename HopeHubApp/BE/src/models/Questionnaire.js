@@ -9,6 +9,16 @@ const questionnaireSchema = new mongoose.Schema({
     type: Object,
     required: true
   },
+  otherDrugName: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: 100
+  },
+  version: {
+    type: Number,
+    default: 2
+  },
   completedAt: {
     type: Date,
     default: Date.now
