@@ -1,10 +1,6 @@
 import { StyleSheet } from "react-native";
 
-/*
-|--------------------------------------------------------------------------
-| STYLES
-|--------------------------------------------------------------------------
-*/
+
 
 export const styles = StyleSheet.create({
   loadingContainer: {
@@ -306,9 +302,7 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // ==========================================================
-  // SELECTED / CURRENT COUNSELOR
-  // ==========================================================
+ 
 
   selectedCounselorSection: {
     marginHorizontal: 16,
@@ -410,9 +404,7 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.7,
   },
 
-  // ==========================================================
-  // BROWSE OTHER COUNSELORS
-  // ==========================================================
+  
 
   browseCounselorSection: {
     marginTop: 24,
@@ -491,11 +483,7 @@ export const styles = StyleSheet.create({
     color: "#e26d36",
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | MODAL
-  |--------------------------------------------------------------------------
-  */
+  
 
   modalContainer: {
     flex: 1,
@@ -534,11 +522,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | PROFILE
-  |--------------------------------------------------------------------------
-  */
+  
 
   profileHero: {
     backgroundColor: "#2CA6A4",
@@ -697,11 +681,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | BOOKING
-  |--------------------------------------------------------------------------
-  */
+  
 
   bookingSection: {
     marginHorizontal: 16,
@@ -881,11 +861,7 @@ export const styles = StyleSheet.create({
     fontWeight: "900",
   },
 
-  /*
-  |--------------------------------------------------------------------------
-  | BOOKING STATUS CARD
-  |--------------------------------------------------------------------------
-  */
+  
 
   existingBookingCard: {
     marginTop: 15,
@@ -1022,11 +998,7 @@ export const styles = StyleSheet.create({
   },
 });
 
-/*
-|--------------------------------------------------------------------------
-| AI STYLES
-|--------------------------------------------------------------------------
-*/
+
 
 export const aiStyles = StyleSheet.create({
   fab: {

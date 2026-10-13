@@ -18,12 +18,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 
-// ============================================
-// LIVEKIT
-// ============================================
+
 import { registerGlobals } from "@livekit/react-native";
 
-// Register WebRTC globals required by LiveKit
+
 registerGlobals();
 
 export const unstable_settings = {
@@ -57,9 +55,7 @@ function RootLayoutNav() {
 
   const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
-  // ============================================
-  // CHECK AUTHENTICATION
-  // ============================================
+  
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -96,9 +92,7 @@ function RootLayoutNav() {
     checkAuth();
   }, []);
 
-  // ============================================
-  // CHECK QUESTIONNAIRE STATUS
-  // ============================================
+  
 
   useEffect(() => {
     if (loading) return;
@@ -142,9 +136,7 @@ function RootLayoutNav() {
     BASE_URL,
   ]);
 
-  // ============================================
-  // ROUTING
-  // ============================================
+
 
   useEffect(() => {
     if (loading || checkingStatus) {
@@ -178,7 +170,6 @@ function RootLayoutNav() {
       return;
     }
 
-    // User has not completed questionnaire
     if (!completed) {
       router.replace(
         "/(questionnaire)/questionnaire"
@@ -199,9 +190,7 @@ function RootLayoutNav() {
     role,
   ]);
 
-  // ============================================
-  // LOADING SCREEN
-  // ============================================
+  
 
   if (
     !fontLoard ||
@@ -221,9 +210,7 @@ function RootLayoutNav() {
     );
   }
 
-  // ============================================
-  // APP
-  // ============================================
+
 
   return (
     <ThemeProvider

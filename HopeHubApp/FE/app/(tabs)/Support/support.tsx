@@ -28,16 +28,12 @@ import {
 import { ngrokFetch } from "@/utill/ngrokFetch";
 
 
-// ============================================================
-// BACKEND
-// ============================================================
+
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 
-// ============================================================
-// TYPES
-// ============================================================
+
 
 type FilterType =
   | "All Counselors"
@@ -125,9 +121,7 @@ type Booking = {
 };
 
 
-// ============================================================
-// AVAILABLE TIME SLOTS
-// ============================================================
+
 
 const TIME_SLOTS = [
   "09:00 AM",
@@ -141,9 +135,7 @@ const TIME_SLOTS = [
 ];
 
 
-// ============================================================
-// AVATAR
-// ============================================================
+
 
 const getAvatar = (
   counselor: Counselor
@@ -165,9 +157,7 @@ const getAvatar = (
 };
 
 
-// ============================================================
-// AI COUNSELLING BUTTON
-// ============================================================
+
 
 const AICounsellingFAB = ({
   onPress,
@@ -210,9 +200,7 @@ const AICounsellingFAB = ({
 };
 
 
-// ============================================================
-// STAR RATING
-// ============================================================
+
 
 const StarRating = ({
   rating,
@@ -237,9 +225,7 @@ const StarRating = ({
 };
 
 
-// ============================================================
-// BOOKING STATUS
-// ============================================================
+
 
 const BookingStatus = ({
   status,
@@ -320,9 +306,7 @@ const BookingStatus = ({
 };
 
 
-// ============================================================
-// ACTION BUTTON
-// ============================================================
+
 
 const ActionButton = ({
   icon,
@@ -390,9 +374,7 @@ const ActionButton = ({
 };
 
 
-// ============================================================
-// BOOKING MODAL
-// ============================================================
+
 
 const BookingModal = ({
   visible,
@@ -445,9 +427,7 @@ const BookingModal = ({
   }
 
 
-  // ----------------------------------------------------------
-  // NEXT 7 DAYS
-  // ----------------------------------------------------------
+  
 
   const dates = Array.from(
     {
@@ -577,9 +557,7 @@ const BookingModal = ({
           }}
         >
 
-          {/* ==================================================
-              SELECT DATE
-          ================================================== */}
+          
 
           <View
             style={
@@ -681,9 +659,7 @@ const BookingModal = ({
           </View>
 
 
-          {/* ==================================================
-              SELECT TIME
-          ================================================== */}
+          
 
           <View
             style={
@@ -825,9 +801,7 @@ const BookingModal = ({
           </View>
 
 
-          {/* ==================================================
-              INFORMATION
-          ================================================== */}
+          
 
           <View
             style={
@@ -877,9 +851,7 @@ const BookingModal = ({
           </View>
 
 
-          {/* ==================================================
-              SELECTED SUMMARY
-          ================================================== */}
+          
 
           <View
             style={
@@ -969,9 +941,7 @@ const BookingModal = ({
           </View>
 
 
-          {/* ==================================================
-              CONFIRM
-          ================================================== */}
+          
 
           <TouchableOpacity
             style={[
@@ -1029,9 +999,7 @@ const BookingModal = ({
 };
 
 
-// ============================================================
-// COUNSELOR PROFILE MODAL
-// ============================================================
+
 
 const CounselorProfileModal = ({
   visible,
@@ -1447,9 +1415,7 @@ const CounselorProfileModal = ({
 };
 
 
-// ============================================================
-// PROFILE INFO ROW
-// ============================================================
+
 
 const ProfileInfoRow = ({
   icon,
@@ -1516,9 +1482,7 @@ const ProfileInfoRow = ({
 
 
 
-// ============================================================
-// SESSION COUNTDOWN
-// ============================================================
+
 
 const getSessionDateTime = (
   sessionDate: string,
@@ -1573,10 +1537,7 @@ const getSessionDateTime = (
 };
 
 
-// ============================================================
-// SESSION ENDS FOR BOOKING UI 5 MINUTES AFTER START TIME
-// Chat remains available after this point.
-// ============================================================
+
 
 const isSessionPastFiveMinutes = (
   booking: Booking,
@@ -1813,9 +1774,7 @@ const SessionCountdown = ({
 };
 
 
-// ============================================================
-// COUNSELOR CARD
-// ============================================================
+
 
 const CounselorCard = ({
   counselor,
@@ -1853,9 +1812,7 @@ const CounselorCard = ({
     "#2CA6A4";
 
 
-  // Keep this card updated automatically so the session
-  // changes to the post-session state exactly 5 minutes
-  // after the booked start time.
+  
   const [
     now,
     setNow,
@@ -2403,9 +2360,7 @@ const CounselorCard = ({
 };
 
 
-// ============================================================
-// SUPPORT SCREEN
-// ============================================================
+
 
 export default function SupportScreen() {
 
@@ -2511,18 +2466,14 @@ export default function SupportScreen() {
     ];
 
 
-  // ==========================================================
-  // INITIAL LOAD
-  // ==========================================================
+  
 
   useEffect(() => {
     loadSupportData();
   }, []);
 
 
-  // ==========================================================
-  // LOAD ALL DATA
-  // ==========================================================
+  
 
   const loadSupportData =
     async () => {
@@ -2538,9 +2489,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // FETCH COUNSELORS
-  // ==========================================================
+  
 
   const fetchCounselors =
     async () => {
@@ -2646,9 +2595,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // GET CURRENT USER ID
-  // ==========================================================
+  
 
   const getPatientId =
     async (): Promise<
@@ -2657,9 +2604,7 @@ export default function SupportScreen() {
 
       try {
 
-        // ------------------------------------------------------
-        // First preference: userId
-        // ------------------------------------------------------
+     
 
         const directId =
           await AsyncStorage.getItem(
@@ -2677,9 +2622,7 @@ export default function SupportScreen() {
         }
 
 
-        // ------------------------------------------------------
-        // Second preference: saved user object
-        // ------------------------------------------------------
+        
 
         const savedUser =
           await AsyncStorage.getItem(
@@ -2732,9 +2675,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // FETCH PATIENT BOOKINGS
-  // ==========================================================
+  
 
   const fetchPatientBookings =
     async () => {
@@ -2845,9 +2786,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // OPEN PROFILE
-  // ==========================================================
+  
 
   const openProfile = (
     counselor: Counselor
@@ -2863,9 +2802,7 @@ export default function SupportScreen() {
   };
 
 
-  // ==========================================================
-  // CLOSE PROFILE
-  // ==========================================================
+  
 
   const closeProfile =
     () => {
@@ -2884,9 +2821,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // OPEN BOOKING
-  // ==========================================================
+  
 
   const openBooking = (
     counselor: Counselor
@@ -2937,9 +2872,7 @@ export default function SupportScreen() {
   };
 
 
-  // ==========================================================
-  // CLOSE BOOKING
-  // ==========================================================
+  
 
   const closeBooking =
     () => {
@@ -2961,9 +2894,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // FETCH BOOKED SLOTS
-  // ==========================================================
+  
 
   const fetchBookedSlots =
     async (
@@ -3083,9 +3014,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // SELECT DATE
-  // ==========================================================
+  
 
   const handleDateSelect =
     (date: string) => {
@@ -3111,10 +3040,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // CHECK IF USER ALREADY HAS
-  // AN ACTIVE BOOKING WITH COUNSELOR
-  // ==========================================================
+ 
 
   const getExistingBooking =
     (
@@ -3145,9 +3071,6 @@ export default function SupportScreen() {
         );
 
 
-      // Prefer a booking that is still active.
-      // A confirmed session stops blocking a new booking
-      // 5 minutes after its booked start time.
       const active =
         matches.find(
           (booking) =>
@@ -3168,31 +3091,24 @@ export default function SupportScreen() {
       }
 
 
-      // Old confirmed/cancelled bookings are history only.
-      // They must not prevent the user from booking again.
+      
       return undefined;
     };
 
 
-  // ==========================================================
-  // CREATE BOOKING
-  // ==========================================================
+  
 
   const confirmBooking =
     async () => {
 
-      // ------------------------------------------------------
-      // Prevent duplicate button presses
-      // ------------------------------------------------------
+      
 
       if (bookingLoading) {
         return;
       }
 
 
-      // ------------------------------------------------------
-      // Counselor validation
-      // ------------------------------------------------------
+      
 
       if (
         !selectedCounselor?._id
@@ -3207,9 +3123,7 @@ export default function SupportScreen() {
       }
 
 
-      // ------------------------------------------------------
-      // Date validation
-      // ------------------------------------------------------
+      
 
       if (!selectedDate) {
 
@@ -3222,9 +3136,7 @@ export default function SupportScreen() {
       }
 
 
-      // ------------------------------------------------------
-      // Time validation
-      // ------------------------------------------------------
+      
 
       if (!selectedTime) {
 
@@ -3237,10 +3149,7 @@ export default function SupportScreen() {
       }
 
 
-      // ------------------------------------------------------
-      // Make sure selected slot
-      // wasn't already loaded as booked.
-      // ------------------------------------------------------
+      
 
       if (
         bookedSlots.includes(
@@ -3264,9 +3173,7 @@ export default function SupportScreen() {
         );
 
 
-        // ----------------------------------------------------
-        // GET PATIENT ID
-        // ----------------------------------------------------
+        
 
         const patientId =
           await getPatientId();
@@ -3312,10 +3219,7 @@ export default function SupportScreen() {
         }
 
 
-        // ----------------------------------------------------
-        // CHECK USER DOES NOT ALREADY
-        // HAVE ACTIVE BOOKING WITH THIS COUNSELOR
-        // ----------------------------------------------------
+        
 
         const existingBooking =
           getExistingBooking(
@@ -3334,9 +3238,7 @@ export default function SupportScreen() {
         }
 
 
-        // ----------------------------------------------------
-        // REQUEST BODY
-        // ----------------------------------------------------
+        
 
         const bookingData = {
           counselor:
@@ -3380,9 +3282,7 @@ export default function SupportScreen() {
         );
 
 
-        // ----------------------------------------------------
-        // POST BOOKING
-        // ----------------------------------------------------
+        
 
         const response =
           await ngrokFetch(
@@ -3410,9 +3310,7 @@ export default function SupportScreen() {
           );
 
 
-        // ----------------------------------------------------
-        // READ RESPONSE AS TEXT FIRST
-        // ----------------------------------------------------
+        
 
         const responseText =
           await response.text();
@@ -3455,9 +3353,7 @@ export default function SupportScreen() {
         }
 
 
-        // ----------------------------------------------------
-        // SERVER ERROR
-        // ----------------------------------------------------
+       
 
         if (!response.ok) {
 
@@ -3472,9 +3368,7 @@ export default function SupportScreen() {
             409
           ) {
 
-            // Refresh booked slots
-            // because somebody may
-            // have booked it meanwhile.
+            
 
             await fetchBookedSlots(
               selectedDate
@@ -3502,9 +3396,7 @@ export default function SupportScreen() {
         }
 
 
-        // ----------------------------------------------------
-        // VALIDATE RETURNED BOOKING
-        // ----------------------------------------------------
+        
 
         if (
           !data.booking ||
@@ -3526,9 +3418,7 @@ export default function SupportScreen() {
         }
 
 
-        // ----------------------------------------------------
-        // SUCCESS
-        // ----------------------------------------------------
+        
 
         console.log(
           "BOOKING CREATED SUCCESSFULLY:"
@@ -3539,9 +3429,7 @@ export default function SupportScreen() {
         );
 
 
-        // ----------------------------------------------------
-        // Add immediately to local state
-        // ----------------------------------------------------
+        
 
         setBookings(
           (previous) => {
@@ -3562,9 +3450,7 @@ export default function SupportScreen() {
         );
 
 
-        // ----------------------------------------------------
-        // Close modal
-        // ----------------------------------------------------
+        
 
         setBookingVisible(
           false
@@ -3577,16 +3463,12 @@ export default function SupportScreen() {
         setBookedSlots([]);
 
 
-        // ----------------------------------------------------
-        // Reload from MongoDB
-        // ----------------------------------------------------
+        
 
         await fetchPatientBookings();
 
 
-        // ----------------------------------------------------
-        // SUCCESS MESSAGE
-        // ----------------------------------------------------
+
 
         Alert.alert(
           "Booking Submitted",
@@ -3627,9 +3509,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // REFRESH
-  // ==========================================================
+ 
 
   const onRefresh =
     async () => {
@@ -3655,9 +3535,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // AUTO REFRESH
-  // ==========================================================
+  
 
   useEffect(() => {
 
@@ -3677,9 +3555,7 @@ export default function SupportScreen() {
   }, []);
 
 
-  // ==========================================================
-  // COMMUNICATION
-  // ==========================================================
+  
 
   const handleCommunication =
     (
@@ -3731,9 +3607,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // FIND BOOKING FOR COUNSELOR
-  // ==========================================================
+
 
   const getCounselorBooking =
     (
@@ -3764,12 +3638,7 @@ export default function SupportScreen() {
         );
 
 
-      // ------------------------------------------------------
-      // Prefer a currently active booking.
-      // After a confirmed session is 5 minutes past its
-      // start time, keep the old confirmed booking available
-      // only so the Chat option can still use its booking ID.
-      // ------------------------------------------------------
+      
 
       const activeBooking =
         counselorBookings.find(
@@ -3808,35 +3677,7 @@ export default function SupportScreen() {
     };
 
 
-  // ==========================================================
-  // SELECTED / CURRENT COUNSELORS
-  // ==========================================================
-
-  /*
-    Show ALL counselors who currently have an active booking
-    with this user.
-
-    - pending booking -> counselor appears in Your Counselors
-    - confirmed booking -> counselor appears in Your Counselors
-    - after session/countdown + 5 min -> counselor STILL remains
-      in Your Counselors, but the old Your Session card disappears
-    - Book Session becomes available again
-    - Chat remains available using the previous confirmed booking
-    - cancelled booking -> counselor does not appear
-  */
-
-  // Keep counselors with confirmed/completed sessions
-  // inside "Your Counselors" as well.
-  //
-  // pending   -> shown in Your Counselors
-  // confirmed -> shown in Your Counselors before/during session
-  // completed -> still shown in Your Counselors after the
-  //              countdown + 5 minute session UI period
-  // cancelled -> not shown
-  //
-  // CounselorCard separately decides whether to show:
-  // - active session UI, or
-  // - Book Session + Chat after the session has ended.
+ 
   const activeBookings =
     bookings.filter(
       (booking) =>
@@ -3887,17 +3728,7 @@ export default function SupportScreen() {
       );
 
 
-  // ==========================================================
-  // FILTER
-  // ==========================================================
-
-  /*
-    All active selected counselors are displayed separately
-    above the filter buttons.
-
-    The list below contains only counselors who are not
-    currently in the Your Counselors section.
-  */
+  
 
   const selectedCounselorIdSet =
     new Set(
@@ -3944,9 +3775,7 @@ export default function SupportScreen() {
     );
 
 
-  // ==========================================================
-  // LOADING SCREEN
-  // ==========================================================
+  
 
   if (loading) {
 
@@ -3976,9 +3805,7 @@ export default function SupportScreen() {
   }
 
 
-  // ==========================================================
-  // UI
-  // ==========================================================
+ 
 
   return (
     <View
@@ -3987,9 +3814,7 @@ export default function SupportScreen() {
       }}
     >
 
-      {/* ======================================================
-          COUNSELOR PROFILE MODAL
-      ====================================================== */}
+     
 
       <CounselorProfileModal
         visible={
@@ -4019,10 +3844,7 @@ export default function SupportScreen() {
       />
 
 
-      {/* ======================================================
-          BOOKING MODAL
-      ====================================================== */}
-
+      
       <BookingModal
         visible={
           bookingVisible
@@ -4066,9 +3888,7 @@ export default function SupportScreen() {
       />
 
 
-      {/* ======================================================
-          MAIN SCROLL
-      ====================================================== */}
+      
 
       <ScrollView
         style={
@@ -4095,9 +3915,7 @@ export default function SupportScreen() {
         }
       >
 
-        {/* ====================================================
-            HEADER
-        ==================================================== */}
+        
 
         <View
           style={
@@ -4202,9 +4020,7 @@ export default function SupportScreen() {
         </View>
 
 
-        {/* ====================================================
-            SELECTED / CURRENT COUNSELORS
-        ==================================================== */}
+     
 
         {selectedCounselors.length > 0 && (
 
@@ -4375,9 +4191,7 @@ export default function SupportScreen() {
         )}
 
 
-        {/* ====================================================
-            BROWSE OTHER COUNSELORS
-        ==================================================== */}
+
 
         <View
           style={
@@ -4413,9 +4227,7 @@ export default function SupportScreen() {
         </View>
 
 
-        {/* ====================================================
-            FILTERS
-        ==================================================== */}
+       
 
         <View
           style={
@@ -4465,9 +4277,7 @@ export default function SupportScreen() {
         </View>
 
 
-        {/* ====================================================
-            RESULT COUNT
-        ==================================================== */}
+      
 
         <Text
           style={
@@ -4488,9 +4298,7 @@ export default function SupportScreen() {
         </Text>
 
 
-        {/* ====================================================
-            COUNSELOR LIST
-        ==================================================== */}
+
 
          <View
           style={
@@ -4586,9 +4394,7 @@ export default function SupportScreen() {
 
         </View>
 
-        {/* ====================================================
-            EMERGENCY
-        ==================================================== */}
+      
 
         <View
           style={
@@ -4638,9 +4444,7 @@ export default function SupportScreen() {
       </ScrollView>
 
 
-      {/* ======================================================
-          AI COUNSELLING BUTTON
-      ====================================================== */}
+
 
       <AICounsellingFAB
         onPress={() => {

@@ -10,9 +10,7 @@ export const createVoiceToken = async (req, res) => {
   try {
     const { bookingId } = req.body;
 
-    // =====================================================
-    // VALIDATE BOOKING ID
-    // =====================================================
+ 
 
     if (!bookingId) {
       return res.status(400).json({
@@ -28,9 +26,7 @@ export const createVoiceToken = async (req, res) => {
       });
     }
 
-    // =====================================================
-    // AUTHENTICATED USER FROM JWT
-    // =====================================================
+   
 
     const authenticatedId =
       req.user?.id ||
@@ -57,9 +53,7 @@ export const createVoiceToken = async (req, res) => {
       });
     }
 
-    // =====================================================
-    // CHECK LIVEKIT CONFIGURATION
-    // =====================================================
+    
 
     const livekitUrl =
       process.env.LIVEKIT_URL;
@@ -86,9 +80,7 @@ export const createVoiceToken = async (req, res) => {
       });
     }
 
-    // =====================================================
-    // FIND BOOKING
-    // =====================================================
+    
 
     const booking =
       await Booking.findById(bookingId);
@@ -100,9 +92,7 @@ export const createVoiceToken = async (req, res) => {
       });
     }
 
-    // =====================================================
-    // BOOKING MUST BE CONFIRMED
-    // =====================================================
+   
 
     if (booking.status !== "confirmed") {
       return res.status(403).json({
@@ -112,9 +102,7 @@ export const createVoiceToken = async (req, res) => {
       });
     }
 
-    // =====================================================
-    // VERIFY PARTICIPANT
-    // =====================================================
+    
 
     const isPatient =
       authenticatedRole === "user" &&
@@ -134,9 +122,7 @@ export const createVoiceToken = async (req, res) => {
       });
     }
 
-    // =====================================================
-    // CREATE PRIVATE ROOM NAME
-    // =====================================================
+    
 
     const roomName =
       `voice_${String(booking._id)}`;
@@ -146,9 +132,7 @@ export const createVoiceToken = async (req, res) => {
         ? `c_${String(authenticatedId)}`
         : `u_${String(authenticatedId)}`;
 
-    // =====================================================
-    // CREATE LIVEKIT TOKEN
-    // =====================================================
+    
 
     const accessToken =
       new AccessToken(
@@ -198,9 +182,7 @@ export const createVoiceToken = async (req, res) => {
     verifyError
   );
 }
-    // =====================================================
-    // RESPONSE
-    // =====================================================
+    
 
     return res.status(200).json({
       success: true,
