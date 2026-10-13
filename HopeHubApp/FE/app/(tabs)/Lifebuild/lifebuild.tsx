@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { lifeBuildStyles } from "./lifebuildStyles";
 import JobPage from "../../(lifepages)/jobpage";
 import { ngrokFetch } from "@/utill/ngrokFetch";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -23,43 +24,29 @@ type ProfileQuestionType =
   | "multiSelect"
   | "skills";
 
+
 type ProfileQuestion = {
   id: string;
-  question: string;
   type: ProfileQuestionType;
-  section?: string;
   options?: string[];
   maxSelections?: number;
-  allowOther?: boolean;
-};
-
-type RecoveryQuestion = {
-  id: number;
-  section: string;
-  question: string;
 };
 
 const PROFILE_QUESTIONS: ProfileQuestion[] = [
-  { id: "age", question: "What is your age?", type: "number", section: "Demographic Information" },
+  { id: "age", type: "number" },
   {
     id: "gender",
-    question: "What is your gender?",
     type: "select",
-    section: "Demographic Information",
     options: ["Male", "Female", "Prefer not to say"],
   },
   {
     id: "education",
-    question: "What is your education level?",
     type: "select",
-    section: "Demographic Information",
     options: ["No formal education", "Primary", "Secondary", "Diploma", "Degree or higher"],
   },
   {
     id: "jobInterest",
-    question: "Which activities do you enjoy most? Select up to three.",
     type: "multiSelect",
-    section: "Skills, Interests & Reintegration",
     maxSelections: 3,
     options: [
       "Fixing machines or tools",
@@ -89,70 +76,26 @@ const SKILLS = [
   "Decision Making",
 ];
 
-const RECOVERY_QUESTIONS: RecoveryQuestion[] = [
-  { id: 1, section: "Recovery Self-Efficacy", question: "I am confident that I can resist using drugs even when I feel stressed." },
-  { id: 2, section: "Recovery Self-Efficacy", question: "I can control my urges without using drugs." },
-  { id: 3, section: "Recovery Self-Efficacy", question: "I believe I can continue my recovery successfully." },
-  { id: 4, section: "Recovery Self-Efficacy", question: "I can refuse drugs even if someone offers them to me." },
-  { id: 5, section: "Emotional Stability", question: "I can manage my emotions in healthy ways." },
-  { id: 6, section: "Emotional Stability", question: "I usually remain calm when facing problems." },
-  { id: 7, section: "Emotional Stability", question: "I feel hopeful about my future." },
-  { id: 8, section: "Emotional Stability", question: "I believe I have control over my life." },
-  { id: 9, section: "Lifestyle Stability", question: "I maintain a regular daily routine." },
-  { id: 10, section: "Lifestyle Stability", question: "I get enough sleep most nights." },
-  { id: 11, section: "Lifestyle Stability", question: "I avoid places or people that encourage drug use." },
-  { id: 12, section: "Lifestyle Stability", question: "I spend my free time in productive activities." },
-  { id: 13, section: "Social Support", question: "My family supports my recovery." },
-  { id: 14, section: "Social Support", question: "I have friends who encourage me to stay drug-free." },
-  { id: 15, section: "Social Support", question: "I know where to seek help if I need support." },
-  { id: 16, section: "Social Support", question: "I have someone I trust to discuss my problems." },
-  { id: 17, section: "Career Readiness", question: "I believe I can perform well in a job." },
-  { id: 18, section: "Career Readiness", question: "I can work responsibly with others." },
-  { id: 19, section: "Career Readiness", question: "I am willing to attend vocational training." },
-  { id: 20, section: "Career Readiness", question: "I believe having a career will help me maintain recovery." },
-];
+const RECOVERY_QUESTIONS = Array.from({ length: 20 }, (_, i) => ({
+  id: i + 1,
+  sectionIndex: Math.floor(i / 4),
+}));
 
 const MAX_SCORE = RECOVERY_QUESTIONS.length * 5;
 
-const ANSWER_OPTIONS = [
-  { label: "Strongly Disagree", value: 1 },
-  { label: "Disagree", value: 2 },
-  { label: "Neutral", value: 3 },
-  { label: "Agree", value: 4 },
-  { label: "Strongly Agree", value: 5 },
-];
+const ANSWER_VALUES = [1, 2, 3, 4, 5];
 
-const STEP_CARDS = [
-  {
-    number: "01",
-    icon: "document-text-outline",
-    title: "Complete Recovery Assessment",
-    description: "Answer 20 Recovery Safety Assessment questions and submit.",
-  },
-  {
-    number: "02",
-    icon: "shield-checkmark-outline",
-    title: "See Your Safety Score",
-    description:
-      "Your score is calculated from your 20 answers and shown right away.",
-  },
-  {
-    number: "03",
-    icon: "person-outline",
-    title: "Tell Us About Yourself",
-    description:
-      "Answer 16 questions about your background, skills, interests and recovery support needs.",
-  },
-  {
-    number: "04",
-    icon: "briefcase-outline",
-    title: "Discover Your Career Path",
-    description:
-      "If your Recovery Safety Score is 50% or above, suitable career paths can be recommended.",
-  },
+const STEP_ICONS = [
+  { number: "01", icon: "document-text-outline" },
+  { number: "02", icon: "shield-checkmark-outline" },
+  { number: "03", icon: "person-outline" },
+  { number: "04", icon: "briefcase-outline" },
 ];
 
 export default function LifeBuildScreen() {
+  const { t } = useLanguage();
+  const lb = t.lifeBuild;
+
   const [screen, setScreen] = useState<
     "start" | "profile" | "assessment" | "score" | "result"
   >("start");
@@ -302,10 +245,7 @@ export default function LifeBuildScreen() {
     }
 
     if (maxSelections && currentAnswers.length >= maxSelections) {
-      Alert.alert(
-        "Maximum Selection",
-        `You can select up to ${maxSelections} options.`
-      );
+      Alert.alert(lb.maxSelectionTitle, lb.maxSelectionMsg(maxSelections));
       return;
     }
 
@@ -364,7 +304,7 @@ export default function LifeBuildScreen() {
     const userId = await AsyncStorage.getItem("userId");
 
     if (!userId) {
-      throw new Error("User not logged in");
+      throw new Error(lb.notLoggedIn);
     }
 
     const response = await ngrokFetch(`${BASE_URL}/api/lifeBuild/assessment`, {
@@ -379,7 +319,7 @@ export default function LifeBuildScreen() {
     const json = await response.json();
 
     if (!response.ok || !json.success) {
-      throw new Error(json.message || "Failed to save assessment");
+      throw new Error(json.message || lb.failedSaveAssessment);
     }
 
     return json.data;
@@ -392,7 +332,7 @@ export default function LifeBuildScreen() {
       setSubmitting(true);
 
       const userId = await AsyncStorage.getItem("userId");
-      if (!userId) throw new Error("User not logged in");
+      if (!userId) throw new Error(lb.notLoggedIn);
 
       const response = await ngrokFetch(`${BASE_URL}/api/lifeBuild/profile`, {
         method: "POST",
@@ -402,16 +342,13 @@ export default function LifeBuildScreen() {
 
       const json = await response.json();
       if (!response.ok || !json.success) {
-        throw new Error(json.message || "Failed to save profile");
+        throw new Error(json.message || lb.failedSaveProfile);
       }
 
       setProfileCompleted(true);
       setScreen("score"); // opens <JobPage />
     } catch (error: any) {
-      Alert.alert(
-        "Could Not Save",
-        error?.message || "Could not save your answers. Please try again."
-      );
+      Alert.alert(lb.couldNotSaveTitle, error?.message || lb.couldNotSaveMsg);
     } finally {
       setSubmitting(false);
     }
@@ -431,10 +368,7 @@ export default function LifeBuildScreen() {
 
       setScreen("start");
     } catch (error: any) {
-      Alert.alert(
-        "Could Not Save",
-        error?.message || "Could not save your answers. Please try again."
-      );
+      Alert.alert(lb.couldNotSaveTitle, error?.message || lb.couldNotSaveMsg);
     } finally {
       setSubmitting(false);
     }
@@ -444,7 +378,7 @@ export default function LifeBuildScreen() {
 
   const goToNextProfileQuestion = () => {
     if (!isCurrentProfileQuestionAnswered()) {
-      Alert.alert("Answer Required", "Please provide an answer before continuing.");
+      Alert.alert(lb.answerRequiredTitle, lb.answerRequiredMsg);
       return;
     }
 
@@ -472,7 +406,7 @@ export default function LifeBuildScreen() {
 
   const goToNextRecoveryQuestion = () => {
     if (!recoveryAnswers[currentRecoveryQuestion.id]) {
-      Alert.alert("Answer Required", "Please select an answer before continuing.");
+      Alert.alert(lb.answerRequiredTitle, lb.selectAnswerMsg);
       return;
     }
 
@@ -521,7 +455,7 @@ export default function LifeBuildScreen() {
             color: "#4a5a5a",
           }}
         >
-          Checking your assessment...
+          {lb.checking}
         </Text>
       </View>
     );
@@ -536,12 +470,9 @@ export default function LifeBuildScreen() {
           <View style={lifeBuildStyles.headerCircleSmall} />
 
           <View style={lifeBuildStyles.headerContent}>
-            <Text style={lifeBuildStyles.headerSmallText}>BUILD YOUR FUTURE</Text>
-            <Text style={lifeBuildStyles.headerTitle}>LifeBuild</Text>
-            <Text style={lifeBuildStyles.headerDescription}>
-              Every step you take brings you closer to a stronger, healthier and
-              brighter future.
-            </Text>
+            <Text style={lifeBuildStyles.headerSmallText}>{lb.buildYourFuture}</Text>
+            <Text style={lifeBuildStyles.headerTitle}>{lb.title}</Text>
+            <Text style={lifeBuildStyles.headerDescription}>{lb.headerDescription}</Text>
           </View>
 
           <View style={lifeBuildStyles.headerIcon}>
@@ -562,7 +493,7 @@ export default function LifeBuildScreen() {
 
             {scoreCompleted ? (
               <>
-                <Text style={lifeBuildStyles.startMainTitle}>Your Recovery Safety Score</Text>
+                <Text style={lifeBuildStyles.startMainTitle}>{lb.yourScoreTitle}</Text>
 
                 <Text
                   style={{
@@ -576,13 +507,11 @@ export default function LifeBuildScreen() {
                 </Text>
 
                 <Text style={{ fontSize: 14, color: "#4a5a5a", marginBottom: 6 }}>
-                  {obtainedScore} / {MAX_SCORE} points
+                  {lb.points(obtainedScore, MAX_SCORE)}
                 </Text>
 
                 <Text style={lifeBuildStyles.startMainDescription}>
-                  {safetyScore >= 50
-                    ? "Great progress! You're ready to explore career paths that suit you."
-                    : "Your score is below 50%. Keep building your recovery support, then retake the assessment to unlock career recommendations."}
+                  {safetyScore >= 50 ? lb.scoreGood : lb.scoreLow}
                 </Text>
 
                 <TouchableOpacity
@@ -590,21 +519,20 @@ export default function LifeBuildScreen() {
                   onPress={handleFindJob}
                   activeOpacity={0.85}
                 >
-                  <Text style={lifeBuildStyles.startButtonText}>Let's Find Job</Text>
+                  <Text style={lifeBuildStyles.startButtonText}>{lb.findJob}</Text>
                   <Ionicons name="briefcase-outline" size={20} color="#fff" />
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={restartAssessment} style={{ marginTop: 14 }}>
-                  <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>Retake Assessment</Text>
+                  <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>{lb.retake}</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
-                <Text style={lifeBuildStyles.startMainTitle}>Start Your Assessment</Text>
+                <Text style={lifeBuildStyles.startMainTitle}>{lb.startTitle}</Text>
 
                 <Text style={lifeBuildStyles.startMainDescription}>
-                  Complete your personal information and Recovery Safety Assessment to
-                  understand your current recovery safety level.
+                  {lb.startDescription}
                 </Text>
 
                 <TouchableOpacity
@@ -612,7 +540,7 @@ export default function LifeBuildScreen() {
                   onPress={startAssessment}
                   activeOpacity={0.85}
                 >
-                  <Text style={lifeBuildStyles.startButtonText}>Start Assessment</Text>
+                  <Text style={lifeBuildStyles.startButtonText}>{lb.startButton}</Text>
                   <Ionicons name="arrow-forward" size={20} color="#fff" />
                 </TouchableOpacity>
               </>
@@ -622,7 +550,7 @@ export default function LifeBuildScreen() {
 
         {/* 2x2 Step Cards */}
         <View style={lifeBuildStyles.stepsGrid}>
-          {STEP_CARDS.map((step) => (
+          {STEP_ICONS.map((step, index) => (
             <View key={step.number} style={lifeBuildStyles.stepCard}>
               <View style={lifeBuildStyles.stepCardHeader}>
                 <View style={lifeBuildStyles.stepNumberBadge}>
@@ -632,9 +560,9 @@ export default function LifeBuildScreen() {
                   <Ionicons name={step.icon as any} size={16} color="#2CA6A4" />
                 </View>
               </View>
-              <Text style={lifeBuildStyles.stepCardTitle}>{step.title}</Text>
+              <Text style={lifeBuildStyles.stepCardTitle}>{lb.steps[index].title}</Text>
               <Text style={lifeBuildStyles.stepCardDescription}>
-                {step.description}
+                {lb.steps[index].description}
               </Text>
             </View>
           ))}
@@ -650,33 +578,30 @@ export default function LifeBuildScreen() {
     const progress = ((profileIndex + 1) / PROFILE_QUESTIONS.length) * 100;
     const isLastProfileQuestion = profileIndex === PROFILE_QUESTIONS.length - 1;
 
+    // translated text for the current question
+    const profileText = lb.profileQuestions[profileIndex];
+    const optionLabels = lb.profileOptions[currentProfileQuestion.id] || [];
+
     return (
       <ScrollView
         style={lifeBuildStyles.container}
         contentContainerStyle={lifeBuildStyles.screenPadding}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={lifeBuildStyles.sectionLabel}>PERSONAL & CAREER INFORMATION</Text>
-        <Text style={lifeBuildStyles.screenTitle}>Tell Us About Yourself</Text>
-        <Text style={lifeBuildStyles.screenSubtitle}>
-          This information helps us understand your background, skills and
-          interests for future career recommendations.
-        </Text>
+        <Text style={lifeBuildStyles.sectionLabel}>{lb.profileSectionLabel}</Text>
+        <Text style={lifeBuildStyles.screenTitle}>{lb.profileTitle}</Text>
+        <Text style={lifeBuildStyles.screenSubtitle}>{lb.profileSubtitle}</Text>
 
         <View style={lifeBuildStyles.progressTrack}>
           <View style={[lifeBuildStyles.progressFill, { width: `${progress}%` }]} />
         </View>
         <Text style={lifeBuildStyles.progressText}>
-          Question {profileIndex + 1} of {PROFILE_QUESTIONS.length}
+          {lb.progress(profileIndex + 1, PROFILE_QUESTIONS.length)}
         </Text>
 
         <View style={lifeBuildStyles.questionCard}>
-          <Text style={lifeBuildStyles.questionSection}>
-            {currentProfileQuestion.section}
-          </Text>
-          <Text style={lifeBuildStyles.questionText}>
-            {currentProfileQuestion.question}
-          </Text>
+          <Text style={lifeBuildStyles.questionSection}>{profileText.section}</Text>
+          <Text style={lifeBuildStyles.questionText}>{profileText.question}</Text>
 
           {/* TEXT / NUMBER */}
           {(currentProfileQuestion.type === "text" ||
@@ -684,7 +609,7 @@ export default function LifeBuildScreen() {
             <TextInput
               value={savedAnswer}
               onChangeText={saveProfileAnswer}
-              placeholder="Enter your answer"
+              placeholder={lb.enterAnswer}
               keyboardType={
                 currentProfileQuestion.type === "number" ? "numeric" : "default"
               }
@@ -694,7 +619,7 @@ export default function LifeBuildScreen() {
 
           {/* SINGLE SELECT */}
           {currentProfileQuestion.type === "select" &&
-            currentProfileQuestion.options?.map((option) => {
+            currentProfileQuestion.options?.map((option, optionIndex) => {
               const selected = savedAnswer === option;
               return (
                 <TouchableOpacity
@@ -712,7 +637,7 @@ export default function LifeBuildScreen() {
                       selected && lifeBuildStyles.optionTextSelected,
                     ]}
                   >
-                    {option}
+                    {optionLabels[optionIndex] ?? option}
                   </Text>
                   {selected && (
                     <Ionicons name="checkmark-circle" size={22} color="#2CA6A4" />
@@ -726,11 +651,11 @@ export default function LifeBuildScreen() {
             <>
               {currentProfileQuestion.maxSelections && (
                 <Text style={lifeBuildStyles.maxSelectHint}>
-                  Select up to {currentProfileQuestion.maxSelections} options
+                  {lb.selectUpTo(currentProfileQuestion.maxSelections)}
                 </Text>
               )}
 
-              {currentProfileQuestion.options?.map((option) => {
+              {currentProfileQuestion.options?.map((option, optionIndex) => {
                 const selected = selectedMultiAnswers.includes(option);
                 return (
                   <TouchableOpacity
@@ -754,7 +679,7 @@ export default function LifeBuildScreen() {
                         selected && lifeBuildStyles.optionTextSelected,
                       ]}
                     >
-                      {option}
+                      {optionLabels[optionIndex] ?? option}
                     </Text>
                     <Ionicons
                       name={selected ? "checkbox" : "square-outline"}
@@ -770,13 +695,13 @@ export default function LifeBuildScreen() {
           {/* SKILLS */}
           {currentProfileQuestion.type === "skills" && (
             <View>
-              <Text style={lifeBuildStyles.maxSelectHint}>
-                Rate each skill from 1 to 5.
-              </Text>
+              <Text style={lifeBuildStyles.maxSelectHint}>{lb.rateSkills}</Text>
 
-              {SKILLS.map((skill) => (
+              {SKILLS.map((skill, skillIndex) => (
                 <View key={skill}>
-                  <Text style={lifeBuildStyles.skillLabel}>{skill}</Text>
+                  <Text style={lifeBuildStyles.skillLabel}>
+                    {lb.skills[skillIndex] ?? skill}
+                  </Text>
                   <View style={lifeBuildStyles.skillRow}>
                     {[1, 2, 3, 4, 5].map((value) => {
                       const selected = skillAnswers[skill] === value;
@@ -815,7 +740,7 @@ export default function LifeBuildScreen() {
             style={lifeBuildStyles.previousButton}
             activeOpacity={0.7}
           >
-            <Text style={lifeBuildStyles.previousButtonText}>Back</Text>
+            <Text style={lifeBuildStyles.previousButtonText}>{lb.back}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -829,7 +754,7 @@ export default function LifeBuildScreen() {
             activeOpacity={0.85}
           >
             <Text style={lifeBuildStyles.nextButtonText}>
-              {submitting ? "Saving..." : isLastProfileQuestion ? "Find Jobs" : "Next"}
+              {submitting ? lb.saving : isLastProfileQuestion ? lb.findJobs : lb.next}
             </Text>
           </TouchableOpacity>
         </View>
@@ -842,42 +767,41 @@ export default function LifeBuildScreen() {
     const selectedAnswer = recoveryAnswers[currentRecoveryQuestion.id];
     const isLast = questionIndex === RECOVERY_QUESTIONS.length - 1;
 
+    const sectionName = lb.recoverySections[currentRecoveryQuestion.sectionIndex];
+    const questionText = lb.recoveryQuestions[currentRecoveryQuestion.id - 1];
+
     return (
       <ScrollView
         style={lifeBuildStyles.container}
         contentContainerStyle={lifeBuildStyles.screenPadding}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={lifeBuildStyles.sectionLabel}>RECOVERY SAFETY ASSESSMENT</Text>
-        <Text style={lifeBuildStyles.screenTitle}>Recovery Assessment</Text>
-        <Text style={lifeBuildStyles.screenSubtitle}>
-          Please select the answer that best describes how you currently feel.
-        </Text>
+        <Text style={lifeBuildStyles.sectionLabel}>{lb.assessmentSectionLabel}</Text>
+        <Text style={lifeBuildStyles.screenTitle}>{lb.assessmentTitle}</Text>
+        <Text style={lifeBuildStyles.screenSubtitle}>{lb.assessmentSubtitle}</Text>
 
         <View style={lifeBuildStyles.progressTrack}>
           <View style={[lifeBuildStyles.progressFill, { width: `${progress}%` }]} />
         </View>
         <Text style={lifeBuildStyles.progressText}>
-          Question {questionIndex + 1} of {RECOVERY_QUESTIONS.length}
+          {lb.progress(questionIndex + 1, RECOVERY_QUESTIONS.length)}
         </Text>
 
         <View style={lifeBuildStyles.questionCard}>
           <Text style={lifeBuildStyles.questionSection}>
-            SECTION: {currentRecoveryQuestion.section.toUpperCase()}
+            {lb.sectionPrefix(sectionName.toUpperCase())}
           </Text>
           <Text style={lifeBuildStyles.questionMeta}>
-            RECOVERY QUESTION {currentRecoveryQuestion.id}
+            {lb.recoveryQuestionLabel(currentRecoveryQuestion.id)}
           </Text>
-          <Text style={lifeBuildStyles.questionText}>
-            {currentRecoveryQuestion.question}
-          </Text>
+          <Text style={lifeBuildStyles.questionText}>{questionText}</Text>
 
-          {ANSWER_OPTIONS.map((option) => {
-            const selected = selectedAnswer === option.value;
+          {ANSWER_VALUES.map((value, valueIndex) => {
+            const selected = selectedAnswer === value;
             return (
               <TouchableOpacity
-                key={option.value}
-                onPress={() => selectRecoveryAnswer(option.value)}
+                key={value}
+                onPress={() => selectRecoveryAnswer(value)}
                 style={[
                   lifeBuildStyles.optionButton,
                   selected && lifeBuildStyles.optionButtonSelected,
@@ -890,7 +814,7 @@ export default function LifeBuildScreen() {
                     selected && lifeBuildStyles.optionTextSelected,
                   ]}
                 >
-                  {option.value}. {option.label}
+                  {value}. {lb.answerOptions[valueIndex]}
                 </Text>
                 {selected && (
                   <Ionicons name="checkmark-circle" size={22} color="#2CA6A4" />
@@ -907,7 +831,7 @@ export default function LifeBuildScreen() {
               style={lifeBuildStyles.previousButton}
               activeOpacity={0.7}
             >
-              <Text style={lifeBuildStyles.previousButtonText}>Back</Text>
+              <Text style={lifeBuildStyles.previousButtonText}>{lb.back}</Text>
             </TouchableOpacity>
           )}
 
@@ -922,7 +846,7 @@ export default function LifeBuildScreen() {
             activeOpacity={0.85}
           >
             <Text style={lifeBuildStyles.nextButtonText}>
-              {submitting ? "Saving..." : isLast ? "Submit" : "Next"}
+              {submitting ? lb.saving : isLast ? lb.submit : lb.next}
             </Text>
           </TouchableOpacity>
         </View>

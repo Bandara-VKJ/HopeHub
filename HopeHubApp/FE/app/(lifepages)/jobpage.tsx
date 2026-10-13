@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { jobPageStyles } from "./jobpagestyles";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const BASE_URL = (process.env.EXPO_PUBLIC_BASE_URL || "").replace(/\/+$/, "");
 
@@ -38,40 +39,41 @@ const getImageUrl = (image?: string) => {
   return `${BASE_URL}${image.startsWith("/") ? "" : "/"}${image}`;
 };
 
-const getRiskLevel = (safetyScore: number) => {
-  if (safetyScore >= 75) {
-    return {
-      level: "Low Risk",
-      description:
-        "You currently show a stronger recovery safety level. You can explore suitable career paths.",
-      color: "#17a673",
-      background: "#e9fbea",
-      icon: "shield-checkmark",
-    };
-  }
-
-  if (safetyScore >= 50) {
-    return {
-      level: "Moderate Recovery Safety",
-      description:
-        "You have reached the minimum recovery safety level to explore suitable career paths.",
-      color: "#f09c00",
-      background: "#fff7e6",
-      icon: "shield-half",
-    };
-  }
-
-  return {
-    level: "Needs More Recovery Support",
-    description:
-      "Your current recovery safety score is below 50%. Focus on your recovery activities and support plan.",
-    color: "#e0362e",
-    background: "#fff0f0",
-    icon: "shield-outline",
-  };
-};
-
 export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
+  const { t } = useLanguage();
+  const jp = t.jobPage;
+
+  // Moved inside the component so the text follows the selected language
+  const getRiskLevel = (score: number) => {
+    if (score >= 75) {
+      return {
+        level: jp.lowRiskLevel,
+        description: jp.lowRiskDesc,
+        color: "#17a673",
+        background: "#e9fbea",
+        icon: "shield-checkmark",
+      };
+    }
+
+    if (score >= 50) {
+      return {
+        level: jp.moderateLevel,
+        description: jp.moderateDesc,
+        color: "#f09c00",
+        background: "#fff7e6",
+        icon: "shield-half",
+      };
+    }
+
+    return {
+      level: jp.needsSupportLevel,
+      description: jp.needsSupportDesc,
+      color: "#e0362e",
+      background: "#fff0f0",
+      icon: "shield-outline",
+    };
+  };
+
   const riskInfo = getRiskLevel(safetyScore);
   const isEligibleForCareer = safetyScore >= 50;
 
@@ -98,14 +100,14 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Failed to load jobs");
+          throw new Error(data.message || jp.failedLoadJobs);
         }
 
         setJobs(Array.isArray(data.jobs) ? data.jobs : []);
       } catch (error: any) {
         if (error.name === "AbortError") return;
         console.log("Fetch jobs error:", error);
-        setJobsError(error.message || "Failed to load jobs");
+        setJobsError(error.message || jp.failedLoadJobs);
       } finally {
         setLoadingJobs(false);
       }
@@ -124,13 +126,10 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
           <View style={jobPageStyles.headerCircleSmall} />
 
           <View style={jobPageStyles.headerContent}>
-            <Text style={jobPageStyles.headerSmallText}>
-              YOUR ASSESSMENT RESULT
-            </Text>
-            <Text style={jobPageStyles.headerTitle}>LifeBuild</Text>
+            <Text style={jobPageStyles.headerSmallText}>{jp.headerSmall}</Text>
+            <Text style={jobPageStyles.headerTitle}>{jp.title}</Text>
             <Text style={jobPageStyles.headerDescription}>
-              Here is your current Recovery Safety Score and recommended next
-              steps.
+              {jp.headerDescription}
             </Text>
           </View>
 
@@ -144,7 +143,7 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
             <View style={jobPageStyles.resultScoreHeader}>
               <Ionicons name="shield-checkmark" size={20} color="#2CA6A4" />
               <Text style={jobPageStyles.resultScoreHeaderText}>
-                Recovery Safety Score
+                {jp.scoreHeader}
               </Text>
             </View>
 
@@ -156,7 +155,7 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
                       {safetyScore}%
                     </Text>
                     <Text style={jobPageStyles.resultScoreLabel}>
-                      Safety Score
+                      {jp.safetyScoreLabel}
                     </Text>
                   </View>
                 </View>
@@ -204,15 +203,11 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
               <View style={jobPageStyles.resultCareerHeader}>
                 <Ionicons name="briefcase" size={20} color="#2CA6A4" />
                 <Text style={jobPageStyles.resultCareerHeaderText}>
-                  Recommended Career Paths
+                  {jp.careerHeader}
                 </Text>
               </View>
 
-              <Text style={jobPageStyles.resultCareerDesc}>
-                Based on your recovery safety score, skills, interests and
-                background, these career paths may be suitable for your current
-                recovery journey.
-              </Text>
+              <Text style={jobPageStyles.resultCareerDesc}>{jp.careerDesc}</Text>
 
               {loadingJobs ? (
                 <ActivityIndicator
@@ -223,10 +218,7 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
               ) : jobsError ? (
                 <Text style={jobPageStyles.resultCareerText}>{jobsError}</Text>
               ) : jobs.length === 0 ? (
-                <Text style={jobPageStyles.resultCareerText}>
-                  No job opportunities are available right now. Please check
-                  again later.
-                </Text>
+                <Text style={jobPageStyles.resultCareerText}>{jp.noJobs}</Text>
               ) : (
                 jobs.map((job) => (
                   <TouchableOpacity
@@ -290,15 +282,8 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
               <View style={jobPageStyles.supportIcon}>
                 <Ionicons name="heart-outline" size={30} color="#e0362e" />
               </View>
-              <Text style={jobPageStyles.supportTitle}>
-                Focus on Your Recovery
-              </Text>
-              <Text style={jobPageStyles.supportDescription}>
-                Your Recovery Safety Score is currently below 50%. Continue
-                focusing on your recovery and support activities. Career
-                recommendations will become available when your score reaches
-                50% or above.
-              </Text>
+              <Text style={jobPageStyles.supportTitle}>{jp.focusTitle}</Text>
+              <Text style={jobPageStyles.supportDescription}>{jp.focusDesc}</Text>
             </View>
           )}
 
@@ -307,9 +292,7 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
             style={jobPageStyles.restartButton}
             activeOpacity={0.7}
           >
-            <Text style={jobPageStyles.restartButtonText}>
-              Take Assessment Again
-            </Text>
+            <Text style={jobPageStyles.restartButtonText}>{jp.restart}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -359,7 +342,7 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
 
               {selectedJob?.description ? (
                 <>
-                  <Text style={jobPageStyles.sectionLabel}>About this job</Text>
+                  <Text style={jobPageStyles.sectionLabel}>{jp.aboutJob}</Text>
                   <Text style={jobPageStyles.body}>
                     {selectedJob.description}
                   </Text>
@@ -368,7 +351,7 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
 
               {selectedJob?.recommendedFor ? (
                 <>
-                  <Text style={jobPageStyles.sectionLabel}>Good fit for</Text>
+                  <Text style={jobPageStyles.sectionLabel}>{jp.goodFit}</Text>
                   <Text style={jobPageStyles.body}>
                     {selectedJob.recommendedFor}
                   </Text>
