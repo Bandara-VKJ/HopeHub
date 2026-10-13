@@ -24,14 +24,23 @@ const diarySchema = new mongoose.Schema(
             required: true
         },
 
+        source: {
+            type: String,
+            enum: ["diary", "questionnaire"],
+            default: "diary"
+        },
+
+        questionnaire: {
+            type: mongoose.Schema.Types.Mixed
+        },
+
         emotionAnalysis: {
             dominantEmotion: {
                 type: String
             },
 
             emotionPercentages: {
-                type: Map,
-                of: Number
+                type: mongoose.Schema.Types.Mixed
             }
         }
     },

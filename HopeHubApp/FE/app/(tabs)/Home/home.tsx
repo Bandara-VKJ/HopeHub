@@ -96,6 +96,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
   const levelColor = levelIndex >= 0 ? LEVEL_COLORS[levelIndex] : "#c96a00";
   const levelInfo = levelIndex >= 0 ? home.levels[levelIndex] : null;
   const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const toggleExpand = (id: string) =>
     setExpandedIds((prev) =>
@@ -417,61 +418,102 @@ const getTasks = async () => {
           </View>
         </View>
         <View style={homeStyles.mailCard}>
-          {/* Invite Banner */}
-          <View style={homeStyles.inviteRow}>
-          <Text style={homeStyles.cardTitleText}>{home.inviteFamily}</Text>
-
-            {!inviteFormOpen && (
-            <TouchableOpacity style={homeStyles.inviteBtn}>
-             <Text style={homeStyles.inviteBtnText} onPress={() => setInviteFormOpen(true)}>{home.send}</Text>
-            </TouchableOpacity>
-            )}
+      <View style={homeStyles.inviteRow}>
+        <View style={homeStyles.inviteTitleWrap}>
+          <View style={homeStyles.inviteIconWrap}>
+            <Ionicons name="people" size={18} color="#2CA6A4" />
           </View>
-            {inviteFormOpen && (
-              <View>
-                <Text>{home.role}</Text>
-                <TextInput
-                  style={homeStyles.input}
-                  placeholder={home.rolePlaceholder}
-                  value= {familyName}
-                  onChangeText={setFamilyName}
-                />
-               <Text>{home.email}</Text>
-                <TextInput
-                  style={homeStyles.input}
-                  placeholder={home.emailPlaceholder}
-                  value= {familyEmail}
-                  onChangeText={setFamilyEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
-                <Text>{home.phone}</Text>
-                <TextInput
-                  style={homeStyles.input}
-                  placeholder={home.phonePlaceholder}
-                  value= {familyPhone}
-                  onChangeText={setFamilyPhone}
-                  keyboardType="phone-pad"
-                />
-                <View style={homeStyles.actionsRow}>
-                  <TouchableOpacity 
-                     style={homeStyles.cancelBtn}
-                     onPress={resetInviteForm}
-                     disabled={submitting}
-                    >
-                      <Text style={homeStyles.cancelBtnText}>{home.cancel}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[homeStyles.submitBtn, submitting && { opacity: 0.6 }]}
-                    onPress={handleSendInvite}
-                    disabled={submitting}
-                  >
-                    <Text>{submitting ? home.sending : home.sendInvite}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
+          <Text style={homeStyles.cardTitleText}>{home.inviteFamily}</Text>
         </View>
+
+        {!inviteFormOpen && (
+          <TouchableOpacity
+            style={homeStyles.inviteBtn}
+            onPress={() => setInviteFormOpen(true)}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="paper-plane" size={14} color="#fff" />
+            <Text style={homeStyles.inviteBtnText}>{home.send}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {inviteFormOpen && (
+        <View style={homeStyles.formWrap}>
+          <Text style={homeStyles.inputLabel}>{home.role}</Text>
+          <View style={[homeStyles.inputWrap, focusedField === "name" && homeStyles.inputWrapFocused]}>
+            <Ionicons name="person-outline" size={18} color={focusedField === "name" ? "#2CA6A4" : "#9ab"} />
+            <TextInput
+              style={homeStyles.inputInner}
+              placeholder={home.rolePlaceholder}
+              placeholderTextColor="#a8b8b8"
+              value={familyName}
+              onChangeText={setFamilyName}
+              onFocus={() => setFocusedField("name")}
+              onBlur={() => setFocusedField(null)}
+            />
+          </View>
+
+          <Text style={homeStyles.inputLabel}>{home.email}</Text>
+          <View style={[homeStyles.inputWrap, focusedField === "email" && homeStyles.inputWrapFocused]}>
+            <Ionicons name="mail-outline" size={18} color={focusedField === "email" ? "#2CA6A4" : "#9ab"} />
+            <TextInput
+              style={homeStyles.inputInner}
+              placeholder={home.emailPlaceholder}
+              placeholderTextColor="#a8b8b8"
+              value={familyEmail}
+              onChangeText={setFamilyEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => setFocusedField(null)}
+            />
+          </View>
+
+          <Text style={homeStyles.inputLabel}>{home.phone}</Text>
+          <View style={[homeStyles.inputWrap, focusedField === "phone" && homeStyles.inputWrapFocused]}>
+            <Ionicons name="call-outline" size={18} color={focusedField === "phone" ? "#2CA6A4" : "#9ab"} />
+            <TextInput
+              style={homeStyles.inputInner}
+              placeholder={home.phonePlaceholder}
+              placeholderTextColor="#a8b8b8"
+              value={familyPhone}
+              onChangeText={setFamilyPhone}
+              keyboardType="phone-pad"
+              onFocus={() => setFocusedField("phone")}
+              onBlur={() => setFocusedField(null)}
+            />
+          </View>
+
+          <View style={homeStyles.actionsRow}>
+            <TouchableOpacity
+              style={homeStyles.cancelBtn}
+              onPress={resetInviteForm}
+              disabled={submitting}
+              activeOpacity={0.8}
+            >
+              <Text style={homeStyles.cancelBtnText}>{home.cancel}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[homeStyles.submitBtn, submitting && { opacity: 0.6 }]}
+              onPress={handleSendInvite}
+              disabled={submitting}
+              activeOpacity={0.8}
+            >
+              {submitting ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="paper-plane" size={15} color="#fff" />
+              )}
+              <Text style={homeStyles.submitBtnText}>
+                {submitting ? home.sending : home.sendInvite}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </View>
         {/* Daily Tasks */}
         <View style={homeStyles.card_task}>
         <View style={homeStyles.cardHeader}>

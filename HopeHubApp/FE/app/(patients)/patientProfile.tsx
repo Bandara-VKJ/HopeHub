@@ -5,6 +5,7 @@ import { patientProfileStyles } from './patientProfile.Styles'
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ngrokFetch } from "@/utill/ngrokFetch";
+import WeeklyEmotionChart from './weeklyEmotionChart';
 
 
    type Patient = {
@@ -125,7 +126,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
         {
         patient && (
-            <View style={patientProfileStyles.profileCard}> 
+            <View style={patientProfileStyles.profileCard}>
 
                 <View style={patientProfileStyles.avatarPlaceholder}>
                     <Text style={patientProfileStyles.avatarText}>
@@ -224,9 +225,9 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
             </Modal>
         </View>
 
-            <TouchableOpacity 
+            <TouchableOpacity
             style={patientProfileStyles.taskButton}
-            onPress={() => 
+            onPress={() =>
                 router.push({
                     pathname : '/(task)/task',
                     params :  { patientId: patient?._id }
@@ -242,6 +243,9 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
         }
 
     </View>
+
+    <WeeklyEmotionChart patientId={Array.isArray(patientId) ? patientId[0] : patientId} />
+
     <View style={patientProfileStyles.tasksContainer}>
     <Text style={patientProfileStyles.tasksTitle}>
         Patient's Tasks
@@ -279,7 +283,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
     ))
     )}
     </View>
-    </ScrollView>    
-   
+    </ScrollView>
+
     );
 }
