@@ -1,726 +1,130 @@
 import os
-import joblib
-import pandas as pd
-
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Dict, List, Optional
-from scipy.sparse import hstack
-
 import pickle
 import re
 import unicodedata
 from pathlib import Path
+from typing import Dict, List, Optional
+
+import numpy as np
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from scipy.sparse import hstack
+
+BASE_DIR = Path(__file__).parent
 
 
-
-model = joblib.load(
-    "addiction_rf_model.pkl"
-)
-
-label_encoder = joblib.load(
-    "addiction_label_encoder.pkl"
-)
-
-FEATURE_COLS = joblib.load(
-    "feature_columns.pkl"
-)
+def _load_pickle(name: str):
+    with open(BASE_DIR / name, "rb") as f:
+        return pickle.load(f)
 
 
-model = joblib.load("addiction_rf_model.pkl")
-label_encoder = joblib.load("addiction_label_encoder.pkl")
-FEATURE_COLS = joblib.load("feature_columns.pkl")
+# ============================================================
+# ADDICTION LEVEL - CASCADE RANDOM FOREST (15-question version)
+# ============================================================
 
-tfidf_vectorizer = joblib.load("tfidf_vectorizer.pkl")
-emotion_classifier = joblib.load("emotion_classifier.pkl")
-label_classes = joblib.load("label_classes.pkl")
+bundle = _load_pickle("hopehub_cascade_rf.pkl")
+
+CASCADE_LAYERS = bundle["layers"]       
+FEATURE_NAMES = bundle["feature_names"]
+LEVEL_NAMES = bundle["level_names"]     
+MAPS = bundle["maps"]                    
+COPING_OPTIONS = bundle["coping_options"]
 
 
-DRUG_FREQ_MAP = {
-    "Never": 0,
-    "Rarely": 1,
-    "Sometimes": 2,
-    "Often": 4,
-    "Very Often": 6,
+INDEX_TO_FEATURE = {
+    0: ("Q1_Alcohol", MAPS["freq"]),
+    1: ("Q2_Cannabis", MAPS["freq"]),
+    2: ("Q3_Cocaine", MAPS["freq"]),
+    3: ("Q4_Heroin", MAPS["freq"]),
+    4: ("Q5_Methamphetamine", MAPS["freq"]),
+    5: ("Q6_Nicotine", MAPS["freq"]),
+    6: ("Q7_Other_Drug_Frequency", MAPS["freq"]),
+    7: ("S1_Life_Impact", MAPS["sym"]),
+    8: ("S2_Loss_of_Control", MAPS["sym"]),
+    9: ("S3_Others_Concern", MAPS["sym"]),
+    10: ("S4_Withdrawal", MAPS["sym"]),
+    11: ("C1_Impulsivity", MAPS["freq"]),
+    12: ("C2_Sensation_Seeking", MAPS["freq"]),
+    14: ("C4_Drug_Use_Change", MAPS["change"]),
+}
+COPING_INDEX = 13 
+
+DEFAULTS = {"C4_Drug_Use_Change": MAPS["change"]["No change"]}
+
+DRUG_SCORE_NAMES = {
+    "Alcohol": "Q1_Alcohol",
+    "Cannabis": "Q2_Cannabis",
+    "Cocaine": "Q3_Cocaine",
+    "Heroin": "Q4_Heroin",
+    "Meth": "Q5_Methamphetamine",
+    "Nicotine": "Q6_Nicotine",
+    "Other": "Q7_Other_Drug_Frequency",
 }
 
 
-TRAIT_KEYWORDS = {
-
-    "Nscore": {
-
-        "positive": [
-            "anxious",
-            "stressed",
-            "worry",
-            "worried",
-            "nervous",
-            "unstable",
-            "overwhelmed",
-            "panic",
-            "overthink",
-            "overthinking",
-            "mood swings",
-            "emotional",
-            "upset",
-            "yes",
-            "often",
-            "frequently",
-            "always",
-            "a lot",
-            "very",
-            "deeply",
-            "racing thoughts",
-        ],
-
-        "negative": [
-            "calm",
-            "relaxed",
-            "stable",
-            "no",
-            "never",
-            "rarely",
-            "not really",
-            "not much",
-            "barely",
-            "seldom",
-            "fine",
-            "okay",
-        ],
-    },
-
-
-    "Escore": {
-
-        "positive": [
-            "enjoy",
-            "love",
-            "energized",
-            "social",
-            "people",
-            "gatherings",
-            "outgoing",
-            "active",
-            "fun",
-            "motivated",
-            "yes",
-            "often",
-            "always",
-            "definitely",
-            "very much",
-            "group",
-            "friends",
-        ],
-
-        "negative": [
-            "no",
-            "never",
-            "rarely",
-            "prefer alone",
-            "introvert",
-            "quiet",
-            "shy",
-            "uncomfortable",
-            "dislike",
-            "tired",
-            "drain",
-            "avoid",
-            "not really",
-        ],
-    },
-
-
-    "Oscore": {
-
-        "positive": [
-            "new",
-            "experience",
-            "curious",
-            "creative",
-            "explore",
-            "enjoy",
-            "love",
-            "adventure",
-            "different",
-            "learn",
-            "open",
-            "yes",
-            "often",
-            "try",
-            "risk",
-            "challenge",
-        ],
-
-        "negative": [
-            "no",
-            "never",
-            "prefer routine",
-            "boring",
-            "same",
-            "not interested",
-            "avoid",
-            "rarely",
-            "familiar",
-            "safe",
-        ],
-    },
-
-
-    "AScore": {
-
-        "positive": [
-            "cooperative",
-            "empathetic",
-            "understand",
-            "help",
-            "kind",
-            "peaceful",
-            "avoid conflict",
-            "support",
-            "care",
-            "sensitive",
-            "yes",
-            "often",
-            "always",
-            "definitely",
-            "friendly",
-        ],
-
-        "negative": [
-            "no",
-            "never",
-            "argue",
-            "conflict",
-            "selfish",
-            "aggressive",
-            "don't care",
-            "ignore",
-            "rarely",
-            "not really",
-        ],
-    },
-
-
-    "Cscore": {
-
-        "positive": [
-            "plan",
-            "organized",
-            "routine",
-            "disciplined",
-            "responsible",
-            "schedule",
-            "focused",
-            "on time",
-            "yes",
-            "always",
-            "often",
-            "definitely",
-            "prepare",
-            "goal",
-        ],
-
-        "negative": [
-            "no",
-            "never",
-            "disorganized",
-            "lazy",
-            "procrastinate",
-            "forget",
-            "messy",
-            "rarely",
-            "not really",
-            "skip",
-            "miss",
-        ],
-    },
-
-
-    "Impulsive": {
-
-        "positive": [
-            "impulsive",
-            "without thinking",
-            "react",
-            "regret",
-            "quick",
-            "immediately",
-            "suddenly",
-            "burst",
-            "yes",
-            "often",
-            "always",
-            "can't control",
-            "instantly",
-            "emotion",
-            "snap",
-        ],
-
-        "negative": [
-            "no",
-            "never",
-            "think first",
-            "careful",
-            "consider",
-            "plan",
-            "rarely",
-            "calm",
-            "patient",
-            "wait",
-            "not really",
-        ],
-    },
-
-
-    "SS": {
-
-        "positive": [
-            "thrill",
-            "exciting",
-            "risky",
-            "danger",
-            "adventure",
-            "extreme",
-            "adrenaline",
-            "love",
-            "enjoy",
-            "fun",
-            "yes",
-            "often",
-            "always",
-            "definitely",
-            "dare",
-            "bold",
-        ],
-
-        "negative": [
-            "no",
-            "never",
-            "safe",
-            "boring",
-            "avoid",
-            "not really",
-            "rarely",
-            "prefer safe",
-            "scared",
-            "cautious",
-            "fear",
-        ],
-    },
-
-}
-
-
-
-def text_to_personality_score(
-    answer_text: str,
-    trait: str
-) -> float:
-
-    if not answer_text or not answer_text.strip():
-        return 0.0
-
-
-    text = (
-        answer_text
-        .lower()
-        .strip()
-    )
-
-
-    keywords = TRAIT_KEYWORDS.get(
-        trait,
-        {
-            "positive": [],
-            "negative": [],
-        }
-    )
-
-
-    pos_hits = sum(
-        1
-        for kw in keywords["positive"]
-        if kw in text
-    )
-
-
-    neg_hits = sum(
-        1
-        for kw in keywords["negative"]
-        if kw in text
-    )
-
-
-    net = (
-        pos_hits -
-        neg_hits
-    )
-
-
-    if net > 0:
-
-        return min(
-            2.0,
-            0.5 + net * 0.4
-        )
-
-
-    elif net < 0:
-
-        return max(
-            -2.0,
-            -0.5 + net * 0.4
-        )
-
-
-    return 0.0
-
-
-
-def average_trait_score(
-    ans_a: str,
-    ans_b: str,
-    trait: str
-) -> float:
-
-    s1 = text_to_personality_score(
-        ans_a,
-        trait
-    )
-
-    s2 = text_to_personality_score(
-        ans_b,
-        trait
-    )
-
-
-    return round(
-        (s1 + s2) / 2.0,
-        5
-    )
-
-
-
-def predict_addiction_from_questionnaire(
-    answers: dict,
-    gender: str = "M"
-) -> dict:
-
-    alcohol_raw = answers.get(
-        0,
-        "Never"
-    )
-
-    cannabis_raw = answers.get(
-        1,
-        "Never"
-    )
-
-    coke_raw = answers.get(
-        2,
-        "Never"
-    )
-
-    heroin_raw = answers.get(
-        3,
-        "Never"
-    )
-
-    meth_raw = answers.get(
-        4,
-        "Never"
-    )
-
-    nicotine_raw = answers.get(
-        5,
-        "Never"
-    )
-
-
-    alcohol_num = DRUG_FREQ_MAP.get(
-        alcohol_raw,
-        0
-    )
-
-    cannabis_num = DRUG_FREQ_MAP.get(
-        cannabis_raw,
-        0
-    )
-
-    coke_num = DRUG_FREQ_MAP.get(
-        coke_raw,
-        0
-    )
-
-    heroin_num = DRUG_FREQ_MAP.get(
-        heroin_raw,
-        0
-    )
-
-    meth_num = DRUG_FREQ_MAP.get(
-        meth_raw,
-        0
-    )
-
-    nicotine_num = DRUG_FREQ_MAP.get(
-        nicotine_raw,
-        0
-    )
-
-
-    nscore = average_trait_score(
-        answers.get(6, ""),
-        answers.get(7, ""),
-        "Nscore"
-    )
-
-    escore = average_trait_score(
-        answers.get(8, ""),
-        answers.get(9, ""),
-        "Escore"
-    )
-
-    oscore = average_trait_score(
-        answers.get(10, ""),
-        answers.get(11, ""),
-        "Oscore"
-    )
-
-    ascore = average_trait_score(
-        answers.get(12, ""),
-        answers.get(13, ""),
-        "AScore"
-    )
-
-    cscore = average_trait_score(
-        answers.get(14, ""),
-        answers.get(15, ""),
-        "Cscore"
-    )
-
-    impulsive = average_trait_score(
-        answers.get(16, ""),
-        answers.get(17, ""),
-        "Impulsive"
-    )
-
-    ss = average_trait_score(
-        answers.get(18, ""),
-        answers.get(19, ""),
-        "SS"
-    )
-
-
-    gender_num = (
-        1
-        if gender.upper() == "M"
-        else 0
-    )
-
-
-    high_impulsive = (
-        1
-        if impulsive > 0.5
-        else 0
-    )
-
-
-    low_control = (
-        1
-        if cscore < -0.5
-        else 0
-    )
-
-
-    max_drug = max(
-        alcohol_num,
-        cannabis_num,
-        coke_num,
-        heroin_num,
-        meth_num,
-        nicotine_num
-    )
-
-
-    risky_personality = (
-        1
-        if (
-            oscore > 0.5
-            and
-            ss > 0.5
-        )
-        else 0
-    )
-
-
-    features = pd.DataFrame([{
-
-        "Gender_Num":
-            gender_num,
-
-        "AScore":
-            ascore,
-
-        "Nscore":
-            nscore,
-
-        "Oscore":
-            oscore,
-
-        "Escore":
-            escore,
-
-        "Cscore":
-            cscore,
-
-        "Impulsive":
-            impulsive,
-
-        "SS":
-            ss,
-
-        "Nicotine_Num":
-            nicotine_num,
-
-        "Meth_Num":
-            meth_num,
-
-        "Heroin_Num":
-            heroin_num,
-
-        "Cannabis_Num":
-            cannabis_num,
-
-        "Coke_Num":
-            coke_num,
-
-        "Alcohol_Num":
-            alcohol_num,
-
-        "High_Impulsive":
-            high_impulsive,
-
-        "Low_Control":
-            low_control,
-
-        "Max_Drug":
-            max_drug,
-
-        "Risky_Personality":
-            risky_personality,
-
-    }])
-
-
-    features = features[
-        FEATURE_COLS
-    ]
-
-
-    pred_encoded = model.predict(
-        features
-    )[0]
-
-
-    pred_label = (
-        label_encoder
-        .inverse_transform(
-            [pred_encoded]
-        )[0]
-    )
-
-
-    probabilities = (
-        model.predict_proba(
-            features
-        )[0]
-    )
-
-
-    confidence = round(
-        float(
-            probabilities[
-                pred_encoded
-            ]
-        ) * 100,
-        2
-    )
-
-
-    all_probs = {
-
-        label_encoder.classes_[i]:
-            round(
-                float(p) * 100,
-                2
+def _lookup(mapping: Dict[str, int], raw: str):
+    """Case-insensitive lookup into a value map (e.g. 'Very often' vs 'Very Often')."""
+    wanted = str(raw).strip().lower()
+    for k, v in mapping.items():
+        if k.lower() == wanted:
+            return v
+    return None
+
+
+def encode_answers(answers: Dict[int, str]) -> Dict[str, float]:
+    feats: Dict[str, float] = {}
+
+    for idx, (name, mapping) in INDEX_TO_FEATURE.items():
+        raw = answers.get(idx)
+        if raw is None or str(raw).strip() == "":
+            feats[name] = DEFAULTS.get(name, 0)
+            continue
+        value = _lookup(mapping, raw)
+        if value is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unrecognised value '{raw}' for question {idx}",
             )
+        feats[name] = value
 
-        for i, p in enumerate(
-            probabilities
+    coping_raw = (answers.get(COPING_INDEX) or "").strip()
+    coping = next((o for o in COPING_OPTIONS if o.lower() == coping_raw.lower()), None)
+    if coping_raw and coping is None:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unrecognised value '{coping_raw}' for question {COPING_INDEX}",
         )
+    for opt in COPING_OPTIONS:
+        feats[f"Coping_{opt}"] = int(opt == coping)
 
-    }
+    return feats
 
+
+def predict_addiction_from_questionnaire(answers: Dict[int, str]) -> dict:
+    feats = encode_answers(answers)
+    x = np.array([[feats[f] for f in FEATURE_NAMES]], dtype=float)
+
+    # Cascade: each layer sees the original features + previous layer's probabilities
+    inp = x
+    p = None
+    for models in CASCADE_LAYERS:
+        p = np.mean([m.predict_proba(inp) for m in models], axis=0)
+        inp = np.hstack([x, p])
+    p = p[0]
+
+    level_idx = int(p.argmax())
 
     return {
-
-        "addiction_level":
-            pred_label,
-
-        "confidence":
-            f"{confidence}%",
-
-        "all_probabilities":
-            all_probs,
-
-        "personality_scores": {
-
-            "Nscore (Neuroticism)":
-                nscore,
-
-            "Escore (Extraversion)":
-                escore,
-
-            "Oscore (Openness)":
-                oscore,
-
-            "AScore (Agreeableness)":
-                ascore,
-
-            "Cscore (Conscientiousness)":
-                cscore,
-
-            "Impulsive":
-                impulsive,
-
-            "SS (Sensation Seeking)":
-                ss,
-
+        "addiction_level": LEVEL_NAMES[level_idx],
+        "level_number": level_idx + 1,
+        "confidence": f"{round(float(p[level_idx]) * 100, 2)}%",
+        "all_probabilities": {
+            LEVEL_NAMES[i]: round(float(v) * 100, 2) for i, v in enumerate(p)
         },
-
-        "drug_scores": {
-
-            "Alcohol":
-                alcohol_num,
-
-            "Cannabis":
-                cannabis_num,
-
-            "Cocaine":
-                coke_num,
-
-            "Heroin":
-                heroin_num,
-
-            "Meth":
-                meth_num,
-
-            "Nicotine":
-                nicotine_num,
-
-        },
-
+        # The new questionnaire has no personality questions
+        "personality_scores": None,
+        "drug_scores": {label: feats[col] for label, col in DRUG_SCORE_NAMES.items()},
     }
 
 
@@ -728,15 +132,7 @@ def predict_addiction_from_questionnaire(
 # MULTI-EMOTION DIARY PREDICTION
 # ============================================================
 
-
-DIARY_MODEL_DIR = Path(__file__).parent
 _SINHALA_RANGE = "\u0D80-\u0DFF"
-
-
-def _load_pickle(name: str):
-    with open(DIARY_MODEL_DIR / name, "rb") as f:
-        return pickle.load(f)
-
 
 diary_model = _load_pickle("diary_emotion_model.pkl")
 diary_word_vec = _load_pickle("diary_emotion_word_vectorizer.pkl")
@@ -786,87 +182,43 @@ app.add_middleware(
 # ============================================================
 
 try:
-
-    from rag_service import (
-        generate_counseling_response
-    )
-
+    from rag_service import generate_counseling_response
 
     AI_COUNSELING_AVAILABLE = True
-
-
-    print(
-        "HopeHub AI Counseling RAG service loaded."
-    )
-
+    print("HopeHub AI Counseling RAG service loaded.")
 
 except Exception as error:
-
     AI_COUNSELING_AVAILABLE = False
-
     generate_counseling_response = None
-
-
-    print(
-        "WARNING: AI Counseling RAG service could not load."
-    )
-
-    print(
-        repr(error)
-    )
+    print("WARNING: AI Counseling RAG service could not load.")
+    print(repr(error))
 
 
 # ============================================================
 # REQUEST MODELS
 # ============================================================
 
-class QuestionnaireRequest(
-    BaseModel
-):
-
+class QuestionnaireRequest(BaseModel):
     userId: Optional[str] = None
-
-    gender: str = "M"
-
     answers: Dict[str, str]
+    otherDrugName: Optional[str] = ""
 
 
-class DiaryRequest(
-    BaseModel
-):
-
+class DiaryRequest(BaseModel):
     userId: Optional[str] = None
-
     text: str
 
 
-# ============================================================
-# AI COUNSELING REQUEST MODELS
-# ============================================================
-
-class ConversationMessage(
-    BaseModel
-):
-
+class ConversationMessage(BaseModel):
     role: str
-
     content: str
 
 
-class AICounselingRequest(
-    BaseModel
-):
-
+class AICounselingRequest(BaseModel):
     userId: Optional[str] = None
-
     message: str
-
-    conversationHistory: List[
-        ConversationMessage
-    ] = []
-
+    conversationHistory: List[ConversationMessage] = []
     memorySummary: str = ""
-
     lastTopic: str = ""
 
 
@@ -877,18 +229,10 @@ class AICounselingRequest(
 @app.get("/")
 @app.get("/health")
 def health():
-
     return {
-
-        "status":
-            "ok",
-
-        "message":
-            "HopeHub ML Service is running",
-
-        "aiCounseling":
-            AI_COUNSELING_AVAILABLE,
-
+        "status": "ok",
+        "message": "HopeHub ML Service is running",
+        "aiCounseling": AI_COUNSELING_AVAILABLE,
     }
 
 
@@ -896,67 +240,33 @@ def health():
 # QUESTIONNAIRE
 # ============================================================
 
-@app.post(
-    "/api/questionnaire/submit"
-)
-def submit_questionnaire(
-    payload: QuestionnaireRequest
-):
-
+@app.post("/api/questionnaire/submit")
+def submit_questionnaire(payload: QuestionnaireRequest):
     try:
-
-        int_answers = {
-
-            int(k): v
-
-            for k, v
-            in payload.answers.items()
-
-        }
-
+        int_answers = {int(k): v for k, v in payload.answers.items()}
     except ValueError:
-
         raise HTTPException(
-
             status_code=400,
-
-            detail=
-                "answers keys must be numeric question indices (0-19)"
-
+            detail="answers keys must be numeric question indices (0-14)",
         )
 
-
-    if len(int_answers) < 20:
-
+    if any(k < 0 or k > 14 for k in int_answers):
         raise HTTPException(
-
             status_code=400,
-
-            detail=
-                "expected 20 answers (Q0-Q19)"
-
+            detail="answers keys must be between 0 and 14",
         )
 
-
-    result = (
-        predict_addiction_from_questionnaire(
-
-            int_answers,
-
-            gender=
-                payload.gender
-
+    if not any(str(v).strip() for v in int_answers.values()):
+        raise HTTPException(
+            status_code=400,
+            detail="at least one answer is required",
         )
-    )
 
+    result = predict_addiction_from_questionnaire(int_answers)
 
     return {
-
-        "userId":
-            payload.userId,
-
+        "userId": payload.userId,
         **result,
-
     }
 
 
@@ -964,51 +274,19 @@ def submit_questionnaire(
 # DIARY EMOTION PREDICTION
 # ============================================================
 
-@app.post(
-    "/api/diary/predict"
-)
-def predict_diary_emotion(
-    payload: DiaryRequest
-):
-
-    text = (
-        payload.text
-        .strip()
-    )
-
+@app.post("/api/diary/predict")
+def predict_diary_emotion(payload: DiaryRequest):
+    text = payload.text.strip()
 
     if not text:
+        raise HTTPException(status_code=400, detail="Diary text is required")
 
-        raise HTTPException(
-
-            status_code=400,
-
-            detail=
-                "Diary text is required"
-
-        )
-
-
-    result = predict_diary_emotions(
-        text
-    )
-
+    result = predict_diary_emotions(text)
 
     return {
-
-        "userId":
-            payload.userId,
-
-        "dominant_emotion":
-            result[
-                "dominant_emotion"
-            ],
-
-        "emotion_percentages":
-            result[
-                "emotion_percentages"
-            ],
-
+        "userId": payload.userId,
+        "dominant_emotion": result["dominant_emotion"],
+        "emotion_percentages": result["emotion_percentages"],
     }
 
 
@@ -1016,150 +294,49 @@ def predict_diary_emotion(
 # AI COUNSELING
 # ============================================================
 
-@app.post(
-    "/api/ai-counseling/chat"
-)
-def ai_counseling_chat(
-    payload: AICounselingRequest
-):
-
-    # --------------------------------------------------------
-    # Check AI counseling service
-    # --------------------------------------------------------
-
+@app.post("/api/ai-counseling/chat")
+def ai_counseling_chat(payload: AICounselingRequest):
     if not AI_COUNSELING_AVAILABLE:
-
         raise HTTPException(
-
             status_code=503,
-
-            detail=
-                "AI Counseling service is not available."
-
+            detail="AI Counseling service is not available.",
         )
 
-
-    # --------------------------------------------------------
-    # Validate message
-    # --------------------------------------------------------
-
-    message = (
-        payload.message
-        .strip()
-    )
-
+    message = payload.message.strip()
 
     if not message:
-
-        raise HTTPException(
-
-            status_code=400,
-
-            detail=
-                "Message is required."
-
-        )
-
-
-    # --------------------------------------------------------
-    # Convert conversation history
-    # --------------------------------------------------------
+        raise HTTPException(status_code=400, detail="Message is required.")
 
     history = [
-
-        {
-
-            "role":
-                item.role,
-
-            "content":
-                item.content,
-
-        }
-
-        for item
-        in payload.conversationHistory
-
+        {"role": item.role, "content": item.content}
+        for item in payload.conversationHistory
     ]
 
-
-    # --------------------------------------------------------
-    # Generate NEW AI counselor response
-    # --------------------------------------------------------
-
     try:
-
-        response = (
-            generate_counseling_response(
-
-                user_message=
-                    message,
-
-                conversation_history=
-                    history,
-
-                memory_summary=
-                    payload.memorySummary,
-
-                last_topic=
-                    payload.lastTopic,
-
-            )
+        response = generate_counseling_response(
+            user_message=message,
+            conversation_history=history,
+            memory_summary=payload.memorySummary,
+            last_topic=payload.lastTopic,
         )
-
-
     except Exception as error:
-
-        print(
-            "AI Counseling error:"
-        )
-
-        print(
-            repr(error)
-        )
-
-
+        print("AI Counseling error:")
+        print(repr(error))
         raise HTTPException(
-
             status_code=500,
-
-            detail=
-                "Failed to generate AI counselor response."
-
+            detail="Failed to generate AI counselor response.",
         )
-
-
-    # --------------------------------------------------------
-    # Validate generated response
-    # --------------------------------------------------------
 
     if not response:
-
         raise HTTPException(
-
             status_code=500,
-
-            detail=
-                "AI counselor returned an empty response."
-
+            detail="AI counselor returned an empty response.",
         )
 
-
-    # --------------------------------------------------------
-    # Return only NEW AI response
-    # --------------------------------------------------------
-
     return {
-
-        "success":
-            True,
-
-        "userId":
-            payload.userId,
-
-        "response":
-            response,
-
+        "success": True,
+        "userId": payload.userId,
+        "response": response,
     }
 
 
@@ -1168,50 +345,15 @@ def ai_counseling_chat(
 # ============================================================
 
 if __name__ == "__main__":
-
     import uvicorn
 
+    port = int(os.getenv("PYTHON_PORT", "5001"))
 
-    port = int(
-        os.getenv(
-            "PYTHON_PORT",
-            "5001"
-        )
-    )
+    print("=" * 70)
+    print("HOPEHUB ML SERVICE")
+    print("=" * 70)
+    print(f"Starting server on port {port}")
+    print("AI Counseling:", AI_COUNSELING_AVAILABLE)
+    print("=" * 70)
 
-
-    print(
-        "=" * 70
-    )
-
-    print(
-        "HOPEHUB ML SERVICE"
-    )
-
-    print(
-        "=" * 70
-    )
-
-    print(
-        f"Starting server on port {port}"
-    )
-
-    print(
-        "AI Counseling:",
-        AI_COUNSELING_AVAILABLE
-    )
-
-    print(
-        "=" * 70
-    )
-
-
-    uvicorn.run(
-
-        app,
-
-        host="0.0.0.0",
-
-        port=port
-
-    )
+    uvicorn.run(app, host="0.0.0.0", port=port)

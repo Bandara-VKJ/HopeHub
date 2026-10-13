@@ -1,15 +1,12 @@
-import express from "express";
 import Questionnaire from "../models/Questionnaire.js";
 import User from "../models/User.js";
 import axios from "axios";
-
-const router = express.Router();
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || "http://127.0.0.1:8000";
 
 export const submitQuestionnaire = async (req, res) => {
   try {
-    const { userId, answers, gender } = req.body;
+    const { userId, answers, otherDrugName } = req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -17,9 +14,18 @@ export const submitQuestionnaire = async (req, res) => {
       });
     }
 
+    if (!answers || typeof answers !== "object") {
+      return res.status(400).json({
+        message: "Answers are required",
+      });
+    }
+
+    const cleanDrugName =
+      typeof otherDrugName === "string" ? otherDrugName.trim().slice(0, 100) : "";
+
     const levelResponse = await axios.post(
       `${ML_SERVICE_URL}/api/questionnaire/submit`,
-      { userId, gender: gender || "M", answers }
+      { userId, answers, otherDrugName: cleanDrugName }
     );
 
     const prediction = levelResponse.data;
@@ -28,6 +34,8 @@ export const submitQuestionnaire = async (req, res) => {
     const newEntry = new Questionnaire({
       userId,
       answers,
+      otherDrugName: cleanDrugName,
+      version: 2,
       addictionLevel: prediction.addiction_level,
       confidence: prediction.confidence,
       personalityScores: prediction.personality_scores,
