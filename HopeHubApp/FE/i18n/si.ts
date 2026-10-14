@@ -182,5 +182,99 @@ export const si: Translations = {
   saveFailed: "සුරැකීම අසාර්ථක විය",
   profileSaved: "පැතිකඩ සාර්ථකව සුරකින ලදී!",
   networkError: "ජාල දෝෂයකි",
-}
+},
+  diary: {
+    dateLocale: "si-LK",
+    title: "මගේ දිනපොත",
+    allEntries: "සියලු සටහන්",
+    emptyText: "තවම සටහන් නොමැත.\nඔබේ පළමු සටහන ලිවීමට + ඔබන්න.",
+
+    moodOverview: "මනෝභාව දළ විශ්ලේෂණය",
+    entriesTotal: (n) => `මුළු සටහන් ගණන: ${n}`,
+    good: "හොඳ",
+    bad: "නරක",
+    goodPct: (p) => `හොඳ ${p}%`,
+    badPct: (p) => `නරක ${p}%`,
+
+    goodDay: "හොඳ දිනයක්",
+    toughDay: "දුෂ්කර දිනයක්",
+    quickCheckInTag: "ඉක්මන් පරීක්ෂාව",
+
+    newEntry: "නව සටහනක්",
+    editEntry: "සටහන සංස්කරණය කරන්න",
+    writePlaceholder: "ඔබේ දවස ගැන ලියන්න…",
+    discard: "ඉවත දමන්න",
+    saveEntry: "සටහන සුරකින්න",
+    updateEntry: "සටහන යාවත්කාලීන කරන්න",
+
+    chooseTitle: "ඔබට සටහන් කිරීමට කැමති ක්‍රමය කුමක්ද?",
+    writeDiary: "දිනපොතක් ලියන්න",
+    writeDiarySub: "ඔබේ දවස ඔබේම වචනවලින් විස්තර කරන්න",
+    quickCheckIn: "ඉක්මන් පරීක්ෂාව",
+    quickCheckInSub: "ලිවීමකින් තොරව ඉක්මන් ප්‍රශ්න 5කට පිළිතුරු දෙන්න",
+
+    yourEmotionToday: "අද ඔබේ හැඟීම",
+    mainEmotionToday: "අද ඔබේ ප්‍රධාන හැඟීම",
+    estimateNote: "මෙය ඔබේ පිළිතුරු මත පදනම් වූ ඇස්තමේන්තුවකි.",
+    seeEmotion: "මගේ හැඟීම බලන්න",
+    cancel: "අවලංගු කරන්න",
+    done: "අවසන්",
+    nudgeText: "දිනපොතක් ලියන්න උත්සාහ කරන්න. ඔබේ ගමනට එය බෙහෙවින් උපකාරී වේ.",
+
+    deleteTitle: "සටහන මකන්න",
+    deleteConfirm: "මෙම සටහන මැකීමට ඔබට විශ්වාසද?",
+    delete: "මකන්න",
+
+    loadFailed: "දිනපොත් පූරණය කිරීමට අසමත් විය",
+    saveFailed: "සටහන සුරැකීමට අසමත් විය",
+    updateFailed: "සටහන යාවත්කාලීන කිරීමට අසමත් විය",
+    deleteFailed: "සටහන මැකීමට අසමත් විය",
+    checkInSaveFailed: "පරීක්ෂාව සුරැකීමට අසමත් විය",
+    loginAgain: "ඔබේ පරීක්ෂාව සුරැකීමට කරුණාකර නැවත පිවිසෙන්න",
+
+    emotions: {
+      joy: "සතුට",
+      love: "ආදරය",
+      surprise: "පුදුමය",
+      sadness: "දුක",
+      fear: "බිය",
+      anger: "කෝපය",
+      stress: "ආතතිය",
+      anxiety: "කනස්සල්ල",
+    },
+
+    quickContent: {
+      prefix: "ඉක්මන් පරීක්ෂාව — ",
+      feeling: "හැඟීම",
+      sleep: "නින්ද",
+      craving: "ආශාව",
+      stress: "ආතතිය",
+      trigger: "ප්‍රේරකය",
+    },
+
+    quiz: {
+      feeling: {
+        question: "අද ඔබට දැනෙන්නේ කෙසේද?",
+        options: { good: "හොඳයි", okay: "සාමාන්‍යයි", not_good: "හොඳ නැත" },
+      },
+      sleep: {
+        question: "ඊයේ රාත්‍රියේ ඔබ කොතරම් හොඳින් නිදාගත්තාද?",
+        options: { well: "හොඳින්", not_enough: "ප්‍රමාණවත් නැත", barely: "නිදාගත්තේ ම නැති තරම්" },
+        subs: { well: "පැය 7+", not_enough: "පැය 5-7", barely: "පැය 5ට අඩු" },
+      },
+      craving: {
+        question: "අද ඔබට තද ආශාවක් ඇති වුණාද?",
+        options: { no: "නැත", little: "ටිකක්", strong: "තදින්" },
+      },
+      stress: {
+        question: "අද ඔබට අපහසු හෝ ආතතිදායක තත්ත්වයක් ඇති වුණාද?",
+        options: { no: "නැත", little: "ටිකක්", a_lot: "බොහෝ" },
+      },
+      trigger: {
+        question: "අද ඔබ ප්‍රේරකයකට නිරාවරණය වුණාද?",
+        hint: "උදා: මත්ද්‍රව්‍ය භාවිතය සිහිගන්වන පුද්ගලයන්, ස්ථාන හෝ තත්ත්වයන්",
+        options: { no: "නැත", yes: "ඔව්" },
+      },
+    },
+  },
 };

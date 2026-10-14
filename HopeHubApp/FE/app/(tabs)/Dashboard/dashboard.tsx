@@ -28,9 +28,12 @@ import {
   screenStyles,
 } from './dashboardStyles';
 import { ngrokFetch } from '@/utill/ngrokFetch';
+import { useLanguage } from '@/i18n/LanguageContext';
+import { en, type Translations } from '@/i18n/en';
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
+type DiaryT = Translations['diary'];
 
 const EMOTION_META: Record<string, { color: string; emoji: string }> = {
   joy: { color: '#3DB87C', emoji: '😊' },
@@ -46,8 +49,8 @@ const EMOTION_META: Record<string, { color: string; emoji: string }> = {
 const emotionMeta = (emotion: string) =>
   EMOTION_META[emotion] || { color: '#9EA5B0', emoji: '•' };
 
-const DIARY_NUDGE_TEXT =
-  'Hey, try to write a diary. It will help much more on your journey.';
+const emotionName = (d: DiaryT, emotion: string) =>
+  (d.emotions as Record<string, string>)[emotion] ?? emotion;
 
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 };
 
@@ -63,14 +66,15 @@ interface DiaryEntry {
   content: string;
   // 'questionnaire' = quick check-in; anything else (or missing) = written diary
   source?: 'diary' | 'questionnaire';
+  questionnaire?: QuizAnswers;
   emotionAnalysis?: EmotionAnalysis;
 }
 
-const todayDateString = () => new Date().toISOString().split("T")[0];
+const todayDateString = () => new Date().toISOString().split('T')[0];
 
-const formatDisplayDate = (dateStr: string) => {
+const formatDisplayDate = (dateStr: string, locale: string) => {
   const d = new Date(dateStr);
-  return d.toLocaleDateString('en-GB', {
+  return d.toLocaleDateString(locale, {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
@@ -78,66 +82,43 @@ const formatDisplayDate = (dateStr: string) => {
   });
 };
 
-
 type QuizKey = 'feeling' | 'sleep' | 'craving' | 'stress' | 'trigger';
 type QuizAnswers = Partial<Record<QuizKey, string>>;
 
 const QUIZ: {
   key: QuizKey;
-  question: string;
-  hint?: string;
-  options: { value: string; label: string; emoji?: string; sub?: string }[];
+  options: { value: string; emoji?: string }[];
 }[] = [
   {
     key: 'feeling',
-    question: 'How are you feeling today?',
     options: [
-      { value: 'good', label: 'Good', emoji: '😊' },
-      { value: 'okay', label: 'Okay', emoji: '😐' },
-      { value: 'not_good', label: 'Not good', emoji: '😔' },
+      { value: 'good', emoji: '😊' },
+      { value: 'okay', emoji: '😐' },
+      { value: 'not_good', emoji: '😔' },
     ],
   },
   {
     key: 'sleep',
-    question: 'How well did you sleep last night?',
     options: [
-      { value: 'well', label: 'Well', emoji: '😊', sub: '7+ hours' },
-      { value: 'not_enough', label: 'Not enough', emoji: '😐', sub: '5-7 hours' },
-      { value: 'barely', label: 'Barely slept', emoji: '😔', sub: 'under 5 hours' },
+      { value: 'well', emoji: '😊' },
+      { value: 'not_enough', emoji: '😐' },
+      { value: 'barely', emoji: '😔' },
     ],
   },
-  {
-    key: 'craving',
-    question: 'Did you experience a strong craving today?',
-    options: [
-      { value: 'no', label: 'No' },
-      { value: 'little', label: 'A little' },
-      { value: 'strong', label: 'Strong' },
-    ],
-  },
-  {
-    key: 'stress',
-    question: 'Did you experience a difficult or stressful situation today?',
-    options: [
-      { value: 'no', label: 'No' },
-      { value: 'little', label: 'A little' },
-      { value: 'a_lot', label: 'A lot' },
-    ],
-  },
-  {
-    key: 'trigger',
-    question: 'Were you exposed to a trigger today?',
-    hint: 'e.g. people, places or situations that remind you of substance use',
-    options: [
-      { value: 'no', label: 'No' },
-      { value: 'yes', label: 'Yes' },
-    ],
-  },
+  { key: 'craving', options: [{ value: 'no' }, { value: 'little' }, { value: 'strong' }] },
+  { key: 'stress', options: [{ value: 'no' }, { value: 'little' }, { value: 'a_lot' }] },
+  { key: 'trigger', options: [{ value: 'no' }, { value: 'yes' }] },
 ];
 
-// Points each answer adds to each emotion. The emotion with the most points is the
-// day's main emotion. This is a simple rule-based estimate, not a trained model,
-// so tweak the numbers to taste.
+type QuizText = {
+  question: string;
+  hint?: string;
+  options: Record<string, string>;
+  subs?: Record<string, string>;
+};
+const quizText = (d: DiaryT, key: QuizKey) => d.quiz[key] as QuizText;
+
+
 const EMOTION_WEIGHTS: Record<QuizKey, Record<string, Record<string, number>>> = {
   feeling: {
     good: { joy: 4 },
@@ -182,7 +163,6 @@ const computeQuizEmotions = (answers: QuizAnswers): EmotionAnalysis => {
     return { emotion, exact, pct: Math.floor(exact) };
   });
 
-  // Largest-remainder rounding so the percentages add up to exactly 100.
   let remaining = 100 - parts.reduce((s, p) => s + p.pct, 0);
   [...parts]
     .sort((a, b) => (b.exact - b.pct) - (a.exact - a.pct))
@@ -207,30 +187,33 @@ const computeQuizEmotions = (answers: QuizAnswers): EmotionAnalysis => {
 const quizMood = (a: QuizAnswers): 'good' | 'bad' =>
   a.feeling === 'not_good' || a.craving === 'strong' || a.stress === 'a_lot' ? 'bad' : 'good';
 
-const labelOf = (key: QuizKey, value?: string) =>
-  QUIZ.find((q) => q.key === key)?.options.find((o) => o.value === value)?.label ?? '';
+const labelOf = (d: DiaryT, key: QuizKey, value?: string) =>
+  (value && quizText(d, key).options[value]) || '';
 
-const buildQuizContent = (a: QuizAnswers) =>
-  `Quick check-in — Feeling: ${labelOf('feeling', a.feeling)}. ` +
-  `Sleep: ${labelOf('sleep', a.sleep)}. ` +
-  `Craving: ${labelOf('craving', a.craving)}. ` +
-  `Stress: ${labelOf('stress', a.stress)}. ` +
-  `Trigger: ${labelOf('trigger', a.trigger)}.`;
-
+const buildQuizContent = (a: QuizAnswers, d: DiaryT) => {
+  const c = d.quickContent;
+  return (
+    `${c.prefix}${c.feeling}: ${labelOf(d, 'feeling', a.feeling)}. ` +
+    `${c.sleep}: ${labelOf(d, 'sleep', a.sleep)}. ` +
+    `${c.craving}: ${labelOf(d, 'craving', a.craving)}. ` +
+    `${c.stress}: ${labelOf(d, 'stress', a.stress)}. ` +
+    `${c.trigger}: ${labelOf(d, 'trigger', a.trigger)}.`
+  );
+};
 
 function MoodChart({ entries }: { entries: DiaryEntry[] }) {
-  const good = entries.filter(e => e.mood === 'good').length;
-  const bad = entries.filter(e => e.mood === 'bad').length;
+  const { t } = useLanguage();
+  const d = t.diary;
+  const good = entries.filter((e) => e.mood === 'good').length;
+  const bad = entries.filter((e) => e.mood === 'bad').length;
   const total = entries.length || 1;
   const goodPct = Math.round((good / total) * 100);
   const badPct = Math.round((bad / total) * 100);
 
   return (
     <View style={chartStyles.wrapper}>
-      <Text style={chartStyles.heading}>Mood Overview</Text>
-      <Text style={chartStyles.sub}>
-        {entries.length} {entries.length === 1 ? 'entry' : 'entries'} total
-      </Text>
+      <Text style={chartStyles.heading}>{d.moodOverview}</Text>
+      <Text style={chartStyles.sub}>{d.entriesTotal(entries.length)}</Text>
 
       <View style={chartStyles.bars}>
         <View style={chartStyles.barGroup}>
@@ -239,7 +222,7 @@ function MoodChart({ entries }: { entries: DiaryEntry[] }) {
             <View style={[chartStyles.barFill, dynamicStyles.barFill(goodPct, COLORS.good)]} />
           </View>
           <View style={[chartStyles.dot, dynamicStyles.bg(COLORS.good)]} />
-          <Text style={chartStyles.barLabel}>Good</Text>
+          <Text style={chartStyles.barLabel}>{d.good}</Text>
         </View>
 
         <View style={chartStyles.divider} />
@@ -250,7 +233,7 @@ function MoodChart({ entries }: { entries: DiaryEntry[] }) {
             <View style={[chartStyles.barFill, dynamicStyles.barFill(badPct, COLORS.bad)]} />
           </View>
           <View style={[chartStyles.dot, dynamicStyles.bg(COLORS.bad)]} />
-          <Text style={chartStyles.barLabel}>Bad</Text>
+          <Text style={chartStyles.barLabel}>{d.bad}</Text>
         </View>
       </View>
 
@@ -259,15 +242,15 @@ function MoodChart({ entries }: { entries: DiaryEntry[] }) {
         <View style={[chartStyles.trackFill, dynamicStyles.flexFill(badPct, COLORS.bad)]} />
       </View>
       <View style={chartStyles.trackLabels}>
-        <Text style={[chartStyles.trackLabel, dynamicStyles.textColor(COLORS.good)]}>{goodPct}% good</Text>
-        <Text style={[chartStyles.trackLabel, dynamicStyles.textColor(COLORS.bad)]}>{badPct}% bad</Text>
+        <Text style={[chartStyles.trackLabel, dynamicStyles.textColor(COLORS.good)]}>{d.goodPct(goodPct)}</Text>
+        <Text style={[chartStyles.trackLabel, dynamicStyles.textColor(COLORS.bad)]}>{d.badPct(badPct)}</Text>
       </View>
     </View>
   );
 }
 
-// Compact badge shown on the card: the day's main emotion + its %.
 function DominantEmotionBadge({ analysis }: { analysis: DiaryEntry['emotionAnalysis'] }) {
+  const { t } = useLanguage();
   if (!analysis) return null;
   const { dominantEmotion } = analysis;
   const meta = emotionMeta(dominantEmotion);
@@ -276,22 +259,23 @@ function DominantEmotionBadge({ analysis }: { analysis: DiaryEntry['emotionAnaly
     <View style={[badgeStyles.container, dynamicStyles.tint(meta.color)]}>
       <Text style={badgeStyles.emoji}>{meta.emoji}</Text>
       <Text style={[badgeStyles.text, dynamicStyles.textColor(meta.color)]}>
-        {dominantEmotion}
+        {emotionName(t.diary, dominantEmotion)}
       </Text>
     </View>
   );
 }
 
-// Gentle reminder that writing a diary gives a richer picture than the quick check-in.
 function DiaryNudge({ onWrite }: { onWrite?: () => void }) {
+  const { t } = useLanguage();
+  const d = t.diary;
   return (
     <View style={nudgeStyles.container}>
       <Text style={nudgeStyles.icon}>📝</Text>
       <View style={nudgeStyles.body}>
-        <Text style={nudgeStyles.text}>{DIARY_NUDGE_TEXT}</Text>
+        <Text style={nudgeStyles.text}>{d.nudgeText}</Text>
         {onWrite && (
           <TouchableOpacity onPress={onWrite} style={nudgeStyles.button} activeOpacity={0.8}>
-            <Text style={nudgeStyles.buttonText}>Write a diary</Text>
+            <Text style={nudgeStyles.buttonText}>{d.writeDiary}</Text>
             <Ionicons name="arrow-forward" size={14} color="#1B7A50" />
           </TouchableOpacity>
         )}
@@ -299,7 +283,6 @@ function DiaryNudge({ onWrite }: { onWrite?: () => void }) {
     </View>
   );
 }
-
 
 function EntryCard({
   entry,
@@ -310,34 +293,39 @@ function EntryCard({
   onEdit: (entry: DiaryEntry) => void;
   onDelete: (entry: DiaryEntry) => void;
 }) {
+  const { t } = useLanguage();
+  const d = t.diary;
   const [expanded, setExpanded] = useState(false);
   const isGood = entry.mood === 'good';
   const isToday = entry.date === todayDateString();
   const isQuick = entry.source === 'questionnaire';
 
+  const displayContent =
+    isQuick && entry.questionnaire ? buildQuizContent(entry.questionnaire, d) : entry.content;
+
   return (
     <TouchableOpacity
       activeOpacity={0.85}
-      onPress={() => setExpanded(v => !v)}
+      onPress={() => setExpanded((v) => !v)}
       style={cardStyles.wrapper}
     >
       <View style={cardStyles.row}>
         <View style={[cardStyles.moodDot, dynamicStyles.bg(isGood ? COLORS.good : COLORS.bad)]} />
         <View style={cardStyles.meta}>
           <View style={cardStyles.rowCenter}>
-            <Text style={cardStyles.date}>{formatDisplayDate(entry.date)}</Text>
+            <Text style={cardStyles.date}>{formatDisplayDate(entry.date, d.dateLocale)}</Text>
             <DominantEmotionBadge analysis={entry.emotionAnalysis} />
           </View>
           <View style={cardStyles.rowCenter}>
             <View style={[cardStyles.pill, dynamicStyles.bg(isGood ? COLORS.goodSoft : COLORS.badSoft)]}>
               <Text style={[cardStyles.pillText, dynamicStyles.textColor(isGood ? COLORS.goodText : COLORS.badText)]}>
-                {isGood ? 'Good day' : 'Tough day'}
+                {isGood ? d.goodDay : d.toughDay}
               </Text>
             </View>
             {isQuick && (
               <View style={cardStyles.quickTag}>
                 <Ionicons name="flash-outline" size={11} color="#6B7280" />
-                <Text style={cardStyles.quickTagText}>Quick check-in</Text>
+                <Text style={cardStyles.quickTagText}>{d.quickCheckInTag}</Text>
               </View>
             )}
           </View>
@@ -372,11 +360,10 @@ function EntryCard({
         <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="#9EA5B0" />
       </View>
 
-      {expanded && <Text style={cardStyles.content}>{entry.content}</Text>}
+      {expanded && <Text style={cardStyles.content}>{displayContent}</Text>}
     </TouchableOpacity>
   );
 }
-
 
 function EntryModal({
   visible,
@@ -393,6 +380,8 @@ function EntryModal({
   initialContent?: string;
   mode: 'add' | 'edit';
 }) {
+  const { t } = useLanguage();
+  const d = t.diary;
   const [mood, setMood] = useState<'good' | 'bad'>(initialMood || 'good');
   const [content, setContent] = useState(initialContent || '');
 
@@ -403,7 +392,7 @@ function EntryModal({
     }
   }, [visible, initialMood, initialContent]);
 
-  const dateLabel = formatDisplayDate(todayDateString());
+  const dateLabel = formatDisplayDate(todayDateString(), d.dateLocale);
 
   const handleSave = () => {
     if (!content.trim()) return;
@@ -422,7 +411,7 @@ function EntryModal({
           <View style={modalStyles.handle} />
 
           <View style={modalStyles.header}>
-            <Text style={modalStyles.title}>{mode === 'add' ? 'New Entry' : 'Edit Entry'}</Text>
+            <Text style={modalStyles.title}>{mode === 'add' ? d.newEntry : d.editEntry}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={HIT_SLOP}>
               <Ionicons name="close" size={22} color="#6B7280" />
             </TouchableOpacity>
@@ -439,7 +428,7 @@ function EntryModal({
               onPress={() => setMood('good')}
             >
               <Text style={[modalStyles.moodBtnText, mood === 'good' && modalStyles.moodTextGood]}>
-                😊  Good day
+                😊  {d.goodDay}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -447,7 +436,7 @@ function EntryModal({
               onPress={() => setMood('bad')}
             >
               <Text style={[modalStyles.moodBtnText, mood === 'bad' && modalStyles.moodTextBad]}>
-                😔  Tough day
+                😔  {d.toughDay}
               </Text>
             </TouchableOpacity>
           </View>
@@ -455,7 +444,7 @@ function EntryModal({
           <TextInput
             style={modalStyles.textArea}
             multiline
-            placeholder="Write about your day…"
+            placeholder={d.writePlaceholder}
             placeholderTextColor="#C4C9D0"
             value={content}
             onChangeText={setContent}
@@ -464,7 +453,7 @@ function EntryModal({
 
           <View style={modalStyles.actions}>
             <TouchableOpacity style={modalStyles.cancelBtn} onPress={onClose}>
-              <Text style={modalStyles.cancelText}>Discard</Text>
+              <Text style={modalStyles.cancelText}>{d.discard}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[modalStyles.saveBtn, !content.trim() && modalStyles.saveBtnDisabled]}
@@ -472,7 +461,7 @@ function EntryModal({
               disabled={!content.trim()}
             >
               <Ionicons name="checkmark" size={16} color="#FFF" style={modalStyles.btnIcon} />
-              <Text style={modalStyles.saveText}>{mode === 'add' ? 'Save Entry' : 'Update Entry'}</Text>
+              <Text style={modalStyles.saveText}>{mode === 'add' ? d.saveEntry : d.updateEntry}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -480,9 +469,6 @@ function EntryModal({
     </Modal>
   );
 }
-
-
-// Bottom sheet shown when the + button is tapped: write a diary or do the quick check-in.
 function EntryChoiceModal({
   visible,
   onClose,
@@ -494,6 +480,8 @@ function EntryChoiceModal({
   onWriteDiary: () => void;
   onQuickCheckIn: () => void;
 }) {
+  const { t } = useLanguage();
+  const d = t.diary;
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={modalStyles.overlay}>
@@ -503,7 +491,7 @@ function EntryChoiceModal({
           <View style={modalStyles.handle} />
 
           <View style={modalStyles.header}>
-            <Text style={modalStyles.title}>How do you want to check in?</Text>
+            <Text style={modalStyles.title}>{d.chooseTitle}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={HIT_SLOP}>
               <Ionicons name="close" size={22} color="#6B7280" />
             </TouchableOpacity>
@@ -514,8 +502,8 @@ function EntryChoiceModal({
               <Ionicons name="create-outline" size={22} color="#1B7A50" />
             </View>
             <View style={choiceStyles.body}>
-              <Text style={choiceStyles.title}>Write a diary</Text>
-              <Text style={choiceStyles.sub}>Describe your day in your own words</Text>
+              <Text style={choiceStyles.title}>{d.writeDiary}</Text>
+              <Text style={choiceStyles.sub}>{d.writeDiarySub}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#9EA5B0" />
           </TouchableOpacity>
@@ -525,8 +513,8 @@ function EntryChoiceModal({
               <Ionicons name="flash-outline" size={22} color="#4F46E5" />
             </View>
             <View style={choiceStyles.body}>
-              <Text style={choiceStyles.title}>Quick check-in</Text>
-              <Text style={choiceStyles.sub}>Answer 5 quick questions, no writing needed</Text>
+              <Text style={choiceStyles.title}>{d.quickCheckIn}</Text>
+              <Text style={choiceStyles.sub}>{d.quickCheckInSub}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#9EA5B0" />
           </TouchableOpacity>
@@ -536,8 +524,6 @@ function EntryChoiceModal({
   );
 }
 
-
-// Quick Recovery Questionnaire: 5 taps, then the user sees their main emotion for the day.
 function QuickCheckInModal({
   visible,
   onClose,
@@ -554,6 +540,8 @@ function QuickCheckInModal({
   }) => Promise<boolean>;
   onWriteDiary: () => void;
 }) {
+  const { t } = useLanguage();
+  const d = t.diary;
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<EmotionAnalysis | null>(null);
@@ -575,7 +563,7 @@ function QuickCheckInModal({
     const ok = await onSubmit({
       answers,
       mood: quizMood(answers),
-      content: buildQuizContent(answers),
+      content: buildQuizContent(answers, en.diary),
       emotionAnalysis,
     });
     setSubmitting(false);
@@ -593,7 +581,7 @@ function QuickCheckInModal({
           <View style={modalStyles.handle} />
 
           <View style={modalStyles.header}>
-            <Text style={modalStyles.title}>{result ? 'Your emotion today' : 'Quick check-in'}</Text>
+            <Text style={modalStyles.title}>{result ? d.yourEmotionToday : d.quickCheckIn}</Text>
             <TouchableOpacity onPress={onClose} hitSlop={HIT_SLOP}>
               <Ionicons name="close" size={22} color="#6B7280" />
             </TouchableOpacity>
@@ -604,21 +592,19 @@ function QuickCheckInModal({
               <View style={quizStyles.resultTop}>
                 <Text style={quizStyles.resultEmoji}>{dominantMeta.emoji}</Text>
                 <Text style={[quizStyles.resultName, dynamicStyles.textColor(dominantMeta.color)]}>
-                  {result.dominantEmotion}
+                  {emotionName(d, result.dominantEmotion)}
                 </Text>
-                <Text style={quizStyles.resultSub}>Your main emotion today</Text>
+                <Text style={quizStyles.resultSub}>{d.mainEmotionToday}</Text>
               </View>
 
-              <Text style={quizStyles.estimateNote}>
-                This is an estimate based on your answers.
-              </Text>
+              <Text style={quizStyles.estimateNote}>{d.estimateNote}</Text>
 
               <DiaryNudge onWrite={onWriteDiary} />
 
               <View style={[modalStyles.actions, modalStyles.actionsTop]}>
                 <TouchableOpacity style={modalStyles.saveBtn} onPress={onClose}>
                   <Ionicons name="checkmark" size={16} color="#FFF" style={modalStyles.btnIcon} />
-                  <Text style={modalStyles.saveText}>Done</Text>
+                  <Text style={modalStyles.saveText}>{d.done}</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -627,39 +613,43 @@ function QuickCheckInModal({
               <DiaryNudge />
 
               <ScrollView style={quizStyles.scrollQuestions} showsVerticalScrollIndicator={false}>
-                {QUIZ.map((q, i) => (
-                  <View key={q.key} style={quizStyles.question}>
-                    <Text style={quizStyles.questionText}>
-                      {i + 1}. {q.question}
-                    </Text>
-                    {q.hint && <Text style={quizStyles.questionHint}>{q.hint}</Text>}
-                    <View style={quizStyles.chipRow}>
-                      {q.options.map((o) => {
-                        const active = answers[q.key] === o.value;
-                        return (
-                          <TouchableOpacity
-                            key={o.value}
-                            style={[quizStyles.chip, active && quizStyles.chipActive]}
-                            onPress={() => setAnswers((prev) => ({ ...prev, [q.key]: o.value }))}
-                            activeOpacity={0.8}
-                          >
-                            <Text style={[quizStyles.chipText, active && quizStyles.chipTextActive]}>
-                              {o.emoji ? `${o.emoji}  ` : ''}{o.label}
-                            </Text>
-                            {o.sub && (
-                              <Text style={[quizStyles.chipSub, active && quizStyles.chipTextActive]}>{o.sub}</Text>
-                            )}
-                          </TouchableOpacity>
-                        );
-                      })}
+                {QUIZ.map((q, i) => {
+                  const qt = quizText(d, q.key);
+                  return (
+                    <View key={q.key} style={quizStyles.question}>
+                      <Text style={quizStyles.questionText}>
+                        {i + 1}. {qt.question}
+                      </Text>
+                      {qt.hint && <Text style={quizStyles.questionHint}>{qt.hint}</Text>}
+                      <View style={quizStyles.chipRow}>
+                        {q.options.map((o) => {
+                          const active = answers[q.key] === o.value;
+                          const sub = qt.subs?.[o.value];
+                          return (
+                            <TouchableOpacity
+                              key={o.value}
+                              style={[quizStyles.chip, active && quizStyles.chipActive]}
+                              onPress={() => setAnswers((prev) => ({ ...prev, [q.key]: o.value }))}
+                              activeOpacity={0.8}
+                            >
+                              <Text style={[quizStyles.chipText, active && quizStyles.chipTextActive]}>
+                                {o.emoji ? `${o.emoji}  ` : ''}{qt.options[o.value]}
+                              </Text>
+                              {sub && (
+                                <Text style={[quizStyles.chipSub, active && quizStyles.chipTextActive]}>{sub}</Text>
+                              )}
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
                     </View>
-                  </View>
-                ))}
+                  );
+                })}
               </ScrollView>
 
               <View style={modalStyles.actions}>
                 <TouchableOpacity style={modalStyles.cancelBtn} onPress={onClose}>
-                  <Text style={modalStyles.cancelText}>Cancel</Text>
+                  <Text style={modalStyles.cancelText}>{d.cancel}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[modalStyles.saveBtn, (!allAnswered || submitting) && modalStyles.saveBtnDisabled]}
@@ -671,7 +661,7 @@ function QuickCheckInModal({
                   ) : (
                     <>
                       <Ionicons name="sparkles-outline" size={16} color="#FFF" style={modalStyles.btnIcon} />
-                      <Text style={modalStyles.saveText}>See my emotion</Text>
+                      <Text style={modalStyles.saveText}>{d.seeEmotion}</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -684,8 +674,10 @@ function QuickCheckInModal({
   );
 }
 
-
 export default function DiaryScreen() {
+  const { t } = useLanguage();
+  const d = t.diary;
+
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -696,7 +688,7 @@ export default function DiaryScreen() {
 
   const fetchDiaries = useCallback(async () => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
+      const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
         setLoading(false);
         setRefreshing(false);
@@ -707,26 +699,28 @@ export default function DiaryScreen() {
       const data = await response.json();
 
       if (response.ok) {
-        const mapped: DiaryEntry[] = (data.diaries || []).map((d: any) => ({
-          id: d._id,
-          date: d.date,
-          mood: d.mood,
-          content: d.content,
-          source: d.source,
-          emotionAnalysis: d.emotionAnalysis,
+        const mapped: DiaryEntry[] = (data.diaries || []).map((item: any) => ({
+          id: item._id,
+          date: item.date,
+          mood: item.mood,
+          content: item.content,
+          source: item.source,
+          questionnaire: item.questionnaire,
+          emotionAnalysis: item.emotionAnalysis,
         }));
         setEntries(mapped);
       } else {
-        Alert.alert("Error", data.message || "Failed to load diaries");
+        Alert.alert(t.common.error, data.message || d.loadFailed);
       }
     } catch (error) {
-      console.log("Fetch diaries error:", error);
-      Alert.alert("Error", "Failed to load diaries");
+      console.log('Fetch diaries error:', error);
+      Alert.alert(t.common.error, d.loadFailed);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+
+  }, [t]);
 
   useEffect(() => {
     fetchDiaries();
@@ -751,7 +745,7 @@ export default function DiaryScreen() {
     setModalOpen(true);
   };
 
-  // + button -> choose between writing a diary and the quick check-in
+
   const openChoice = () => setChoiceOpen(true);
 
   const chooseWriteDiary = () => {
@@ -764,7 +758,7 @@ export default function DiaryScreen() {
     setQuizOpen(true);
   };
 
-  // "Write a diary" button inside the quick check-in
+
   const switchQuizToDiary = () => {
     setQuizOpen(false);
     openAddModal();
@@ -782,12 +776,12 @@ export default function DiaryScreen() {
 
   const handleAdd = async (mood: 'good' | 'bad', content: string) => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
+      const userId = await AsyncStorage.getItem('userId');
       if (!userId) return;
 
       const response = await ngrokFetch(`${BASE_URL}/api/diary/diary-add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
           date: todayDateString(),
@@ -799,18 +793,17 @@ export default function DiaryScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert("Error", data.message || "Failed to save entry");
+        Alert.alert(t.common.error, data.message || d.saveFailed);
         return;
       }
 
       fetchDiaries();
     } catch (error) {
-      console.log("Add diary error:", error);
-      Alert.alert("Error", "Failed to save entry");
+      console.log('Add diary error:', error);
+      Alert.alert(t.common.error, d.saveFailed);
     }
   };
 
-  // Saves a quick check-in. Returns true on success so the modal can show the result.
   const handleQuizSave = async (payload: {
     answers: QuizAnswers;
     mood: 'good' | 'bad';
@@ -818,21 +811,21 @@ export default function DiaryScreen() {
     emotionAnalysis: EmotionAnalysis;
   }): Promise<boolean> => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
+      const userId = await AsyncStorage.getItem('userId');
       if (!userId) {
-        Alert.alert("Error", "Please log in again to save your check-in");
+        Alert.alert(t.common.error, d.loginAgain);
         return false;
       }
 
       const response = await ngrokFetch(`${BASE_URL}/api/diary/diary-add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
           date: todayDateString(),
           mood: payload.mood,
           content: payload.content,
-          source: "questionnaire",
+          source: 'questionnaire',
           questionnaire: payload.answers,
           emotionAnalysis: payload.emotionAnalysis,
         }),
@@ -841,29 +834,29 @@ export default function DiaryScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert("Error", data.message || "Failed to save check-in");
+        Alert.alert(t.common.error, data.message || d.checkInSaveFailed);
         return false;
       }
 
       fetchDiaries();
       return true;
     } catch (error) {
-      console.log("Quick check-in error:", error);
-      Alert.alert("Error", "Failed to save check-in");
+      console.log('Quick check-in error:', error);
+      Alert.alert(t.common.error, d.checkInSaveFailed);
       return false;
     }
   };
 
   const handleEdit = async (diaryId: string, mood: 'good' | 'bad', content: string) => {
     try {
-      const userId = await AsyncStorage.getItem("userId");
+      const userId = await AsyncStorage.getItem('userId');
       if (!userId) return;
 
       const response = await ngrokFetch(
         `${BASE_URL}/api/diary/diaries/${userId}/${diaryId}`,
         {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ mood, content }),
         }
       );
@@ -871,54 +864,48 @@ export default function DiaryScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert("Error", data.message || "Failed to update entry");
+        Alert.alert(t.common.error, data.message || d.updateFailed);
         return;
       }
 
-      // Refetch so the updated emotionAnalysis (recomputed server-side) comes back too —
-      // the previous version only patched mood/content locally and lost the new analysis.
       fetchDiaries();
     } catch (error) {
-      console.log("Edit diary error:", error);
-      Alert.alert("Error", "Failed to update entry");
+      console.log('Edit diary error:', error);
+      Alert.alert(t.common.error, d.updateFailed);
     }
   };
 
   const handleDelete = (entry: DiaryEntry) => {
-    Alert.alert(
-      "Delete entry",
-      "Are you sure you want to delete this entry?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const userId = await AsyncStorage.getItem("userId");
-              if (!userId) return;
+    Alert.alert(d.deleteTitle, d.deleteConfirm, [
+      { text: d.cancel, style: 'cancel' },
+      {
+        text: d.delete,
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const userId = await AsyncStorage.getItem('userId');
+            if (!userId) return;
 
-              const response = await ngrokFetch(
-                `${BASE_URL}/api/diary/diaries/${userId}/${entry.id}`,
-                { method: "DELETE" }
-              );
+            const response = await ngrokFetch(
+              `${BASE_URL}/api/diary/diaries/${userId}/${entry.id}`,
+              { method: 'DELETE' }
+            );
 
-              const data = await response.json();
+            const data = await response.json();
 
-              if (!response.ok) {
-                Alert.alert("Error", data.message || "Failed to delete entry");
-                return;
-              }
-
-              setEntries((prev) => prev.filter((e) => e.id !== entry.id));
-            } catch (error) {
-              console.log("Delete diary error:", error);
-              Alert.alert("Error", "Failed to delete entry");
+            if (!response.ok) {
+              Alert.alert(t.common.error, data.message || d.deleteFailed);
+              return;
             }
-          },
+
+            setEntries((prev) => prev.filter((e) => e.id !== entry.id));
+          } catch (error) {
+            console.log('Delete diary error:', error);
+            Alert.alert(t.common.error, d.deleteFailed);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   return (
@@ -926,7 +913,7 @@ export default function DiaryScreen() {
       <View style={screenStyles.sticky}>
         <View style={screenStyles.header}>
           <View>
-            <Text style={screenStyles.pageTitle}>My Diary</Text>
+            <Text style={screenStyles.pageTitle}>{d.title}</Text>
           </View>
         </View>
         <MoodChart entries={entries} />
@@ -939,29 +926,23 @@ export default function DiaryScreen() {
       ) : (
         <FlatList
           data={sorted}
-          keyExtractor={e => e.id}
+          keyExtractor={(e) => e.id}
           renderItem={({ item }) => (
             <EntryCard entry={item} onEdit={openEditModal} onDelete={handleDelete} />
           )}
           contentContainerStyle={screenStyles.list}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-          ListHeaderComponent={<Text style={screenStyles.sectionLabel}>All Entries</Text>}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListHeaderComponent={<Text style={screenStyles.sectionLabel}>{d.allEntries}</Text>}
           ListEmptyComponent={
             <View style={screenStyles.empty}>
               <Ionicons name="book-outline" size={40} color="#D1D5DB" />
-              <Text style={screenStyles.emptyText}>No entries yet.{'\n'}Tap + to write your first.</Text>
+              <Text style={screenStyles.emptyText}>{d.emptyText}</Text>
             </View>
           }
         />
       )}
 
-      <TouchableOpacity
-        style={screenStyles.fab}
-        onPress={openChoice}
-        activeOpacity={0.88}
-      >
+      <TouchableOpacity style={screenStyles.fab} onPress={openChoice} activeOpacity={0.88}>
         <Ionicons name="add" size={28} color="#FFFFFF" />
       </TouchableOpacity>
 
