@@ -281,6 +281,10 @@ profile: {
         options: { no: "No", yes: "Yes" },
       },
     },
+        months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    formatDate: (weekday: string, day: number, month: string, year: number) =>
+      `${weekday}, ${day} ${month} ${year}`,
   },
 };
 

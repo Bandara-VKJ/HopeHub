@@ -72,14 +72,15 @@ interface DiaryEntry {
 
 const todayDateString = () => new Date().toISOString().split('T')[0];
 
-const formatDisplayDate = (dateStr: string, locale: string) => {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+const formatDisplayDate = (dateStr: string, d: DiaryT) => {
+  const date = new Date(dateStr);
+  // UTC getters, because "YYYY-MM-DD" strings are parsed as UTC
+  return d.formatDate(
+    d.weekdays[date.getUTCDay()],
+    date.getUTCDate(),
+    d.months[date.getUTCMonth()],
+    date.getUTCFullYear()
+  );
 };
 
 type QuizKey = 'feeling' | 'sleep' | 'craving' | 'stress' | 'trigger';
@@ -313,7 +314,7 @@ function EntryCard({
         <View style={[cardStyles.moodDot, dynamicStyles.bg(isGood ? COLORS.good : COLORS.bad)]} />
         <View style={cardStyles.meta}>
           <View style={cardStyles.rowCenter}>
-            <Text style={cardStyles.date}>{formatDisplayDate(entry.date, d.dateLocale)}</Text>
+           <Text style={cardStyles.date}>{formatDisplayDate(entry.date, d)}</Text>
             <DominantEmotionBadge analysis={entry.emotionAnalysis} />
           </View>
           <View style={cardStyles.rowCenter}>
@@ -392,7 +393,7 @@ function EntryModal({
     }
   }, [visible, initialMood, initialContent]);
 
-  const dateLabel = formatDisplayDate(todayDateString(), d.dateLocale);
+  const dateLabel = formatDisplayDate(todayDateString(), d);
 
   const handleSave = () => {
     if (!content.trim()) return;
