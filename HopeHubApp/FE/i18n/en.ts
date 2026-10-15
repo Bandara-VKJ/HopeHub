@@ -187,7 +187,105 @@ profile: {
   saveFailed: "Save failed",
   profileSaved: "Profile saved!",
   networkError: "Network error",
-}
+},
+  diary: {
+    dateLocale: "en-GB",
+    title: "My Diary",
+    allEntries: "All Entries",
+    emptyText: "No entries yet.\nTap + to write your first.",
+
+    moodOverview: "Mood Overview",
+    entriesTotal: (n: number) => `${n} ${n === 1 ? "entry" : "entries"} total`,
+    good: "Good",
+    bad: "Bad",
+    goodPct: (p: number) => `${p}% good`,
+    badPct: (p: number) => `${p}% bad`,
+
+    goodDay: "Good day",
+    toughDay: "Tough day",
+    quickCheckInTag: "Quick check-in",
+
+    newEntry: "New Entry",
+    editEntry: "Edit Entry",
+    writePlaceholder: "Write about your day…",
+    discard: "Discard",
+    saveEntry: "Save Entry",
+    updateEntry: "Update Entry",
+
+    chooseTitle: "How do you want to check in?",
+    writeDiary: "Write a diary",
+    writeDiarySub: "Describe your day in your own words",
+    quickCheckIn: "Quick check-in",
+    quickCheckInSub: "Answer 5 quick questions, no writing needed",
+
+    yourEmotionToday: "Your emotion today",
+    mainEmotionToday: "Your main emotion today",
+    estimateNote: "This is an estimate based on your answers.",
+    seeEmotion: "See my emotion",
+    cancel: "Cancel",
+    done: "Done",
+    nudgeText: "Hey, try to write a diary. It will help much more on your journey.",
+
+    deleteTitle: "Delete entry",
+    deleteConfirm: "Are you sure you want to delete this entry?",
+    delete: "Delete",
+
+    loadFailed: "Failed to load diaries",
+    saveFailed: "Failed to save entry",
+    updateFailed: "Failed to update entry",
+    deleteFailed: "Failed to delete entry",
+    checkInSaveFailed: "Failed to save check-in",
+    loginAgain: "Please log in again to save your check-in",
+
+    emotions: {
+      joy: "joy",
+      love: "love",
+      surprise: "surprise",
+      sadness: "sadness",
+      fear: "fear",
+      anger: "anger",
+      stress: "stress",
+      anxiety: "anxiety",
+    },
+
+    quickContent: {
+      prefix: "Quick check-in — ",
+      feeling: "Feeling",
+      sleep: "Sleep",
+      craving: "Craving",
+      stress: "Stress",
+      trigger: "Trigger",
+    },
+
+    quiz: {
+      feeling: {
+        question: "How are you feeling today?",
+        options: { good: "Good", okay: "Okay", not_good: "Not good" },
+      },
+      sleep: {
+        question: "How well did you sleep last night?",
+        options: { well: "Well", not_enough: "Not enough", barely: "Barely slept" },
+        subs: { well: "7+ hours", not_enough: "5-7 hours", barely: "under 5 hours" },
+      },
+      craving: {
+        question: "Did you experience a strong craving today?",
+        options: { no: "No", little: "A little", strong: "Strong" },
+      },
+      stress: {
+        question: "Did you experience a difficult or stressful situation today?",
+        options: { no: "No", little: "A little", a_lot: "A lot" },
+      },
+      trigger: {
+        question: "Were you exposed to a trigger today?",
+        hint: "e.g. people, places or situations that remind you of substance use",
+        options: { no: "No", yes: "Yes" },
+      },
+    },
+        months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    formatDate: (weekday: string, day: number, month: string, year: number) =>
+      `${weekday}, ${day} ${month} ${year}`,
+  },
 };
 
 export type Translations = typeof en;
