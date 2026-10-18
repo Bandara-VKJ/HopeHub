@@ -221,7 +221,7 @@ export const en = {
       {
         title: "Tell Us About Yourself",
         description:
-          "Answer 16 questions about your background, skills, interests and recovery support needs.",
+          "Answer 5 questions about your background, skills and interests.",
       },
       {
         title: "Discover Your Career Path",
@@ -238,6 +238,7 @@ export const en = {
     enterAnswer: "Enter your answer",
     selectUpTo: (n: number) => `Select up to ${n} options`,
     rateSkills: "Rate each skill from 1 to 5.",
+    skillHeader: "Skill",
 
     profileQuestions: [
       { section: "Demographic Information", question: "What is your age?" },
@@ -246,6 +247,10 @@ export const en = {
       {
         section: "Skills, Interests & Reintegration",
         question: "Which activities do you enjoy most? Select up to three.",
+      },
+      {
+        section: "Skills, Interests & Reintegration",
+        question: "Rate each of your skills from 1 to 5.",
       },
     ],
 

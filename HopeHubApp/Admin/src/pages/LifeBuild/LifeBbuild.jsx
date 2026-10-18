@@ -2,20 +2,67 @@ import React, { useEffect, useState } from "react";
 import "./LifeBbuild.css";
 
 const BASE_URL = "http://localhost:5000";
+
+const INTEREST_OPTIONS = [
+  "Fixing machines or tools",
+  "Working with computers",
+  "Drawing or designing",
+  "Helping people",
+  "Teaching or mentoring",
+  "Managing projects",
+  "Farming or gardening",
+  "Cooking",
+  "Selling products",
+  "Organizing events",
+  "Driving",
+  "Working outdoors",
+];
+
+const SKILL_OPTIONS = [
+  "Communication",
+  "Teamwork",
+  "Problem Solving",
+  "Time Management",
+  "Computer Skills",
+  "Leadership",
+  "Creativity",
+  "Decision Making",
+];
+
+const EDUCATION_OPTIONS = [
+  "No formal education",
+  "Primary",
+  "Secondary",
+  "Diploma",
+  "Degree or higher",
+];
+
 const EMPTY_FORM = {
   title: "",
   company: "",
   location: "",
   type: "Full-time",
   salary: "",
+  contactNumber: "",
   recommendedFor: "",
   description: "",
+  minEducation: "",
 };
 
 function getImageUrl(image) {
   if (!image) return "";
   if (image.startsWith("http") || image.startsWith("data:")) return image;
   return `${BASE_URL}${image}`;
+}
+
+// requiredSkills may come back from Mongo as a plain object or a Map-like object
+function skillEntries(requiredSkills) {
+  if (!requiredSkills) return [];
+  const entries =
+    requiredSkills instanceof Map
+      ? Array.from(requiredSkills.entries())
+      : Object.entries(requiredSkills);
+  return entries.filter(([, level]) => Number(level) > 0);
 }
 
 function JobOpportunities() {
@@ -25,10 +72,11 @@ function JobOpportunities() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [interestTags, setInterestTags] = useState([]);
+  const [requiredSkills, setRequiredSkills] = useState({});
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState("");
   const [selectedJob, setSelectedJob] = useState(null);
-
 
   async function fetchJobs() {
     try {
@@ -60,9 +108,10 @@ function JobOpportunities() {
     };
   }, [preview]);
 
-
   function openModal() {
     setForm(EMPTY_FORM);
+    setInterestTags([]);
+    setRequiredSkills({});
     setImageFile(null);
     setPreview("");
     setIsOpen(true);
@@ -85,6 +134,16 @@ function JobOpportunities() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  function toggleInterest(tag) {
+    setInterestTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  }
+
+  function handleSkillLevel(skill, level) {
+    setRequiredSkills((prev) => ({ ...prev, [skill]: Number(level) }));
+  }
+
   function handleImageChange(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -92,10 +151,16 @@ function JobOpportunities() {
     setImageFile(file);
     setPreview(URL.createObjectURL(file));
   }
+
   async function handleSubmit(e) {
     e.preventDefault();
 
     if (!form.title.trim() || !form.company.trim()) return;
+
+    if (interestTags.length === 0) {
+      window.alert("Select at least one interest tag so this job can be recommended.");
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -105,6 +170,15 @@ function JobOpportunities() {
       Object.entries(form).forEach(([key, value]) => {
         body.append(key, value);
       });
+
+      // Arrays / objects must be sent as JSON strings with FormData.
+      // Only skills with a level above 0 are sent (0 = not required).
+      const skillsToSend = Object.fromEntries(
+        Object.entries(requiredSkills).filter(([, level]) => level > 0)
+      );
+
+      body.append("interestTags", JSON.stringify(interestTags));
+      body.append("requiredSkills", JSON.stringify(skillsToSend));
 
       if (imageFile) {
         body.append("image", imageFile);
@@ -256,6 +330,20 @@ function JobOpportunities() {
               </label>
 
               <label className="form-field">
+                <span>Contact number *</span>
+                <input
+                  type="tel"
+                  name="contactNumber"
+                  value={form.contactNumber}
+                  onChange={handleChange}
+                  placeholder="e.g. 07x xxxxxxx"
+                  pattern="[0-9+\s\-]{9,15}"
+                  title="Enter a valid phone number (9-15 digits, may include +, spaces or -)"
+                  required
+                />
+              </label>
+
+              <label className="form-field">
                 <span>Recommended for</span>
                 <input
                   type="text"
@@ -275,6 +363,89 @@ function JobOpportunities() {
                   rows={4}
                   placeholder="What the role involves, requirements, how to apply..."
                 />
+              </label>
+
+              {/* ---------- RECOMMENDATION FIELDS ---------- */}
+
+              <div className="form-field">
+                <span>Matching interests * (used for recommendations)</span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+                  {INTEREST_OPTIONS.map((tag) => {
+                    const selected = interestTags.includes(tag);
+                    return (
+                      <button
+                        type="button"
+                        key={tag}
+                        onClick={() => toggleInterest(tag)}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: 16,
+                          border: `1px solid ${selected ? "#2CA6A4" : "#cfd8d8"}`,
+                          background: selected ? "#2CA6A4" : "#fff",
+                          color: selected ? "#fff" : "#2b3a3a",
+                          fontSize: 13,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="form-field">
+                <span>Required skill level (0 = not required)</span>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 8,
+                    marginTop: 6,
+                  }}
+                >
+                  {SKILL_OPTIONS.map((skill) => (
+                    <label
+                      key={skill}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        fontSize: 13,
+                      }}
+                    >
+                      <span>{skill}</span>
+                      <select
+                        value={requiredSkills[skill] || 0}
+                        onChange={(e) => handleSkillLevel(skill, e.target.value)}
+                      >
+                        <option value={0}>0</option>
+                        <option value={1}>1</option>
+                        <option value={2}>2</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4</option>
+                        <option value={5}>5</option>
+                      </select>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <label className="form-field">
+                <span>Minimum education</span>
+                <select
+                  name="minEducation"
+                  value={form.minEducation}
+                  onChange={handleChange}
+                >
+                  <option value="">No requirement</option>
+                  {EDUCATION_OPTIONS.map((level) => (
+                    <option key={level} value={level}>
+                      {level}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <div className="modal-actions">
@@ -321,7 +492,16 @@ function JobOpportunities() {
             <div className="job-card-tags">
               <span className="job-tag">{selectedJob.type}</span>
               {selectedJob.salary && <span className="job-tag">{selectedJob.salary}</span>}
+              {selectedJob.minEducation && (
+                <span className="job-tag">Min: {selectedJob.minEducation}</span>
+              )}
             </div>
+
+            {selectedJob.contactNumber && (
+              <p className="job-card-company">
+                Contact: <a href={`tel:${selectedJob.contactNumber}`}>{selectedJob.contactNumber}</a>
+              </p>
+            )}
 
             {selectedJob.description && (
               <p className="job-card-desc">{selectedJob.description}</p>
@@ -331,6 +511,32 @@ function JobOpportunities() {
               <p className="job-card-recommend">
                 Good fit for: {selectedJob.recommendedFor}
               </p>
+            )}
+
+            {selectedJob.interestTags && selectedJob.interestTags.length > 0 && (
+              <>
+                <p className="job-card-company">Matching interests</p>
+                <div className="job-card-tags">
+                  {selectedJob.interestTags.map((tag) => (
+                    <span key={tag} className="job-tag">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {skillEntries(selectedJob.requiredSkills).length > 0 && (
+              <>
+                <p className="job-card-company">Required skills</p>
+                <div className="job-card-tags">
+                  {skillEntries(selectedJob.requiredSkills).map(([skill, level]) => (
+                    <span key={skill} className="job-tag">
+                      {skill}: {level}/5
+                    </span>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
