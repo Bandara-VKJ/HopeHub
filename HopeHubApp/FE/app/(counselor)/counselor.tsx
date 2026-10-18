@@ -4,6 +4,8 @@ import {
   StatusBar,
   ActivityIndicator,
   Platform,
+  BackHandler,
+  StyleSheet,
 } from "react-native";
 
 import { CounselorStyles as styles } from "./counselorStyles";
@@ -21,369 +23,12 @@ import {
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { io } from "socket.io-client";
 import { ngrokFetch } from "@/utill/ngrokFetch";
 
 import * as React from "react";
-import { forwardRef, useMemo, useRef } from "react";
-import {
-  Text as NativeText,
-  TextInput as NativeTextInput,
-  Image as NativeImage,
-  TouchableOpacity as NativeTouchableOpacity,
-  Alert as NativeAlert,
-} from "react-native";
-import { useLanguage } from "@/i18n/LanguageContext";
-
-
-
-// UI-only translations. Backend/session/filter values remain English.
-const sinhala: Record<string, string> = {
-  "Error": "දෝෂයකි",
-  "Success": "සාර්ථකයි",
-  "Network Error": "ජාල දෝෂයකි",
-  "Network error": "ජාල දෝෂයකි",
-  "OK": "හරි",
-  "Yes": "ඔව්",
-  "No": "නැත",
-  "Cancel": "අවලංගු කරන්න",
-  "Confirm": "තහවුරු කරන්න",
-  "Counselor": "උපදේශක",
-  "Patient": "රෝගියා",
-  "A patient": "රෝගියෙකු",
-  "No email": "විද්‍යුත් තැපෑලක් නොමැත",
-  "Welcome Back 👋": "නැවත සාදරයෙන් පිළිගනිමු 👋",
-  "Professional Counselor": "වෘත්තීය උපදේශක",
-  "Mental Health & Wellness Counselor": "මානසික සෞඛ්‍ය සහ යහපැවැත්ම පිළිබඳ උපදේශක",
-  "Rating": "ඇගයීම",
-  "Rating ·": "ඇගයීම ·",
-  "Reviews": "සමාලෝචන",
-  "reviews)": "සමාලෝචන)",
-  "Current Status": "වත්මන් තත්ත්වය",
-  "● Available": "● ලබා ගත හැක",
-  "● Busy": "● කාර්යබහුලයි",
-  "Available": "ලබා ගත හැක",
-  "Available Now": "දැන් ලබා ගත හැක",
-  "Available Today": "අද ලබා ගත හැක",
-  "Busy": "කාර්යබහුලයි",
-  "Set Busy": "කාර්යබහුල ලෙස සකසන්න",
-  "Set Available": "ලබා ගත හැකි ලෙස සකසන්න",
-  "Status Updated": "තත්ත්වය යාවත්කාලීන කරන ලදී",
-  "You are now Available.": "ඔබ දැන් සැසි සඳහා ලබා ගත හැක.",
-  "You are now Busy.": "ඔබ දැන් කාර්යබහුලයි.",
-  "Booking Requests": "සැසි ඉල්ලීම්",
-  "pending request": "පොරොත්තු ඉල්ලීම්",
-  "s": "",
-  "No Booking Requests": "සැසි ඉල්ලීම් නොමැත",
-  "New patient session requests will appear here.": "නව රෝගී සැසි ඉල්ලීම් මෙහි දිස්වනු ඇත.",
-  "Pending": "පොරොත්තුවෙන්",
-  "Confirmed": "තහවුරු කරන ලදී",
-  "Cancelled": "අවලංගු කරන ලදී",
-  "Confirm Session": "සැසිය තහවුරු කරන්න",
-  "Cancel Session": "සැසිය අවලංගු කරන්න",
-  "Open Chat": "කතාබහ විවෘත කරන්න",
-  "Finished Session": "අවසන් වූ සැසිය",
-  "Session Finished": "සැසිය අවසන් වී ඇත",
-  "Waiting for counselor confirmation.": "උපදේශකවරයාගේ තහවුරු කිරීම බලාපොරොත්තුවෙන්.",
-  "Session confirmed.": "සැසිය තහවුරු කරන ලදී.",
-  "Session cancelled.": "සැසිය අවලංගු කරන ලදී.",
-  "Chat": "කතාබහ",
-  "Voice": "හඬ",
-  "Video": "වීඩියෝ",
-  "Voice Call": "හඬ ඇමතුම",
-  "Video Call": "වීඩියෝ ඇමතුම",
-  "Sessions": "සැසි",
-  "My Profile Details": "මගේ පැතිකඩ විස්තර",
-  "Email": "විද්‍යුත් තැපෑල",
-  "Mobile": "ජංගම දුරකථනය",
-  "Title": "පදවි නාමය",
-  "Specialty": "විශේෂඥතාව",
-  "Experience": "පළපුරුද්ද",
-  "Availability": "ලබා ගත හැකි වේලාව",
-  "Quick Actions": "ඉක්මන් ක්‍රියාමාර්ග",
-  "Schedule": "කාලසටහන",
-  "Chats": "කතාබස්",
-  "Reports": "වාර්තා",
-  "Patients": "රෝගීන්",
-  "Patient Profile": "රෝගී පැතිකඩ",
-  "View patient details": "රෝගී විස්තර බලන්න",
-  "My Schedule": "මගේ කාලසටහන",
-  "All your scheduled counseling sessions": "ඔබේ නියමිත සියලු උපදේශන සැසි",
-  "My Chats": "මගේ කතාබස්",
-  "Active and previous counseling chats": "සක්‍රිය සහ පෙර උපදේශන කතාබස්",
-  "Patient Reports": "රෝගී වාර්තා",
-  "Create and manage patient reports": "රෝගී වාර්තා සාදන්න සහ කළමනාකරණය කරන්න",
-  "My Patients": "මගේ රෝගීන්",
-  "Patients assigned to your counseling sessions": "ඔබේ උපදේශන සැසි සඳහා යොමු කළ රෝගීන්",
-  "View detailed patient information": "විස්තරාත්මක රෝගී තොරතුරු බලන්න",
-  "No Scheduled Sessions": "නියමිත සැසි නොමැත",
-  "Your scheduled counseling sessions will appear here.": "ඔබේ නියමිත උපදේශන සැසි මෙහි දිස්වනු ඇත.",
-  "No Chats Yet": "තවම කතාබස් නොමැත",
-  "Confirmed or previous counseling sessions will appear here.": "තහවුරු කළ හෝ පෙර උපදේශන සැසි මෙහි දිස්වනු ඇත.",
-  "Select Patient": "රෝගියෙකු තෝරන්න",
-  "No patients available.": "රෝගීන් නොමැත.",
-  "Counseling Report": "උපදේශන වාර්තාව",
-  "Write your counseling session report...": "ඔබේ උපදේශන සැසි වාර්තාව ලියන්න...",
-  "Create Report": "වාර්තාව සාදන්න",
-  "Previous Reports": "පෙර වාර්තා",
-  "No Patients": "රෝගීන් නොමැත",
-  "Patients with your counseling sessions will appear here.": "ඔබේ උපදේශන සැසිවලට සහභාගී වන රෝගීන් මෙහි දිස්වනු ඇත.",
-  "Chat with Patient": "රෝගියා සමඟ කතාබහ කරන්න",
-  "Last session:": "අවසන් සැසිය:",
-  "Full Name": "සම්පූර්ණ නම",
-  "Last Session": "අවසන් සැසිය",
-  "Session Time": "සැසි වේලාව",
-  "Session Type": "සැසි වර්ගය",
-  "Booking Status": "වෙන්කිරීමේ තත්ත්වය",
-  "Logout": "ගිණුමෙන් ඉවත් වන්න",
-  "Are you sure you want to logout?": "ඔබට ගිණුමෙන් ඉවත් වීමට අවශ්‍ය බව විශ්වාසද?",
-  "\"Healing takes time, and asking for help is a courageous step.\"": "“සුවය ලැබීමට කාලය ගත වන අතර, උදව් ඉල්ලා සිටීම ධෛර්ය සම්පන්න පියවරකි.”",
-  "Loading counselor profile...": "උපදේශක පැතිකඩ පූරණය වෙමින්...",
-  "Counselor profile not found.": "උපදේශක පැතිකඩ සොයාගත නොහැක.",
-  "Login Again": "නැවත පිවිසෙන්න",
-  "Login Error": "පිවිසුම් දෝෂයකි",
-  "Counselor information is incomplete. Please login again.": "උපදේශක තොරතුරු අසම්පූර්ණයි. කරුණාකර නැවත පිවිසෙන්න.",
-  "Unable to load counselor profile.": "උපදේශක පැතිකඩ පූරණය කළ නොහැක.",
-  "Failed to load bookings.": "සැසි වෙන්කිරීම් පූරණය කිරීම අසාර්ථකයි.",
-  "Could not load bookings. Please check your backend and ngrok connection.": "සැසි වෙන්කිරීම් පූරණය කළ නොහැක. කරුණාකර සේවාදායක සම්බන්ධතාව පරීක්ෂා කරන්න.",
-  "Invalid Booking": "වලංගු නොවන වෙන්කිරීමකි",
-  "Only pending bookings can be confirmed.": "තහවුරු කළ හැක්කේ පොරොත්තු වෙන්කිරීම් පමණි.",
-  "Failed to confirm booking.": "වෙන්කිරීම තහවුරු කිරීම අසාර්ථකයි.",
-  "The booking has been confirmed successfully.": "වෙන්කිරීම සාර්ථකව තහවුරු කරන ලදී.",
-  "Could not confirm the booking.": "වෙන්කිරීම තහවුරු කළ නොහැක.",
-  "Already Cancelled": "දැනටමත් අවලංගු කර ඇත",
-  "This booking has already been cancelled.": "මෙම වෙන්කිරීම දැනටමත් අවලංගු කර ඇත.",
-  "Failed to cancel booking.": "වෙන්කිරීම අවලංගු කිරීම අසාර්ථකයි.",
-  "The booking has been cancelled successfully.": "වෙන්කිරීම සාර්ථකව අවලංගු කරන ලදී.",
-  "Could not cancel the booking.": "වෙන්කිරීම අවලංගු කළ නොහැක.",
-  "Chat Unavailable": "කතාබහ ලබා ගත නොහැක",
-  "You can chat with the patient only after confirming the booking.": "රෝගියා සමඟ කතාබහ කළ හැක්කේ වෙන්කිරීම තහවුරු කිරීමෙන් පසුව පමණි.",
-  "Chat Error": "කතාබස් දෝෂයකි",
-  "Booking ID is missing.": "වෙන්කිරීමේ හැඳුනුම නොමැත.",
-  "Counselor ID was not found. Please login again.": "උපදේශක හැඳුනුම සොයාගත නොහැක. කරුණාකර නැවත පිවිසෙන්න.",
-  "Voice Unavailable": "හඬ සැසිය ලබා ගත නොහැක",
-  "You can start a voice session only after confirming the booking.": "හඬ සැසියක් ආරම්භ කළ හැක්කේ වෙන්කිරීම තහවුරු කිරීමෙන් පසුව පමණි.",
-  "Voice Error": "හඬ සැසි දෝෂයකි",
-  "Video Unavailable": "වීඩියෝ සැසිය ලබා ගත නොහැක",
-  "You can start a video session only after confirming the booking.": "වීඩියෝ සැසියක් ආරම්භ කළ හැක්කේ වෙන්කිරීම තහවුරු කිරීමෙන් පසුව පමණි.",
-  "Video Error": "වීඩියෝ සැසි දෝෂයකි",
-  "Failed to update availability.": "ලබා ගත හැකි තත්ත්වය යාවත්කාලීන කිරීම අසාර්ථකයි.",
-  "Could not update your availability. Please try again.": "ඔබේ ලබා ගත හැකි තත්ත්වය යාවත්කාලීන කළ නොහැක. නැවත උත්සාහ කරන්න.",
-  "Please select a patient first.": "කරුණාකර පළමුව රෝගියෙකු තෝරන්න.",
-  "Report Required": "වාර්තාවක් අවශ්‍යයි",
-  "Please enter the counseling report.": "කරුණාකර උපදේශන වාර්තාව ඇතුළත් කරන්න.",
-  "Report Created": "වාර්තාව සාදන ලදී",
-  "Could not save the report.": "වාර්තාව සුරැකීමට නොහැකි විය.",
-  "Logout failed. Please try again.": "ගිණුමෙන් ඉවත් වීම අසාර්ථකයි. නැවත උත්සාහ කරන්න.",
-  "🔔 New Booking": "🔔 නව සැසි වෙන්කිරීමක්",
-  "View Booking": "වෙන්කිරීම බලන්න",
-  "Date:": "දිනය:",
-  "Time:": "වේලාව:",
-  "Type:": "වර්ගය:",
-  "Counselor Profile": "උපදේශක පැතිකඩ",
-  "Professional Details": "වෘත්තීය විස්තර",
-  "Book Session": "සැසියක් වෙන්කරන්න",
-  "Currently Busy": "දැනට කාර්යබහුලයි",
-  "All Counselors": "සියලු උපදේශකවරු",
-  "Top Rated": "ඉහළම ඇගයීම් ලැබූ",
-  "Booking Confirmation": "වෙන්කිරීම තහවුරු කිරීම",
-  "Select Date": "දිනය තෝරන්න",
-  "Select Time": "වේලාව තෝරන්න",
-  "Select a date": "දිනයක් තෝරන්න",
-  "Select a time": "වේලාවක් තෝරන්න",
-  "Please select a date first.": "කරුණාකර පළමුව දිනයක් තෝරන්න.",
-  "Booked": "වෙන්කර ඇත",
-  "Your Session": "ඔබේ සැසිය",
-  "Selected Session": "තෝරාගත් සැසිය",
-  "Confirm Book Session": "සැසි වෙන්කිරීම තහවුරු කරන්න",
-  "Your booking will initially be marked as Pending. The counselor must confirm it before the session is officially confirmed.": "ඔබේ වෙන්කිරීම මුලින් පොරොත්තු තත්ත්වයේ සටහන් වේ. සැසිය නිල වශයෙන් තහවුරු වීමට උපදේශකවරයා එය තහවුරු කළ යුතුය.",
-  "SESSION STARTS IN": "සැසිය ආරම්භ වීමට",
-  "HR": "පැය",
-  "MIN": "මිනිත්තු",
-  "SEC": "තත්පර",
-  "Session time has arrived": "සැසි වේලාව පැමිණ ඇත",
-  "YOUR COUNSELING SUPPORT": "ඔබේ උපදේශන සහාය",
-  "Connect with Counselors": "උපදේශකවරුන් සමඟ සම්බන්ධ වන්න",
-  "Professional Support Available": "වෘත්තීය සහාය ලබා ගත හැක",
-  "Connect with counselors who specialize in addiction recovery. All conversations are confidential and secure.": "ඇබ්බැහිවීමෙන් සුවය ලැබීම පිළිබඳ විශේෂඥ උපදේශකවරුන් සමඟ සම්බන්ධ වන්න. සියලු කතාබස් රහසිගත සහ ආරක්ෂිතයි.",
-  "Your Counselors": "ඔබේ උපදේශකවරු",
-  "Your selected recovery support counselors": "ඔබ තෝරාගත් සුවය ලැබීමේ සහාය උපදේශකවරු",
-  "SELECTED": "තෝරාගෙන ඇත",
-  "Explore Other Counselors": "වෙනත් උපදේශකවරු සොයන්න",
-  "Find another counselor who matches your support needs.": "ඔබේ සහාය අවශ්‍යතාවලට ගැලපෙන වෙනත් උපදේශකවරයෙකු සොයන්න.",
-  "other counselor": "වෙනත් උපදේශකවරු",
-  "found": "හමු විය",
-  "No counselors found": "උපදේශකවරු හමු නොවීය",
-  "No counselors are currently available. Please refresh the page or try again later.": "දැනට උපදේශකවරු ලබා ගත නොහැක. පිටුව නැවුම් කරන්න හෝ පසුව නැවත උත්සාහ කරන්න.",
-  "Need Immediate Help?": "වහාම උදව් අවශ්‍යද?",
-  "If you're in crisis, contact your local emergency service or a qualified crisis professional immediately.": "ඔබ අර්බුදයක සිටී නම්, වහාම ඔබේ ප්‍රදේශයේ හදිසි සේවාවක් හෝ සුදුසුකම් ලත් අර්බුද සහාය වෘත්තිකයෙකු අමතන්න.",
-  "Loading counselors...": "උපදේශකවරු පූරණය වෙමින්...",
-  "AI": "කෘත්‍රිම බුද්ධිය",
-  "Counselor Busy": "උපදේශකවරයා කාර්යබහුලයි",
-  "Counselor ID is missing.": "උපදේශක හැඳුනුම නොමැත.",
-  "This counselor is currently unavailable. Please choose another counselor.": "මෙම උපදේශකවරයා දැනට ලබා ගත නොහැක. කරුණාකර වෙනත් උපදේශකවරයෙකු තෝරන්න.",
-  "Counselor information is missing.": "උපදේශක තොරතුරු නොමැත.",
-  "Please select a session date.": "කරුණාකර සැසි දිනයක් තෝරන්න.",
-  "Please select a session time.": "කරුණාකර සැසි වේලාවක් තෝරන්න.",
-  "Time Unavailable": "වේලාව ලබා ගත නොහැක",
-  "This time slot has already been booked. Please select another time.": "මෙම වේලාව දැනටමත් වෙන්කර ඇත. කරුණාකර වෙනත් වේලාවක් තෝරන්න.",
-  "Login Required": "පිවිසීම අවශ්‍යයි",
-  "Your user ID was not found. Please logout and login again.": "ඔබේ පරිශීලක හැඳුනුම සොයාගත නොහැක. කරුණාකර ඉවත් වී නැවත පිවිසෙන්න.",
-  "Existing Booking": "පවතින වෙන්කිරීමක්",
-  "Booking Failed": "වෙන්කිරීම අසාර්ථකයි",
-  "Could not parse booking response.": "වෙන්කිරීමේ ප්‍රතිචාරය කියවීමට නොහැකි විය.",
-  "Booking Error": "වෙන්කිරීමේ දෝෂයකි",
-  "The server did not return a valid booking.": "සේවාදායකය වලංගු වෙන්කිරීමක් ලබා දී නොමැත.",
-  "Booking Submitted": "වෙන්කිරීම ඉදිරිපත් කරන ලදී",
-  "Your counseling session has been booked successfully. Status: Pending The counselor must confirm the session before it becomes confirmed.": "ඔබේ උපදේශන සැසිය සාර්ථකව වෙන්කර ඇත.\n\nතත්ත්වය: පොරොත්තුවෙන්\n\nසැසිය තහවුරු වීමට උපදේශකවරයා එය තහවුරු කළ යුතුය.",
-  "Could not connect to the server. Please make sure the backend and ngrok are running.": "සේවාදායකයට සම්බන්ධ විය නොහැක. කරුණාකර සේවාදායකය සහ ngrok ක්‍රියාත්මක බව තහවුරු කරන්න.",
-  "Session Unavailable": "සැසිය ලබා ගත නොහැක",
-  "The booking ID could not be found. Please refresh the Support page and try again.": "වෙන්කිරීමේ හැඳුනුම සොයාගත නොහැක. සහාය පිටුව නැවුම් කර නැවත උත්සාහ කරන්න.",
-  "Account Created Successfully": "ගිණුම සාර්ථකව සාදන ලදී",
-  "Your counselor account has been created successfully. Please wait for HopeHub System approval before logging in.": "ඔබේ උපදේශක ගිණුම සාර්ථකව සාදන ලදී. පිවිසීමට පෙර HopeHub පද්ධතියේ අනුමැතිය ලැබෙන තෙක් රැඳී සිටින්න.",
-  "Please allow photo library access to select a counselor image.": "උපදේශක ඡායාරූපයක් තෝරා ගැනීමට ඡායාරූප ගබඩාවට ප්‍රවේශ වීමට අවසර දෙන්න.",
-  "Unable to select an image. Please try again.": "ඡායාරූපයක් තෝරාගත නොහැක. කරුණාකර නැවත උත්සාහ කරන්න.",
-  "Change counselor image": "උපදේශක ඡායාරූපය වෙනස් කරන්න",
-  "Select counselor image": "උපදේශක ඡායාරූපයක් තෝරන්න",
-  "Select counselor image (optional)": "උපදේශක ඡායාරූපයක් තෝරන්න (අත්‍යවශ්‍ය නොවේ)",
-  "Selected counselor image": "තෝරාගත් උපදේශක ඡායාරූපය",
-  "Counselor profile photo": "උපදේශක පැතිකඩ ඡායාරූපය",
-  "active": "සක්‍රිය",
-  "reports": "වාර්තා",
-  "patients": "රෝගීන්",
-  "sessions": "සැසි",
-  "Sun": "ඉරිදා",
-  "Mon": "සඳුදා",
-  "Tue": "අඟහරුවාදා",
-  "Wed": "බදාදා",
-  "Thu": "බ්‍රහස්පතින්දා",
-  "Fri": "සිකුරාදා",
-  "Sat": "සෙනසුරාදා",
-  "Jan": "ජනවාරි",
-  "Feb": "පෙබරවාරි",
-  "Mar": "මාර්තු",
-  "Apr": "අප්‍රේල්",
-  "May": "මැයි",
-  "Jun": "ජූනි",
-  "Jul": "ජූලි",
-  "Aug": "අගෝස්තු",
-  "Sep": "සැප්තැම්බර්",
-  "Oct": "ඔක්තෝබර්",
-  "Nov": "නොවැම්බර්",
-  "Dec": "දෙසැම්බර්",
-  "AM": "පෙ.ව.",
-  "PM": "ප.ව."
-};
-
-function translateCounselorText(value: string, language: string): string {
-  if (language !== "si" || !value.trim()) return value;
-  const key = value.replace(/\s+/g, " ").trim();
-  if (Object.prototype.hasOwnProperty.call(sinhala, key)) {
-    return (value.match(/^\s*/)?.[0] || "") + sinhala[key] + (value.match(/\s*$/)?.[0] || "");
-  }
-  let match = key.match(/^Confirm the session with (.+)\?$/);
-  if (match) return match[1] + " සමඟ සැසිය තහවුරු කරන්නද?";
-  match = key.match(/^Cancel the session with (.+)\?$/);
-  if (match) return match[1] + " සමඟ සැසිය අවලංගු කරන්නද?";
-  match = key.match(/^The report for (.+) has been saved successfully\.$/);
-  if (match) return match[1] + " සඳහා වාර්තාව සාර්ථකව සුරකින ලදී.";
-  match = key.match(/^You already have a (\w+) session with this counselor on (.+) at (.+)\.$/);
-  if (match) {
-    const status = ({ pending: "පොරොත්තු", confirmed: "තහවුරු කළ", cancelled: "අවලංගු කළ" } as Record<string, string>)[match[1]] || match[1];
-    return "ඔබට මෙම උපදේශකවරයා සමඟ " + match[2] + " දින " + match[3] + " වේලාවට " + status + " සැසියක් දැනටමත් ඇත.";
-  }
-  match = key.match(/^Server returned (\d+)\.$/);
-  if (match) return "සේවාදායකය ලබා දුන් තත්ත්ව කේතය: " + match[1] + ".";
-  // Notification template: keep patient identity and date/time values untouched.
-  const booked = value.indexOf(" has booked a counseling session.");
-  if (booked >= 0) {
-    return value.slice(0, booked) + " උපදේශන සැසියක් වෙන්කර ඇත." +
-      value.slice(booked + " has booked a counseling session.".length)
-        .replace(/Date:/g, "දිනය:").replace(/Time:/g, "වේලාව:")
-        .replace(/Type: (Chat|Video|Voice)/g, (_, kind) => "වර්ගය: " + sinhala[kind]);
-  }
-  if (/^\d{1,2}:\d{2}\s+(AM|PM)$/.test(key)) {
-    return value.replace(/\bAM\b/, "පෙ.ව.").replace(/\bPM\b/, "ප.ව.");
-  }
-  return value;
-}
-
-function localizeChildren(children: React.ReactNode, language: string): React.ReactNode {
-  if (typeof children === "string") return translateCounselorText(children, language);
-  if (Array.isArray(children)) return children.map(child => localizeChildren(child, language));
-  return children;
-}
-
-type TextProps = React.ComponentProps<typeof NativeText> & { translateText?: boolean };
-const Text = forwardRef<React.ElementRef<typeof NativeText>, TextProps>(
-  ({ children, accessibilityLabel, accessibilityHint, translateText = true, ...props }, ref) => {
-    const { language } = useLanguage();
-    return (
-      <NativeText {...props} ref={ref}
-        accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
-        accessibilityHint={accessibilityHint ? translateCounselorText(accessibilityHint, language) : accessibilityHint}
-      >
-        {translateText ? localizeChildren(children, language) : children}
-      </NativeText>
-    );
-  }
-);
-Text.displayName = "CounselorLocalizedText";
-
-const TextInput = forwardRef<React.ElementRef<typeof NativeTextInput>, React.ComponentProps<typeof NativeTextInput>>(
-  ({ placeholder, accessibilityLabel, ...props }, ref) => {
-    const { language } = useLanguage();
-    return <NativeTextInput {...props} ref={ref}
-      placeholder={placeholder ? translateCounselorText(placeholder, language) : placeholder}
-      accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
-    />;
-  }
-);
-TextInput.displayName = "CounselorLocalizedTextInput";
-
-const Image = forwardRef<React.ElementRef<typeof NativeImage>, React.ComponentProps<typeof NativeImage>>(
-  ({ accessibilityLabel, ...props }, ref) => {
-    const { language } = useLanguage();
-    return <NativeImage {...props} ref={ref}
-      accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
-    />;
-  }
-);
-Image.displayName = "CounselorLocalizedImage";
-
-const TouchableOpacity = forwardRef<React.ElementRef<typeof NativeTouchableOpacity>, React.ComponentProps<typeof NativeTouchableOpacity>>(
-  ({ accessibilityLabel, accessibilityHint, ...props }, ref) => {
-    const { language } = useLanguage();
-    return <NativeTouchableOpacity {...props} ref={ref}
-      accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
-      accessibilityHint={accessibilityHint ? translateCounselorText(accessibilityHint, language) : accessibilityHint}
-    />;
-  }
-);
-TouchableOpacity.displayName = "CounselorLocalizedTouchableOpacity";
-
-// A stable object with a live language reference also localizes socket callbacks.
-function useLocalizedAlert() {
-  const { language } = useLanguage();
-  const currentLanguage = useRef(language);
-  currentLanguage.current = language;
-  return useMemo(() => ({
-    alert: (...args: Parameters<typeof NativeAlert.alert>) => {
-      const [title, message, buttons, options] = args;
-      const translate = (text: string) => translateCounselorText(text, currentLanguage.current);
-      NativeAlert.alert(
-        translate(title),
-        message ? translate(message) : message,
-        buttons?.map(button => ({ ...button, text: button.text ? translate(button.text) : button.text })),
-        options
-      );
-    },
-  }), []);
-}
-
-
-import LanguageToggle from "@/components/LanguageToggle";
+import { Text, TextInput, Image, TouchableOpacity, Alert } from "react-native";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -554,7 +199,6 @@ function useCounselorPhoto(remoteUri: string | null): string | null {
 }
 
 export default function CounselorScreen() {
-  const Alert = useLocalizedAlert();
 
   const [
     counselor,
@@ -1806,6 +1450,28 @@ const toggleAvailability =
       );
     };
 
+
+  const handleBack = React.useCallback(() => {
+    if (quickAction !== null) {
+      if (reportPatient && (quickAction === "profiles" || quickAction === "reports")) {
+        setReportPatient(null);
+        return;
+      }
+      setQuickAction(null);
+      return;
+    }
+    if (router.canGoBack()) router.back();
+    else router.replace({ pathname: "/(auth)/Login/login", params: { role: "counselor" } });
+  }, [quickAction, reportPatient]);
+
+  useFocusEffect(React.useCallback(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      handleBack();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [handleBack]));
+
   if (loading) {
 
     return (
@@ -1814,6 +1480,7 @@ const toggleAvailability =
           styles.loadingContainer
         }
       >
+        <PageBack onPress={handleBack} dark />
 
         <ActivityIndicator
           size="large"
@@ -1840,6 +1507,7 @@ const toggleAvailability =
           styles.loadingContainer
         }
       >
+        <PageBack onPress={handleBack} dark />
 
         <Text
           style={
@@ -1900,9 +1568,7 @@ const toggleAvailability =
       }
     >
 
-      <View style={{ alignItems: "flex-end", paddingHorizontal: 16, paddingTop: 8, backgroundColor: "#2CA6A4" }}>
-        <LanguageToggle />
-      </View>
+      <View style={backStyles.bar}><PageBack onPress={handleBack} /></View>
 
       <StatusBar
         barStyle="light-content"
@@ -2334,7 +2000,7 @@ const toggleAvailability =
                         style={styles.flexOneML12}
                       >
 
-                        <Text translateText={false}
+                        <Text
                           style={
                             styles.patientName
                           }
@@ -3089,6 +2755,7 @@ const toggleAvailability =
               <View
                 style={styles.overlayHeaderRow}
               >
+                <PageBack onPress={handleBack} dark />
 
                 <View
                   style={styles.flexOne}
@@ -3207,7 +2874,7 @@ const toggleAvailability =
                                 style={styles.flexOneML12}
                               >
 
-                                <Text translateText={false}
+                                <Text
                                   style={styles.cardPatientName}
                                 >
                                   {patientName}
@@ -3371,7 +3038,7 @@ const toggleAvailability =
                                   style={styles.flexOneML12}
                                 >
 
-                                  <Text translateText={false}
+                                  <Text
                                     style={styles.cardPatientName}
                                   >
                                     {patientName}
@@ -3491,7 +3158,7 @@ const toggleAvailability =
                               style={styles.flexOneML12}
                             >
 
-                              <Text translateText={false}
+                              <Text
                                 style={styles.boldDark333}
                               >
                                 {getPatientName(booking)}
@@ -3588,7 +3255,7 @@ const toggleAvailability =
                             style={styles.previousReportCard}
                           >
 
-                            <Text translateText={false}
+                            <Text
                               style={styles.boldDark333}
                             >
                               {report.patientName}
@@ -3600,7 +3267,7 @@ const toggleAvailability =
                               {report.sessionDate}
                             </Text>
 
-                            <Text translateText={false}
+                            <Text
                               style={styles.previousReportText}
                             >
                               {report.report}
@@ -3691,7 +3358,7 @@ const toggleAvailability =
                                 style={styles.flexOneML13}
                               >
 
-                                <Text translateText={false}
+                                <Text
                                   style={styles.patientCardName}
                                 >
                                   {patientName}
@@ -3840,7 +3507,7 @@ const toggleAvailability =
                     </View>
 
                     <View style={styles.flexOneML12}>
-                      <Text translateText={false} style={styles.boldDark333}>
+                      <Text style={styles.boldDark333}>
                         {getPatientName(booking)}
                       </Text>
 
@@ -3882,7 +3549,7 @@ const toggleAvailability =
                   </View>
 
                   <View style={styles.flexOneML12}>
-                    <Text translateText={false}
+                    <Text
                       style={styles.patientProfileName}
                     >
                       {getPatientName(reportPatient)}
@@ -4061,3 +3728,25 @@ function InfoRow({
     </View>
   );
 }
+
+function PageBack({ onPress, dark = false, disabled = false }: {
+  onPress: () => void;
+  dark?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <TouchableOpacity onPress={onPress} disabled={disabled}
+      accessibilityRole="button" accessibilityLabel="Go back"
+      style={[backStyles.button, disabled && backStyles.disabled]}>
+      <Ionicons name="chevron-back" size={20} color={dark ? "#1A3A3A" : "#FFFFFF"} />
+      <Text style={[backStyles.label, { color: dark ? "#1A3A3A" : "#FFFFFF" }]}>Back</Text>
+    </TouchableOpacity>
+  );
+}
+
+const backStyles = StyleSheet.create({
+  bar: { backgroundColor: "#2CA6A4", paddingHorizontal: 12, paddingTop: 4 },
+  button: { minHeight: 44, minWidth: 44, flexDirection: "row", alignItems: "center", alignSelf: "flex-start", paddingHorizontal: 6 },
+  label: { fontSize: 13, fontWeight: "600" },
+  disabled: { opacity: 0.45 },
+});

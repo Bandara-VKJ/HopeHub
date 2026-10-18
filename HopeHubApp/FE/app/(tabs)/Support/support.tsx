@@ -12,12 +12,14 @@ import {
   Modal,
   SafeAreaView,
   Platform,
+  BackHandler,
+  StyleSheet,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import {
   styles,
@@ -42,16 +44,6 @@ import { useLanguage } from "@/i18n/LanguageContext";
 
 // UI-only translations. Backend/session/filter values remain English.
 const sinhala: Record<string, string> = {
-  "Counseling languages": "උපදේශන සැසි පවත්වන භාෂා",
-  "Sinhala": "සිංහල",
-  "English": "ඉංග්‍රීසි",
-  "Not provided; confirm with the counselor.": "සඳහන් කර නොමැත; උපදේශකවරයා සමඟ තහවුරු කරන්න.",
-  "Marked available; confirm a session time.": "ලබා ගත හැකි ලෙස සටහන් කර ඇත; සැසි වේලාව තහවුරු කරන්න.",
-  "Currently busy; you can browse this profile.": "දැනට කාර්යබහුලයි; ඔබට පැතිකඩ බැලිය හැක.",
-  "Suggestions for your support needs": "ඔබේ සහාය අවශ්‍යතා සඳහා යෝජනා",
-  "Recommendations unavailable; showing approved counselors.": "නිර්දේශ ලබා ගත නොහැක; අනුමත උපදේශකවරු පෙන්වයි.",
-  "Consider contacting a counselor to discuss your support needs.": "ඔබේ සහාය අවශ්‍යතා සාකච්ඡා කිරීමට උපදේශකවරයෙකු ඇමතීම සලකා බලන්න.",
-  "Choose a counselor to discuss your support needs.": "ඔබේ සහාය අවශ්‍යතා සාකච්ඡා කිරීමට උපදේශකවරයෙකු තෝරන්න.",
   "Error": "දෝෂයකි",
   "Success": "සාර්ථකයි",
   "Network Error": "ජාල දෝෂයකි",
@@ -414,6 +406,134 @@ function useLocalizedAlert() {
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
+type RatingSession = {
+  _id: string;
+  counselorName: string;
+  sessionDate: string;
+  sessionTime: string;
+  score?: number;
+};
+
+const RatingSummary = ({ counselor, profile = false }: {
+  counselor: Counselor; profile?: boolean;
+}) => {
+  const summary = counselor.ratingSummary;
+  return (
+    <View style={{ alignItems: profile ? "center" : "flex-start", marginTop: 6, marginBottom: 8 }}>
+      {profile && <Text style={{ fontWeight: "600", color: "#466363", marginBottom: 5 }}>Patient ratings</Text>}
+      {counselor.ratingsUnavailable ? <Text style={{ color: "#667777" }}>Ratings unavailable</Text>
+        : !summary?.count ? <Text style={{ color: "#667777", fontSize: 12 }}>No ratings yet</Text>
+        : <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <Ionicons key={value} name={summary.average >= value ? "star" : summary.average >= value - 0.5 ? "star-half" : "star-outline"}
+                size={profile ? 20 : 14} color="#B87500" accessible={false} />
+            ))}
+            <Text style={{ marginLeft: 6, fontWeight: "700", color: "#354B4B" }}>{summary.average.toFixed(1)} / 5</Text>
+            <Text style={{ marginLeft: 5, color: "#667777", fontSize: 12 }}>({summary.count} <Text>ratings</Text>)</Text>
+          </View>}
+    </View>
+  );
+};
+
+function RatingSessionRow({ session, onSaved }: { session: RatingSession; onSaved: () => Promise<void> }) {
+  const Alert = useLocalizedAlert();
+  const [score, setScore] = useState(session.score || 0);
+  const [savedScore, setSavedScore] = useState(session.score || 0);
+  const [saving, setSaving] = useState(false);
+  const submitting = useRef(false);
+  useEffect(() => {
+    if (session.score) { setSavedScore(session.score); setScore(session.score); }
+  }, [session.score]);
+  const submit = async () => {
+    if (submitting.current || savedScore || score < 1 || score > 5) return;
+    submitting.current = true;
+    setSaving(true);
+    try {
+      const response = await ngrokFetch(BASE_URL + "/api/bookings/" + encodeURIComponent(session._id) + "/rating", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ score }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        // Another device, double submission, or a retried response may already have saved it.
+        if (response.status === 409 && data.score) {
+          setSavedScore(data.score); setScore(data.score); await onSaved(); return;
+        }
+        throw new Error("Rating request failed");
+      }
+      setSavedScore(data.score); setScore(data.score);
+      Alert.alert("Rating saved", "Thank you for your feedback.");
+      await onSaved();
+    } catch {
+      Alert.alert("Error", "Could not save your rating. Please try again.");
+    } finally { submitting.current = false; setSaving(false); }
+  };
+  return (
+    <View style={{ padding: 14, marginTop: 10, backgroundColor: "#fff", borderRadius: 14, borderWidth: 1, borderColor: "#DDEAEA" }}>
+      <Text style={{ fontWeight: "700", color: "#244444" }}>{session.counselorName}</Text>
+      <Text style={{ marginTop: 3, color: "#667777", fontSize: 12 }}>{session.sessionDate} · {session.sessionTime}</Text>
+      <Text style={{ marginTop: 10 }}>{savedScore ? "Your rating" : "Choose a score"}</Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 4 }}>
+        {[1, 2, 3, 4, 5].map((value) => (
+          <TouchableOpacity key={value} disabled={saving || !!savedScore} onPress={() => setScore(value)}
+            accessibilityRole="button" accessibilityLabel={value === 1 ? "Rate 1 star" : `Rate ${value} stars`}
+            accessibilityState={{ selected: score === value, disabled: saving || !!savedScore }}
+            style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}>
+            <Ionicons name={score >= value ? "star" : "star-outline"} size={28} color="#B87500" />
+          </TouchableOpacity>
+        ))}
+      </View>
+      {savedScore ? <Text style={{ color: "#26775B", marginTop: 5 }}>{savedScore} / 5</Text>
+        : <TouchableOpacity onPress={submit} disabled={!score || saving} accessibilityRole="button"
+            style={{ backgroundColor: "#247E7C", opacity: !score || saving ? 0.5 : 1, borderRadius: 10, padding: 12, marginTop: 8, alignItems: "center" }}>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>{saving ? "Saving..." : "Submit rating"}</Text>
+          </TouchableOpacity>}
+    </View>
+  );
+}
+
+function SessionRatings({ onSaved }: { onSaved: () => Promise<void> }) {
+  const [sessions, setSessions] = useState<RatingSession[]>([]);
+  const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const inFlight = useRef(false);
+  const mounted = useRef(true);
+  const load = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    try {
+      const response = await ngrokFetch(BASE_URL + "/api/bookings/ratings/mine");
+      if (!response.ok) throw new Error("Rating sessions request failed");
+      const data = await response.json();
+      if (!Array.isArray(data.sessions)) throw new Error("Invalid sessions response");
+      if (mounted.current) { setSessions(data.sessions); setFailed(false); }
+    } catch { if (mounted.current) setFailed(true); }
+    finally { inFlight.current = false; if (mounted.current) setLoading(false); }
+  }, []);
+  useEffect(() => {
+    mounted.current = true;
+    void load();
+    const timer = setInterval(() => { void load(); }, 10000);
+    return () => { mounted.current = false; clearInterval(timer); };
+  }, [load]);
+  return (
+    <View style={{ marginHorizontal: 20, marginTop: 18, marginBottom: 18 }}>
+      <Text style={{ fontSize: 19, fontWeight: "700", color: "#244444" }}>Rate your sessions</Text>
+      <Text style={{ marginTop: 5, color: "#667777", fontSize: 12 }}>Rate your session after a connected voice or video call ends.</Text>
+      {loading && <ActivityIndicator color="#247E7C" style={{ marginTop: 10 }} />}
+      {failed && <View style={{ marginTop: 10 }}>
+        <Text>Could not load rating sessions.</Text>
+        <TouchableOpacity onPress={() => { void load(); }} accessibilityRole="button" style={{ paddingVertical: 12 }}><Text>Retry</Text></TouchableOpacity>
+      </View>}
+      {sessions.map((session) => <RatingSessionRow key={session._id} session={session}
+        onSaved={async () => { await Promise.all([load(), onSaved()]); }} />)}
+    </View>
+  );
+}
+
+
+
+
+
 type FilterType =
   | "Recommended Counselors"
   | "Available Now"
@@ -421,8 +541,8 @@ type FilterType =
 
 
 type Counselor = {
-  counselingLanguages?: Array<"en" | "si">;
-  recommendation?: { available: boolean; specialtyMatch: boolean; languageMatch?: boolean | null; reason: string };
+  ratingSummary?: { average: number; count: number };
+  ratingsUnavailable?: boolean;
   _id: string;
 
   firstName?: string;
@@ -993,6 +1113,7 @@ const BookingModal = ({
             styles.modalHeader
           }
         >
+          <PageBack onPress={onClose} dark disabled={booking} />
           <View>
 
             <Text
@@ -1010,6 +1131,7 @@ const BookingModal = ({
             >
               {counselor.name}
             </Text>
+            <RatingSummary counselor={counselor} profile />
 
           </View>
 
@@ -1484,19 +1606,6 @@ const BookingModal = ({
 
 
 
-const CounselingLanguages = ({ counselor }: { counselor: Counselor }) => {
-  const languages = Array.isArray(counselor.counselingLanguages)
-    ? [...new Set(counselor.counselingLanguages.filter(code => code === "en" || code === "si"))] : [];
-  return (
-    <View style={{ marginBottom: 10 }}>
-      <Text style={{ color: "#285C5A", fontWeight: "600" }}>Counseling languages</Text>
-      {languages.length ? <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 4 }}>
-        {languages.map(code => <Text key={code} style={{ color: "#526C6B", marginRight: 12 }}>{code === "si" ? "Sinhala" : "English"}</Text>)}
-      </View> : <Text style={{ color: "#526C6B", marginTop: 4 }}>Not provided; confirm with the counselor.</Text>}
-    </View>
-  );
-};
-
 const CounselorProfileModal = ({
   visible,
 
@@ -1548,6 +1657,7 @@ const CounselorProfileModal = ({
             styles.modalHeader
           }
         >
+          <PageBack onPress={onClose} dark />
 
           <Text
             style={
@@ -1690,7 +1800,6 @@ const CounselorProfileModal = ({
             </Text>
 
 
-            <CounselingLanguages counselor={counselor} />
             <ProfileInfoRow
               icon="heart-outline"
               label="Specialty"
@@ -2269,6 +2378,8 @@ const CounselorCard = ({
           >
             {counselor.name}
           </Text>
+          <RatingSummary counselor={counselor} />
+
 
           <Text
             style={
@@ -2332,7 +2443,6 @@ const CounselorCard = ({
       </View>
 
 
-      <CounselingLanguages counselor={counselor} />
       {/* META */}
 
       <View
@@ -2704,9 +2814,8 @@ const CounselorCard = ({
 
 
 export default function SupportScreen() {
-  const [recommendationsReady, setRecommendationsReady] = useState(false);
-  const counselorFetchInFlight = useRef(false);
   const Alert = useLocalizedAlert();
+  const bookingFromProfile = useRef(false);
 
   const [
     activeFilter,
@@ -2836,8 +2945,7 @@ export default function SupportScreen() {
 
   const fetchCounselors =
     async () => {
-      if (counselorFetchInFlight.current) return;
-      counselorFetchInFlight.current = true;
+
       try {
 
         console.log(
@@ -2845,27 +2953,14 @@ export default function SupportScreen() {
         );
 
 
-        // The protected endpoint reads the signed-in patient's saved level.
-        // Fall back to browsing when recommendations cannot be loaded.
-        let response: Response;
-        let data: any = null;
-        let personalized = false;
-        try {
-          response = await ngrokFetch(BASE_URL + "/api/counselors/recommendations");
-          if (!response.ok) throw new Error("Recommendations unavailable");
-          data = await response.json();
-          if (data?.success !== true || !Array.isArray(data?.counselors)) {
-            throw new Error("Invalid recommendation response");
-          }
-          personalized = true;
-        } catch {
-          response = await ngrokFetch(BASE_URL + "/api/counselors");
-          const text = await response.text();
-          try { data = text ? JSON.parse(text) : null; } catch { data = null; }
-        }
-        setRecommendationsReady(false);
+        const response =
+          await ngrokFetch(
+            `${BASE_URL}/api/counselors`
+          );
 
 
+        const text =
+          await response.text();
 
 
         console.log(
@@ -2874,6 +2969,24 @@ export default function SupportScreen() {
         );
 
 
+        let data: any = null;
+
+
+        try {
+
+          data = text
+            ? JSON.parse(text)
+            : null;
+
+        } catch {
+
+          console.log(
+            "Invalid counselor response:",
+            text
+          );
+
+          data = null;
+        }
 
 
         if (!response.ok) {
@@ -2889,8 +3002,6 @@ export default function SupportScreen() {
         }
 
 
-        personalized = personalized && data?.success === true && Array.isArray(data?.counselors);
-        setRecommendationsReady(personalized);
         let counselorList =
           Array.isArray(data)
             ? data
@@ -2917,6 +3028,27 @@ export default function SupportScreen() {
           "Counselors loaded:",
           counselorList.length
         );
+
+
+        // Always use saved patient ratings; legacy counselor.rating is not a vote source.
+        try {
+          const summaryResponse = await ngrokFetch(BASE_URL + "/api/bookings/ratings/summary");
+          if (!summaryResponse.ok) throw new Error("Rating summary request failed");
+          const summaryData = await summaryResponse.json();
+          if (!Array.isArray(summaryData.summaries)) throw new Error("Invalid rating summary response");
+          const summaries = new Map<string, { average: number; count: number }>(
+            summaryData.summaries.map((item: any) => [String(item.counselorId),
+              { average: item.average, count: item.count }])
+          );
+          counselorList = counselorList.map((item: any) => ({ ...item,
+            ratingSummary: summaries.get(String(item._id)) || { average: 0, count: 0 },
+            ratingsUnavailable: false,
+          }));
+        } catch {
+          counselorList = counselorList.map((item: any) => ({ ...item,
+            ratingSummary: undefined, ratingsUnavailable: true,
+          }));
+        }
         setCounselors(counselorList);
 
       } catch (error) {
@@ -2927,11 +3059,13 @@ export default function SupportScreen() {
         );
 
         setCounselors([]);
-        setRecommendationsReady(false);
-      } finally {
-        counselorFetchInFlight.current = false;
+
       }
     };
+
+
+  
+
   const getPatientId =
     async (): Promise<
       string | null
@@ -3187,6 +3321,8 @@ export default function SupportScreen() {
     }
 
 
+    bookingFromProfile.current = profileVisible;
+
     setSelectedCounselor(
       counselor
     );
@@ -3220,6 +3356,11 @@ export default function SupportScreen() {
       setBookingVisible(
         false
       );
+
+      if (bookingFromProfile.current) {
+        setProfileVisible(true);
+        bookingFromProfile.current = false;
+      }
 
       setSelectedDate("");
 
@@ -4083,13 +4224,37 @@ export default function SupportScreen() {
     );
 
 
-  // The server returns all approved counselors in recommendation order.
-  // Other filters and existing selected-counselor cards retain their behavior.
-  const filteredCounselors = activeFilter === "Available Now"
-    ? otherCounselors.filter((counselor) => counselor.available)
-    : activeFilter === "Recommended Counselors" && recommendationsReady
-    ? otherCounselors
-    : [...otherCounselors].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  // Recommendations prioritize availability without using scores or changing API data.
+  // Keep the existing order within each availability group.
+  const filteredCounselors =
+    activeFilter === "Available Now"
+      ? otherCounselors.filter((counselor) => counselor.available)
+      : activeFilter === "Recommended Counselors"
+      ? [
+          ...otherCounselors.filter((counselor) => counselor.available),
+          ...otherCounselors.filter((counselor) => !counselor.available),
+        ]
+      : otherCounselors;
+
+
+  
+
+
+  const handleBack = () => {
+    if (bookingVisible) { closeBooking(); return; }
+    if (profileVisible) { closeProfile(); return; }
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
+  };
+
+  useFocusEffect(useCallback(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      handleBack();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [bookingVisible, profileVisible, bookingLoading]));
+
   if (loading) {
 
     return (
@@ -4098,6 +4263,7 @@ export default function SupportScreen() {
           styles.loadingContainer
         }
       >
+        <PageBack onPress={handleBack} dark />
 
         <ActivityIndicator
           size="large"
@@ -4128,6 +4294,8 @@ export default function SupportScreen() {
     >
 
      
+
+      <View style={backStyles.bar}><PageBack onPress={handleBack} /></View>
 
       <CounselorProfileModal
         visible={
@@ -4504,6 +4672,11 @@ export default function SupportScreen() {
 
         )}
 
+
+
+
+        <SessionRatings onSaved={fetchCounselors} />
+
         <View
           style={
             styles.browseCounselorSection
@@ -4768,3 +4941,25 @@ export default function SupportScreen() {
     </View>
   );
 }
+
+function PageBack({ onPress, dark = false, disabled = false }: {
+  onPress: () => void;
+  dark?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <TouchableOpacity onPress={onPress} disabled={disabled}
+      accessibilityRole="button" accessibilityLabel="Go back"
+      style={[backStyles.button, disabled && backStyles.disabled]}>
+      <Ionicons name="chevron-back" size={20} color={dark ? "#1A3A3A" : "#FFFFFF"} />
+      <Text style={[backStyles.label, { color: dark ? "#1A3A3A" : "#FFFFFF" }]}>Back</Text>
+    </TouchableOpacity>
+  );
+}
+
+const backStyles = StyleSheet.create({
+  bar: { backgroundColor: "#2CA6A4", paddingHorizontal: 12, paddingTop: 4 },
+  button: { minHeight: 44, minWidth: 44, flexDirection: "row", alignItems: "center", alignSelf: "flex-start", paddingHorizontal: 6 },
+  label: { fontSize: 13, fontWeight: "600" },
+  disabled: { opacity: 0.45 },
+});
