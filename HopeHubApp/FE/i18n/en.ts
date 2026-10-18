@@ -51,7 +51,6 @@ export const en = {
     sessionExpired: "Session expired.",
     userIdMissing: "User ID missing",
     failed: "Failed",
-    skipAll: "Skip all",
     progress: (current: number, total: number) => `Question ${current} of ${total}`,
     yourAnswer: "Your answer",
     otherDrugNameLabel: "Drug name (optional)",

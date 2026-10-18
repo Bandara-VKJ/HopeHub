@@ -53,7 +53,6 @@ export const si: Translations = {
     sessionExpired: "සැසිය කල් ඉකුත් වී ඇත.",
     userIdMissing: "පරිශීලක හැඳුනුම සොයාගත නොහැක",
     failed: "අසාර්ථකයි",
-    skipAll: "සියල්ල මඟහරින්න",
     progress: (current, total) => `ප්‍රශ්නය ${current} / ${total}`,
     yourAnswer: "ඔබේ පිළිතුර",
     otherDrugNameLabel: "මත්ද්‍රව්‍යයේ නම (අත්‍යවශ්‍ය නොවේ)",

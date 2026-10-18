@@ -251,10 +251,6 @@ export default function LifeScreen() {
     }
   };
 
-  const skipAll = () => {
-    setCurrentIndex(questions.length);
-  };
-
   const handleSubmit = async () => {
     if (isSubmitting) return;
 
@@ -310,9 +306,6 @@ export default function LifeScreen() {
                 </Text>
               </View>
 
-              <TouchableOpacity onPress={skipAll}>
-                <Text style={styles.skipLink}>{q.skipAll}</Text>
-              </TouchableOpacity>
             </View>
 
             <View style={styles.progressTrack}>
