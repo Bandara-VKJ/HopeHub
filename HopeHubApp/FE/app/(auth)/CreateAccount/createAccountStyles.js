@@ -5,7 +5,6 @@ export const accountCreateStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F4FAFA",
   },
-
   hero: {
     position: "relative",
     minHeight: 240,
@@ -16,32 +15,28 @@ export const accountCreateStyles = StyleSheet.create({
     paddingBottom: 25,
     overflow: "hidden",
   },
-
   heroAnimation: {
     width: 190,
     height: 150,
   },
-
   heroContent: {
     alignItems: "center",
     justifyContent: "center",
     marginTop: -10,
   },
-
   smallTitle: {
     fontSize: 15,
     color: "#557979",
     fontWeight: "500",
     marginBottom: 3,
+    textAlign: "center",
   },
-
   brand: {
     fontSize: 32,
     color: "#2CA6A4",
     fontWeight: "800",
     letterSpacing: 0.5,
   },
-
   roleSwitch: {
     flexDirection: "row",
     alignSelf: "center",
@@ -52,37 +47,30 @@ export const accountCreateStyles = StyleSheet.create({
     marginTop: 22,
     marginBottom: 15,
   },
-
   roleBtn: {
     flex: 1,
     paddingVertical: 11,
+    paddingHorizontal: 8,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 9,
   },
-
   roleBtnActive: {
     backgroundColor: "#2CA6A4",
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-
   roleText: {
     fontSize: 14,
     fontWeight: "600",
     color: "#617777",
+    textAlign: "center",
+    flexShrink: 1,
   },
-
-  roleTextActive: {
-    color: "#FFFFFF",
-  },
-
+  roleTextActive: { color: "#FFFFFF" },
   card: {
     width: "90%",
     alignSelf: "center",
@@ -93,40 +81,29 @@ export const accountCreateStyles = StyleSheet.create({
     paddingBottom: 28,
     marginBottom: 40,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,
   },
-
   cardTitle: {
     fontSize: 21,
     fontWeight: "700",
     color: "#254747",
     marginBottom: 20,
   },
-
   sectionLabel: {
     fontSize: 15,
     fontWeight: "700",
     color: "#385E5E",
     marginBottom: 13,
   },
-
   divider: {
     height: 1,
     backgroundColor: "#E5EEEE",
     marginVertical: 17,
   },
-
-  row: {
-    flexDirection: "row",
-    gap: 10,
-  },
-
+  row: { flexDirection: "row", gap: 10 },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -138,17 +115,98 @@ export const accountCreateStyles = StyleSheet.create({
     minHeight: 52,
     marginBottom: 13,
   },
-
-  // IMPORTANT:
-  // Do NOT add outlineStyle: "none" here.
+  // Keep native/web focus styling; do not add outlineStyle here.
   input: {
     flex: 1,
+    minWidth: 0,
     fontSize: 15,
     color: "#263D3D",
     paddingVertical: 10,
     marginLeft: 8,
   },
-
+  languageSection: {
+    backgroundColor: "#F4FAFA",
+    borderWidth: 1,
+    borderColor: "#D8E7E7",
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 20,
+  },
+  languageTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#385E5E",
+    marginBottom: 6,
+  },
+  languageHelp: {
+    fontSize: 13,
+    lineHeight: 21,
+    color: "#526C6B",
+    marginBottom: 12,
+  },
+  languageOptions: { flexDirection: "row", flexWrap: "wrap" },
+  languageOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: 48,
+    maxWidth: "100%",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginRight: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: "#D2E3E3",
+    backgroundColor: "#FFFFFF",
+  },
+  languageOptionSelected: {
+    borderColor: "#247E7C",
+    backgroundColor: "#E4F4F2",
+  },
+  languageOptionText: {
+    marginLeft: 8,
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#385E5E",
+    flexShrink: 1,
+  },
+  languageOptionTextSelected: { color: "#1D6462", fontWeight: "700" },
+  disabled: { opacity: 0.55 },
+  approvalHelp: {
+    color: "#526C6B",
+    fontSize: 13,
+    lineHeight: 21,
+    marginBottom: 14,
+  },
+  photoSection: { alignItems: "center", marginBottom: 16 },
+  photoPicker: { alignItems: "center", padding: 12, maxWidth: "100%" },
+  photoPreview: { width: 110, height: 110, borderRadius: 55 },
+  photoLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#385E5E",
+    marginTop: 8,
+    textAlign: "center",
+    lineHeight: 22,
+  },
+  specialtySection: { marginBottom: 12 },
+  specialtyOptions: { flexDirection: "row", flexWrap: "wrap", marginTop: 8 },
+  specialtyOption: {
+    maxWidth: "100%",
+    minHeight: 44,
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#D2E3E3",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  specialtyOptionSelected: { borderColor: "#247E7C", backgroundColor: "#E4F4F2" },
+  specialtyOptionText: { color: "#285C5A", fontSize: 13, lineHeight: 21 },
+  specialtyHelp: { color: "#526C6B", fontSize: 12, lineHeight: 20 },
   button: {
     width: "100%",
     minHeight: 52,
@@ -158,30 +216,22 @@ export const accountCreateStyles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 10,
     shadowColor: "#2CA6A4",
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 3,
   },
-
   buttonText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "700",
+    textAlign: "center",
   },
-
   bottomText: {
     textAlign: "center",
     marginTop: 19,
     fontSize: 14,
     color: "#718585",
   },
-
-  loginText: {
-    color: "#2CA6A4",
-    fontWeight: "700",
-  },
+  loginText: { color: "#2CA6A4", fontWeight: "700" },
 });

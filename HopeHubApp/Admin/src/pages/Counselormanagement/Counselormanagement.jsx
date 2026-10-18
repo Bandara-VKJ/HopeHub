@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 
 import "./Counselormanagement.css";
+import { adminFetch } from "../../../services/adminApi.js";
 
 
 const BASE_URL =
@@ -49,6 +50,7 @@ function CounselorAvatar({ counselor }) {
 }
 
 function CounselorManagement() {
+  const [loadError, setLoadError] = useState("");
 
   const [
     counselors,
@@ -78,10 +80,11 @@ function CounselorManagement() {
       try {
 
         setLoading(true);
+        setLoadError("");
 
 
         const response =
-          await fetch(
+          await adminFetch(
             `${BASE_URL}/api/counselors/admin/all`
           );
 
@@ -117,10 +120,8 @@ function CounselorManagement() {
         );
 
 
-        window.alert(
-          error.message ||
-          "Failed to load counselors"
-        );
+        setLoadError(error.message || "Failed to load counselors");
+        setCounselors([]);
 
 
       } finally {
@@ -163,7 +164,7 @@ function CounselorManagement() {
 
 
         const response =
-          await fetch(
+          await adminFetch(
             `${BASE_URL}/api/counselors/admin/${id}/approve`,
             {
               method: "PATCH",
@@ -268,7 +269,7 @@ function CounselorManagement() {
 
 
         const response =
-          await fetch(
+          await adminFetch(
             `${BASE_URL}/api/counselors/admin/${id}/reject`,
             {
               method: "PATCH",
@@ -379,7 +380,7 @@ function CounselorManagement() {
 
 
         const response =
-          await fetch(
+          await adminFetch(
             `${BASE_URL}/api/counselors/admin/${id}`,
             {
               method: "DELETE",
@@ -569,6 +570,7 @@ function CounselorManagement() {
 
 
           <button
+            disabled={loading || actionLoading !== null}
             className="refresh-button"
 
             onClick={
@@ -595,6 +597,12 @@ function CounselorManagement() {
 
           </div>
 
+        ) : loadError ? (
+          <div className="empty-box" role="alert">
+            <h3>Unable to load counselors</h3>
+            <p>{loadError}</p>
+            <p>Log in again, then use Refresh.</p>
+          </div>
         ) : counselors.length ===
           0 ? (
 
@@ -689,6 +697,12 @@ function CounselorManagement() {
 
 
                   {/* DETAILS */}
+                  <div className="detail-row">
+                    <span className="detail-label">Counseling languages</span>
+                    <span>{Array.isArray(counselor.counselingLanguages) && counselor.counselingLanguages.some(code => code === "si" || code === "en")
+                      ? [...new Set(counselor.counselingLanguages)].filter(code => code === "si" || code === "en").map(code => code === "si" ? "Sinhala" : "English").join(", ")
+                      : "Not provided"}</span>
+                  </div>
 
                   <div
                     className="details"

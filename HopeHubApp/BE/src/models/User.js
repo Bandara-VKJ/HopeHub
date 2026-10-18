@@ -9,15 +9,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["user", "counselor"], default: "user" },
     mobile: { type: String, default: "" },
     profilePic: { type: String, default: null },
-    
-
     predictedLevel: { type: String, default: null },
-
-    language: {
-    type: String,
-    enum: ["en", "si"],
-    default: "en",
-    },
+    language: { type: String, enum: ["en", "si"], default: "en" },
     counselorLevel: {
       type: String,
       enum: ["No risk", "Very Low", "Low", "Moderate", "High", "Very High", "Severe Addiction", "Contact with counselor"],
@@ -33,6 +26,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Preserve existing app behavior. Recommendations normalize independently.
 userSchema.virtual("level").get(function () {
   if (this.counselorLevel) return this.counselorLevel;
   return mapPredictedToAppLevel(this.predictedLevel);
@@ -53,5 +47,4 @@ function mapPredictedToAppLevel(predicted) {
 }
 
 const User = mongoose.model("User", userSchema);
-
 export default User;

@@ -17,7 +17,7 @@ import {
 
 } from "react-native";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { router } from "expo-router";
 
@@ -45,15 +45,165 @@ const BASE_URL =
 
   process.env.EXPO_PUBLIC_BASE_URL;
 
+// UI language is independent of the stable specialty values submitted to the API.
+const accountCopy = {
+  "en": {
+    "common": {
+      "error": "Error",
+      "success": "Success",
+      "user": "User",
+      "counselor": "Counselor",
+      "email": "Email",
+      "password": "Password",
+      "login": "Login",
+      "networkError": "Could not connect to the server. Please try again."
+    },
+    "createAccount": {
+      "welcome": "Start your journey with",
+      "counselorDetails": "Create a counselor account",
+      "accountDetails": "Create your account",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "mobile": "Mobile number",
+      "professionalInfo": "Counselor profile details",
+      "titlePlaceholder": "Professional title",
+      "specialtyPlaceholder": "Specialty / support area",
+      "experiencePlaceholder": "Experience (e.g. 3 years)",
+      "availabilityPlaceholder": "Availability note (optional)",
+      "confirmPassword": "Confirm password",
+      "createCounselor": "Create counselor account",
+      "createAccount": "Create account",
+      "haveAccount": "Already have an account?",
+      "fillBasic": "Please fill in your first name, last name, email and both password fields.",
+      "passwordMismatch": "The passwords do not match.",
+      "passwordShort": "Use a password with at least 6 characters.",
+      "fillCounselor": "Please enter your mobile number, title, specialty and experience.",
+      "registrationFailed": "Account creation failed. Please check your details and try again.",
+      "userCreated": "Your account has been created successfully."
+    },
+    "photoPermission": "Please allow photo library access to select a counselor image.",
+    "photoError": "Unable to select an image. Please try again.",
+    "changePhoto": "Change counselor image",
+    "selectPhoto": "Select counselor image",
+    "optionalPhoto": "Select counselor image (optional)",
+    "selectedPhoto": "Selected counselor image",
+    "accountCreated": "Account created successfully",
+    "approvalPending": "Your counselor account has been created successfully. Please wait for HopeHub System approval before logging in.",
+    "ok": "OK",
+    "specialtyChoices": "Choose a support area, or type your own",
+    "specialtyHelp": "These are self-described support areas used for simple suggestions. Selecting one does not verify qualifications.",
+    "approvalHelp": "Your profile will appear in recommendations only after HopeHub System approval.",
+    "invalidEmail": "Please enter a valid email address.",
+    "serverError": "The server returned an invalid response. Please try again.",
+    "missingServer": "The server address is not configured. Please contact the app administrator.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "counselingLanguages": "Counseling languages",
+    "counselingLanguagesHelp": "Choose the languages you can conduct counseling sessions in. You can select one or both.",
+    "selectCounselingLanguages": "Please select Sinhala, English, or both.",
+    "sinhala": "Sinhala",
+    "english": "English"
+  },
+  "si": {
+    "common": {
+      "error": "දෝෂයකි",
+      "success": "සාර්ථකයි",
+      "user": "පරිශීලක",
+      "counselor": "උපදේශක",
+      "email": "විද්‍යුත් තැපෑල",
+      "password": "මුරපදය",
+      "login": "පිවිසෙන්න",
+      "networkError": "සේවාදායකයට සම්බන්ධ විය නොහැක. කරුණාකර නැවත උත්සාහ කරන්න."
+    },
+    "createAccount": {
+      "welcome": "ඔබේ ගමන අරඹන්න",
+      "counselorDetails": "උපදේශක ගිණුමක් සාදන්න",
+      "accountDetails": "ඔබේ ගිණුම සාදන්න",
+      "firstName": "මුල් නම",
+      "lastName": "වාසගම",
+      "mobile": "ජංගම දුරකථන අංකය",
+      "professionalInfo": "උපදේශක පැතිකඩ විස්තර",
+      "titlePlaceholder": "වෘත්තීය පදවි නාමය",
+      "specialtyPlaceholder": "විශේෂත්වය / සහාය ක්ෂේත්‍රය",
+      "experiencePlaceholder": "පළපුරුද්ද (උදා: වසර 3)",
+      "availabilityPlaceholder": "ලබා ගත හැකි වේලාව පිළිබඳ සටහන (අත්‍යවශ්‍ය නොවේ)",
+      "confirmPassword": "මුරපදය තහවුරු කරන්න",
+      "createCounselor": "උපදේශක ගිණුම සාදන්න",
+      "createAccount": "ගිණුම සාදන්න",
+      "haveAccount": "දැනටමත් ගිණුමක් තිබේද?",
+      "fillBasic": "මුල් නම, වාසගම, විද්‍යුත් තැපෑල සහ මුරපද ක්ෂේත්‍ර දෙකම පුරවන්න.",
+      "passwordMismatch": "මුරපද දෙක නොගැලපේ.",
+      "passwordShort": "අවම වශයෙන් අක්ෂර 6ක් සහිත මුරපදයක් භාවිත කරන්න.",
+      "fillCounselor": "ජංගම දුරකථන අංකය, පදවි නාමය, විශේෂත්වය සහ පළපුරුද්ද ඇතුළත් කරන්න.",
+      "registrationFailed": "ගිණුම සෑදීම අසාර්ථකයි. තොරතුරු පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
+      "userCreated": "ඔබේ ගිණුම සාර්ථකව සාදන ලදී."
+    },
+    "photoPermission": "උපදේශක ඡායාරූපයක් තේරීමට ඡායාරූප ගබඩාවට ප්‍රවේශ වීමට අවසර දෙන්න.",
+    "photoError": "ඡායාරූපය තේරීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.",
+    "changePhoto": "උපදේශක ඡායාරූපය වෙනස් කරන්න",
+    "selectPhoto": "උපදේශක ඡායාරූපයක් තෝරන්න",
+    "optionalPhoto": "උපදේශක ඡායාරූපයක් තෝරන්න (අත්‍යවශ්‍ය නොවේ)",
+    "selectedPhoto": "තෝරාගත් උපදේශක ඡායාරූපය",
+    "accountCreated": "ගිණුම සාර්ථකව සාදන ලදී",
+    "approvalPending": "ඔබේ උපදේශක ගිණුම සාර්ථකව සාදන ලදී. පිවිසීමට පෙර HopeHub පද්ධතියේ අනුමැතිය ලැබෙන තෙක් රැඳී සිටින්න.",
+    "ok": "හරි",
+    "specialtyChoices": "සහාය ක්ෂේත්‍රයක් තෝරන්න, නැතහොත් ඔබම ඇතුළත් කරන්න",
+    "specialtyHelp": "මෙම සහාය ක්ෂේත්‍ර ඔබ විසින් සඳහන් කරන තොරතුරු වන අතර සරල යෝජනා සඳහා භාවිත වේ. එකක් තේරීමෙන් සුදුසුකම් තහවුරු නොවේ.",
+    "approvalHelp": "ඔබේ පැතිකඩ නිර්දේශවල දිස්වන්නේ HopeHub පද්ධතියේ අනුමැතිය ලැබුණු පසුව පමණි.",
+    "invalidEmail": "වලංගු විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න.",
+    "serverError": "සේවාදායකයෙන් වලංගු ප්‍රතිචාරයක් නොලැබුණි. නැවත උත්සාහ කරන්න.",
+    "missingServer": "සේවාදායක ලිපිනය සකසා නොමැත. යෙදුමේ පරිපාලක අමතන්න.",
+    "showPassword": "මුරපදය පෙන්වන්න",
+    "hidePassword": "මුරපදය සඟවන්න",
+    "counselingLanguages": "උපදේශන සැසි පවත්වන භාෂා",
+    "counselingLanguagesHelp": "ඔබට උපදේශන සැසි පැවැත්විය හැකි භාෂා තෝරන්න. එක් භාෂාවක් හෝ භාෂා දෙකම තෝරාගත හැක.",
+    "selectCounselingLanguages": "සිංහල, ඉංග්‍රීසි හෝ භාෂා දෙකම තෝරන්න.",
+    "sinhala": "සිංහල",
+    "english": "ඉංග්‍රීසි"
+  }
+};
+const specialtyOptions = [
+  {
+    "value": "Addiction recovery",
+    "en": "Addiction recovery",
+    "si": "ඇබ්බැහිවීමෙන් සුවය ලැබීම"
+  },
+  {
+    "value": "Alcohol and substance recovery",
+    "en": "Alcohol and substance recovery",
+    "si": "මත්පැන් සහ මත්ද්‍රව්‍ය භාවිතයෙන් සුවය ලැබීම"
+  },
+  {
+    "value": "Relapse prevention",
+    "en": "Relapse prevention",
+    "si": "නැවත ඇබ්බැහි වීම වැළැක්වීම"
+  },
+  {
+    "value": "Stress and anxiety",
+    "en": "Stress and anxiety",
+    "si": "ආතතිය සහ කාංසාව"
+  },
+  {
+    "value": "General counseling",
+    "en": "General counseling",
+    "si": "සාමාන්‍ය උපදේශනය"
+  }
+];
+
 export default function CreateAccount() {
 
   const {
 
-    t,
-
     language,
 
   } = useLanguage();
+  const t = language === "si" ? accountCopy.si : accountCopy.en;
+  const submitting = useRef(false);
+  const [counselingLanguages, setCounselingLanguages] = useState<Array<"en" | "si">>([]);
+  const toggleCounselingLanguage = (code: "en" | "si") => {
+    setCounselingLanguages(current => current.includes(code)
+      ? current.filter(item => item !== code) : [...current, code]);
+  };
 
   const [
 
@@ -178,7 +328,7 @@ export default function CreateAccount() {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert(t.common.error, "Please allow photo library access to select a counselor image.");
+        Alert.alert(t.common.error, t.photoPermission);
         return;
       }
 
@@ -194,7 +344,7 @@ export default function CreateAccount() {
       }
     } catch (error) {
       console.log("Counselor image picker error:", error);
-      Alert.alert(t.common.error, "Unable to select an image. Please try again.");
+      Alert.alert(t.common.error, t.photoError);
     }
   };
 
@@ -206,7 +356,7 @@ export default function CreateAccount() {
 
   const handleCreateAccount = async () => {
 
-    if (loading) {
+    if (submitting.current) {
 
       return;
 
@@ -276,6 +426,15 @@ export default function CreateAccount() {
 
     }
 
+    if (!BASE_URL?.trim()) {
+      Alert.alert(t.common.error, t.missingServer);
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      Alert.alert(t.common.error, t.invalidEmail);
+      return;
+    }
+    submitting.current = true;
     try {
 
       setLoading(true);
@@ -318,7 +477,12 @@ export default function CreateAccount() {
 
         }
 
+        if (counselingLanguages.length === 0) {
+          Alert.alert(t.common.error, t.selectCounselingLanguages);
+          return;
+        }
         const formData = new FormData();
+        formData.append("counselingLanguages", JSON.stringify(counselingLanguages));
         formData.append("firstName", first.trim());
         formData.append("lastName", last.trim());
         formData.append("email", email.trim().toLowerCase());
@@ -381,7 +545,8 @@ export default function CreateAccount() {
 
         } catch {
 
-          data = {};
+          Alert.alert(t.common.error, t.serverError);
+          return;
 
         }
 
@@ -391,9 +556,7 @@ export default function CreateAccount() {
 
             t.common.error,
 
-            data?.message ||
-
-              t.createAccount.registrationFailed
+            t.createAccount.registrationFailed
 
           );
 
@@ -417,15 +580,15 @@ export default function CreateAccount() {
 
         Alert.alert(
 
-          "Account Created Successfully",
+          t.accountCreated,
 
-          "Your counselor account has been created successfully. Please wait for HopeHub System approval before logging in.",
+          t.approvalPending,
 
           [
 
             {
 
-              text: "OK",
+              text: t.ok,
 
               onPress: () => {
 
@@ -535,7 +698,8 @@ export default function CreateAccount() {
 
       } catch {
 
-        data = {};
+        Alert.alert(t.common.error, t.serverError);
+        return;
 
       }
 
@@ -545,9 +709,7 @@ export default function CreateAccount() {
 
           t.common.error,
 
-          data?.message ||
-
-            t.createAccount.registrationFailed
+          t.createAccount.registrationFailed
 
         );
 
@@ -589,6 +751,7 @@ export default function CreateAccount() {
 
     } finally {
 
+      submitting.current = false;
       setLoading(false);
 
     }
@@ -1095,26 +1258,45 @@ export default function CreateAccount() {
 
           <>
 
-            <View style={{ alignItems: "center", marginBottom: 16 }}>
+            <View style={styles.languageSection}>
+              <Text style={styles.languageTitle}>{t.counselingLanguages}</Text>
+              <Text style={styles.languageHelp}>{t.counselingLanguagesHelp}</Text>
+              <View style={styles.languageOptions}>
+                {(["si", "en"] as const).map(code => {
+                  const selected = counselingLanguages.includes(code);
+                  return (
+                    <TouchableOpacity key={code} disabled={loading}
+                      accessibilityRole="checkbox" accessibilityState={{ checked: selected, disabled: loading }}
+                      onPress={() => toggleCounselingLanguage(code)}
+                      style={[styles.languageOption, selected && styles.languageOptionSelected, loading && styles.disabled]}>
+                      <Ionicons name={selected ? "checkbox" : "square-outline"} size={24} color="#247E7C" />
+                      <Text style={[styles.languageOptionText, selected && styles.languageOptionTextSelected]}>{code === "si" ? t.sinhala : t.english}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+            <Text style={styles.approvalHelp}>{t.approvalHelp}</Text>
+            <View style={styles.photoSection}>
               <TouchableOpacity
                 onPress={pickCounselorImage}
                 disabled={loading}
                 accessibilityRole="button"
-                accessibilityLabel={counselorImage ? "Change counselor image" : "Select counselor image"}
-                style={{ alignItems: "center", padding: 12 }}
+                accessibilityLabel={counselorImage ? t.changePhoto : t.selectPhoto}
+                style={[styles.photoPicker, loading && styles.disabled]}
               >
                 {counselorImage ? (
                   <Image
                     source={{ uri: counselorImage.uri }}
-                    style={{ width: 110, height: 110, borderRadius: 55 }}
+                    style={styles.photoPreview}
                     resizeMode="cover"
-                    accessibilityLabel="Selected counselor image"
+                    accessibilityLabel={t.selectedPhoto}
                   />
                 ) : (
                   <Ionicons name="camera-outline" size={48} color="#7A9A9A" />
                 )}
-                <Text style={[styles.sectionLabel, { marginTop: 8 }]}>
-                  {counselorImage ? "Change counselor image" : "Select counselor image (optional)"}
+                <Text style={styles.photoLabel}>
+                  {counselorImage ? t.changePhoto : t.optionalPhoto}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1201,6 +1383,24 @@ export default function CreateAccount() {
 
             </View>
 
+            <View style={styles.specialtySection}>
+              <Text style={styles.sectionLabel}>{t.specialtyChoices}</Text>
+              <View style={styles.specialtyOptions}>
+                {specialtyOptions.map((option) => {
+                  const selected = specialty === option.value;
+                  return (
+                    <TouchableOpacity key={option.value} disabled={loading}
+                      accessibilityRole="button" accessibilityState={{ selected, disabled: loading }}
+                      onPress={() => setSpecialty(option.value)}
+                      style={[styles.specialtyOption, selected && styles.specialtyOptionSelected, loading && styles.disabled]}>
+                      <Text style={styles.specialtyOptionText}>{language === "si" ? option.si : option.en}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              <Text style={styles.specialtyHelp}>{t.specialtyHelp}</Text>
+            </View>
+
             <View
 
               style={
@@ -1231,17 +1431,9 @@ export default function CreateAccount() {
 
                 }
 
-                value={
+                value={language === "si" ? (specialtyOptions.find(option => option.value === specialty)?.si || specialty) : specialty}
 
-                  specialty
-
-                }
-
-                onChangeText={
-
-                  setSpecialty
-
-                }
+                onChangeText={value => setSpecialty(specialtyOptions.find(option => option.si === value)?.value || value)}
 
                 style={
 
@@ -1429,6 +1621,7 @@ export default function CreateAccount() {
 
           <TouchableOpacity
 
+            accessibilityRole="button" accessibilityLabel={showpassword ? t.hidePassword : t.showPassword}
             onPress={() =>
 
               setshowpassword(
@@ -1523,6 +1716,7 @@ export default function CreateAccount() {
 
           <TouchableOpacity
 
+            accessibilityRole="button" accessibilityLabel={showconfpassword ? t.hidePassword : t.showPassword}
             onPress={() =>
 
               setconfShowpassword(
