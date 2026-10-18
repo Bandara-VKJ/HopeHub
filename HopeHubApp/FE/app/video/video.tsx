@@ -1,3 +1,4 @@
+import { useCallRating } from "@/hooks/useCallRating";
 import React, {
   useCallback,
   useEffect,
@@ -252,6 +253,8 @@ export default function VideoCallScreen() {
   // CONNECT TO LIVEKIT
   // ==========================================
 
+  const callRating = useCallRating({ bookingId, disconnectRoom, onEnding: setEnding });
+
   useEffect(() => {
     mountedRef.current = true;
 
@@ -379,8 +382,8 @@ export default function VideoCallScreen() {
               dynacast: true,
             });
 
-          roomRef.current =
-            room;
+          roomRef.current = room;
+          callRating.attachRoom(room, data.role);
 
           // ==================================
           // PARTICIPANT EVENTS
@@ -582,6 +585,7 @@ export default function VideoCallScreen() {
           }
 
           setConnected(true);
+          void callRating.connected();
 
           setRemoteJoined(
             room.remoteParticipants
@@ -640,6 +644,8 @@ export default function VideoCallScreen() {
     bookingId,
     passedRole,
     disconnectRoom,
+    callRating.attachRoom,
+    callRating.connected,
   ]);
 
   // ==========================================
@@ -732,36 +738,7 @@ export default function VideoCallScreen() {
   // END CALL
   // ==========================================
 
-  const endCall =
-    useCallback(
-      async () => {
-        if (ending) {
-          return;
-        }
-
-        setEnding(true);
-
-        await disconnectRoom();
-
-        if (
-          router.canGoBack()
-        ) {
-          router.back();
-        } else {
-          router.replace(
-            passedRole ===
-              "counselor"
-              ? "/(counselor)/counselor"
-              : "/(tabs)/Support/support"
-          );
-        }
-      },
-      [
-        disconnectRoom,
-        ending,
-        passedRole,
-      ]
-    );
+  const endCall = callRating.endCall;
 
   // ==========================================
   // ANDROID BACK BUTTON

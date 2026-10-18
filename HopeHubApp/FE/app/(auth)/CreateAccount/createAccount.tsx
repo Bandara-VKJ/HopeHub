@@ -1,11 +1,20 @@
 import {
+
   Text,
+
   View,
+
   TextInput,
+
   TouchableOpacity,
+
   Alert,
+
   ScrollView,
+
+  Platform,
   ActivityIndicator,
+
 } from "react-native";
 
 import { useState } from "react";
@@ -23,407 +32,560 @@ import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageToggle from "@/components/LanguageToggle";
 
 import {
+
   accountCreateStyles as styles,
+
 } from "./createAccountStyles";
 
+import { Image } from "react-native";
+
+import * as ImagePicker from "expo-image-picker";
 
 const BASE_URL =
-  process.env.EXPO_PUBLIC_BASE_URL;
 
+  process.env.EXPO_PUBLIC_BASE_URL;
 
 export default function CreateAccount() {
 
   const {
+
     t,
+
     language,
+
   } = useLanguage();
 
-
   const [
+
     logrole,
+
     setLogrole,
+
   ] = useState<
+
     "user" | "counselor"
+
   >("user");
 
-
   const [
+
     first,
+
     setFirst,
+
   ] = useState("");
 
-
   const [
+
     last,
+
     setLast,
+
   ] = useState("");
 
-
   const [
+
     email,
+
     setEmail,
+
   ] = useState("");
 
-
   const [
+
     mobile,
+
     setMobile,
+
   ] = useState("");
 
-
   const [
+
     title,
+
     setTitle,
+
   ] = useState("");
 
-
   const [
+
     specialty,
+
     setSpecialty,
+
   ] = useState("");
 
-
   const [
+
     experience,
+
     setExperience,
+
   ] = useState("");
 
-
   const [
+
     availability,
+
     setAvailability,
+
   ] = useState("");
 
-
   const [
+
     password,
+
     setPassword,
+
   ] = useState("");
 
-
   const [
+
     confpassword,
+
     setconfPassword,
+
   ] = useState("");
 
-
   const [
+
     showpassword,
+
     setshowpassword,
+
   ] = useState(false);
 
-
   const [
+
     showconfpassword,
-    setconfShowpassword,
-  ] = useState(false);
 
+    setconfShowpassword,
+
+  ] = useState(false);
 
   const [
+
     loading,
+
     setLoading,
+
   ] = useState(false);
 
+  const [counselorImage, setCounselorImage] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
+
+  const pickCounselorImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(t.common.error, "Please allow photo library access to select a counselor image.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets?.[0]) {
+        setCounselorImage(result.assets[0]);
+      }
+    } catch (error) {
+      console.log("Counselor image picker error:", error);
+      Alert.alert(t.common.error, "Unable to select an image. Please try again.");
+    }
+  };
 
   // ==========================================================
+
   // CREATE ACCOUNT
+
   // ==========================================================
 
   const handleCreateAccount = async () => {
 
     if (loading) {
+
       return;
+
     }
 
-
     if (
+
       !first.trim() ||
+
       !last.trim() ||
+
       !email.trim() ||
+
       !password ||
+
       !confpassword
+
     ) {
 
       Alert.alert(
+
         t.common.error,
+
         t.createAccount.fillBasic
+
       );
 
       return;
+
     }
 
-
     if (
+
       password !==
+
       confpassword
+
     ) {
 
       Alert.alert(
+
         t.common.error,
+
         t.createAccount.passwordMismatch
+
       );
 
       return;
-    }
 
+    }
 
     if (
+
       password.length < 6
+
     ) {
 
       Alert.alert(
+
         t.common.error,
+
         t.createAccount.passwordShort
+
       );
 
       return;
-    }
 
+    }
 
     try {
 
       setLoading(true);
 
-
       // ======================================================
+
       // COUNSELOR REGISTRATION
+
       // ======================================================
 
       if (
+
         logrole ===
+
         "counselor"
+
       ) {
 
         if (
+
           !mobile.trim() ||
+
           !title.trim() ||
+
           !specialty.trim() ||
+
           !experience.trim()
+
         ) {
 
           Alert.alert(
+
             t.common.error,
+
             t.createAccount.fillCounselor
+
           );
 
           return;
+
         }
 
+        const formData = new FormData();
+        formData.append("firstName", first.trim());
+        formData.append("lastName", last.trim());
+        formData.append("email", email.trim().toLowerCase());
+        formData.append("password", password);
+        formData.append("mobile", mobile.trim());
+        formData.append("title", title.trim());
+        formData.append("specialty", specialty.trim());
+        formData.append("experience", experience.trim());
+        formData.append("availability", availability.trim());
 
-        const response =
-          await ngrokFetch(
-            `${BASE_URL}/api/counselors/register`,
-            {
-              method: "POST",
+        if (counselorImage) {
+          const name = counselorImage.fileName ||
+            counselorImage.uri.split("/").pop()?.split("?")[0] ||
+            "counselor-image.jpg";
+          const extension = name.split(".").pop()?.toLowerCase();
+          const type = counselorImage.mimeType ||
+            (extension === "png" ? "image/png" :
+              extension === "webp" ? "image/webp" :
+              extension === "heic" ? "image/heic" :
+              extension === "heif" ? "image/heif" : "image/jpeg");
 
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
+          if (Platform.OS === "web") {
+            const file = counselorImage.file ||
+              await (await fetch(counselorImage.uri)).blob();
+            formData.append("image", file, name);
+          } else {
+            // React Native accepts a URI-backed file descriptor for uploads.
+            formData.append("image", {
+              uri: counselorImage.uri,
+              name,
+              type,
+            } as unknown as Blob);
+          }
+        }
 
-              body: JSON.stringify({
-                firstName:
-                  first.trim(),
-
-                lastName:
-                  last.trim(),
-
-                email:
-                  email
-                    .trim()
-                    .toLowerCase(),
-
-                password,
-
-                mobile:
-                  mobile.trim(),
-
-                title:
-                  title.trim(),
-
-                specialty:
-                  specialty.trim(),
-
-                experience:
-                  experience.trim(),
-
-                availability:
-                  availability.trim(),
-              }),
-            }
-          );
-
+        // Fetch supplies the multipart Content-Type and boundary.
+        const response = await ngrokFetch(
+          `${BASE_URL}/api/counselors/register`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         const text =
+
           await response.text();
 
-
         let data: any = {};
-
 
         try {
 
           data =
+
             text
+
               ? JSON.parse(text)
+
               : {};
 
         } catch {
 
           data = {};
-        }
 
+        }
 
         if (!response.ok) {
 
           Alert.alert(
+
             t.common.error,
 
             data?.message ||
+
               t.createAccount.registrationFailed
+
           );
 
           return;
+
         }
 
-
         // ====================================================
+
         // IMPORTANT:
+
         // Do NOT store token / counselor / role here.
+
         //
+
         // Counselor is NOT logged in.
+
         // Admin must approve first.
+
         // ====================================================
 
         Alert.alert(
+
           "Account Created Successfully",
 
           "Your counselor account has been created successfully. Please wait for HopeHub System approval before logging in.",
 
           [
+
             {
+
               text: "OK",
 
               onPress: () => {
 
                 router.replace({
+
                   pathname:
+
                     "/(auth)/Login/login",
 
                   params: {
+
                     role:
+
                       "counselor",
+
                   },
+
                 });
 
               },
+
             },
+
           ]
+
         );
 
-
         return;
+
       }
 
-
       // ======================================================
+
       // NORMAL USER REGISTRATION
+
       // ======================================================
 
       const response =
+
         await ngrokFetch(
+
           `${BASE_URL}/api/auth/register`,
+
           {
+
             method: "POST",
 
             headers: {
+
               "Content-Type":
+
                 "application/json",
+
             },
 
             body: JSON.stringify({
+
               firstName:
+
                 first.trim(),
 
               lastName:
+
                 last.trim(),
 
               email:
+
                 email
+
                   .trim()
+
                   .toLowerCase(),
 
               password,
 
               mobile:
+
                 mobile.trim(),
 
               role:
+
                 "user",
 
               language,
+
             }),
+
           }
+
         );
 
-
       const text =
+
         await response.text();
 
-
       let data: any = {};
-
 
       try {
 
         data =
+
           text
+
             ? JSON.parse(text)
+
             : {};
 
       } catch {
 
         data = {};
-      }
 
+      }
 
       if (!response.ok) {
 
         Alert.alert(
+
           t.common.error,
 
           data?.message ||
+
             t.createAccount.registrationFailed
+
         );
 
         return;
+
       }
 
-
       Alert.alert(
-        t.common.success,
-        t.createAccount.userCreated
-      );
 
+        t.common.success,
+
+        t.createAccount.userCreated
+
+      );
 
       router.replace(
-        "/(auth)/Login/login"
-      );
 
+        "/(auth)/Login/login"
+
+      );
 
     } catch (error) {
 
       console.log(
-        "Create account error:",
-        error
-      );
 
+        "Create account error:",
+
+        error
+
+      );
 
       Alert.alert(
-        t.common.error,
-        t.common.networkError
-      );
 
+        t.common.error,
+
+        t.common.networkError
+
+      );
 
     } finally {
 
@@ -433,19 +595,24 @@ export default function CreateAccount() {
 
   };
 
-
   // ==========================================================
+
   // UI
+
   // ==========================================================
 
   return (
 
     <ScrollView
+
       style={styles.page}
 
       showsVerticalScrollIndicator={
+
         false
+
       }
+
     >
 
       {/* HERO */}
@@ -454,10 +621,12 @@ export default function CreateAccount() {
 
         <LanguageToggle />
 
-
         <LottieView
+
           source={require(
+
             "../../../assets/animations/medicine online.json"
+
           )}
 
           autoPlay
@@ -465,76 +634,113 @@ export default function CreateAccount() {
           loop
 
           style={
+
             styles.heroAnimation
+
           }
+
         />
 
-
         <View
+
           style={
+
             styles.heroContent
+
           }
+
         >
 
           <Text
+
             style={
+
               styles.smallTitle
+
             }
+
           >
+
             {
+
               t.createAccount
+
                 .welcome
+
             }
+
           </Text>
 
-
           <Text
+
             style={
+
               styles.brand
+
             }
+
           >
+
             HopeHub
+
           </Text>
 
         </View>
 
       </View>
 
-
       {/* ROLE SWITCH */}
 
       <View
+
         style={
+
           styles.roleSwitch
+
         }
+
       >
 
         <TouchableOpacity
 
           style={[
+
             styles.roleBtn,
 
             logrole ===
+
               "user" &&
+
               styles.roleBtnActive,
+
           ]}
 
           onPress={() =>
+
             setLogrole(
+
               "user"
+
             )
+
           }
+
         >
 
           <Text
 
             style={[
+
               styles.roleText,
 
               logrole ===
+
                 "user" &&
+
                 styles.roleTextActive,
+
             ]}
+
           >
 
             {t.common.user}
@@ -543,38 +749,54 @@ export default function CreateAccount() {
 
         </TouchableOpacity>
 
-
         <TouchableOpacity
 
           style={[
+
             styles.roleBtn,
 
             logrole ===
+
               "counselor" &&
+
               styles.roleBtnActive,
+
           ]}
 
           onPress={() =>
+
             setLogrole(
+
               "counselor"
+
             )
+
           }
+
         >
 
           <Text
 
             style={[
+
               styles.roleText,
 
               logrole ===
+
                 "counselor" &&
+
                 styles.roleTextActive,
+
             ]}
+
           >
 
             {
+
               t.common
+
                 .counselor
+
             }
 
           </Text>
@@ -583,145 +805,216 @@ export default function CreateAccount() {
 
       </View>
 
-
       {/* FORM */}
 
       <View
+
         style={
+
           styles.card
+
         }
+
       >
 
         <Text
+
           style={
+
             styles.cardTitle
+
           }
+
         >
 
           {
+
             logrole ===
+
             "counselor"
+
               ? t.createAccount
+
                   .counselorDetails
+
               : t.createAccount
+
                   .accountDetails
+
           }
 
         </Text>
 
-
         {/* NAME */}
 
         <View
+
           style={
+
             styles.row
+
           }
+
         >
 
           <View
+
             style={[
+
               styles.inputWrapper,
+
               {
+
                 flex: 1,
+
               },
+
             ]}
+
           >
 
             <Ionicons
+
               name="person-outline"
+
               size={20}
+
               color="#7A9A9A"
+
             />
 
-
             <TextInput
+
               placeholder={
+
                 t.createAccount
+
                   .firstName
+
               }
 
               value={
+
                 first
+
               }
 
               onChangeText={
+
                 setFirst
+
               }
 
               style={
+
                 styles.input
+
               }
+
             />
 
           </View>
 
-
           <View
+
             style={[
+
               styles.inputWrapper,
+
               {
+
                 flex: 1,
+
               },
+
             ]}
+
           >
 
             <Ionicons
+
               name="person-outline"
+
               size={20}
+
               color="#7A9A9A"
+
             />
 
-
             <TextInput
+
               placeholder={
+
                 t.createAccount
+
                   .lastName
+
               }
 
               value={
+
                 last
+
               }
 
               onChangeText={
+
                 setLast
+
               }
 
               style={
+
                 styles.input
+
               }
+
             />
 
           </View>
 
         </View>
 
-
         {/* EMAIL */}
 
         <View
+
           style={
+
             styles.inputWrapper
+
           }
+
         >
 
           <Ionicons
+
             name="mail-outline"
+
             size={20}
+
             color="#7A9A9A"
+
           />
 
-
           <TextInput
+
             placeholder={
+
               t.common.email
+
             }
 
             value={
+
               email
+
             }
 
             onChangeText={
+
               setEmail
+
             }
 
             autoCapitalize="none"
@@ -729,401 +1022,605 @@ export default function CreateAccount() {
             keyboardType="email-address"
 
             style={
+
               styles.input
+
             }
+
           />
 
         </View>
 
-
         {/* MOBILE */}
 
         <View
+
           style={
+
             styles.inputWrapper
+
           }
+
         >
 
           <Ionicons
+
             name="call-outline"
+
             size={20}
+
             color="#7A9A9A"
+
           />
 
-
           <TextInput
+
             placeholder={
+
               t.createAccount
+
                 .mobile
+
             }
 
             value={
+
               mobile
+
             }
 
             onChangeText={
+
               setMobile
+
             }
 
             keyboardType="phone-pad"
 
             style={
+
               styles.input
+
             }
+
           />
 
         </View>
 
-
         {/* COUNSELOR DETAILS */}
 
         {logrole ===
+
           "counselor" && (
+
           <>
 
+            <View style={{ alignItems: "center", marginBottom: 16 }}>
+              <TouchableOpacity
+                onPress={pickCounselorImage}
+                disabled={loading}
+                accessibilityRole="button"
+                accessibilityLabel={counselorImage ? "Change counselor image" : "Select counselor image"}
+                style={{ alignItems: "center", padding: 12 }}
+              >
+                {counselorImage ? (
+                  <Image
+                    source={{ uri: counselorImage.uri }}
+                    style={{ width: 110, height: 110, borderRadius: 55 }}
+                    resizeMode="cover"
+                    accessibilityLabel="Selected counselor image"
+                  />
+                ) : (
+                  <Ionicons name="camera-outline" size={48} color="#7A9A9A" />
+                )}
+                <Text style={[styles.sectionLabel, { marginTop: 8 }]}>
+                  {counselorImage ? "Change counselor image" : "Select counselor image (optional)"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <View
+
               style={
+
                 styles.divider
+
               }
+
             />
 
-
             <Text
+
               style={
+
                 styles.sectionLabel
+
               }
+
             >
 
               {
+
                 t.createAccount
+
                   .professionalInfo
+
               }
 
             </Text>
 
-
             <View
+
               style={
+
                 styles.inputWrapper
+
               }
+
             >
 
               <Ionicons
+
                 name="briefcase-outline"
+
                 size={20}
+
                 color="#7A9A9A"
+
               />
 
-
               <TextInput
+
                 placeholder={
+
                   t.createAccount
+
                     .titlePlaceholder
+
                 }
 
                 value={
+
                   title
+
                 }
 
                 onChangeText={
+
                   setTitle
+
                 }
 
                 style={
+
                   styles.input
+
                 }
+
               />
 
             </View>
 
-
             <View
+
               style={
+
                 styles.inputWrapper
+
               }
+
             >
 
               <Ionicons
+
                 name="heart-outline"
+
                 size={20}
+
                 color="#7A9A9A"
+
               />
 
-
               <TextInput
+
                 placeholder={
+
                   t.createAccount
+
                     .specialtyPlaceholder
+
                 }
 
                 value={
+
                   specialty
+
                 }
 
                 onChangeText={
+
                   setSpecialty
+
                 }
 
                 style={
+
                   styles.input
+
                 }
+
               />
 
             </View>
 
-
             <View
+
               style={
+
                 styles.inputWrapper
+
               }
+
             >
 
               <Ionicons
+
                 name="school-outline"
+
                 size={20}
+
                 color="#7A9A9A"
+
               />
 
-
               <TextInput
+
                 placeholder={
+
                   t.createAccount
+
                     .experiencePlaceholder
+
                 }
 
                 value={
+
                   experience
+
                 }
 
                 onChangeText={
+
                   setExperience
+
                 }
 
                 style={
+
                   styles.input
+
                 }
+
               />
 
             </View>
 
-
             <View
+
               style={
+
                 styles.inputWrapper
+
               }
+
             >
 
               <Ionicons
+
                 name="calendar-outline"
+
                 size={20}
+
                 color="#7A9A9A"
+
               />
 
-
               <TextInput
+
                 placeholder={
+
                   t.createAccount
+
                     .availabilityPlaceholder
+
                 }
 
                 value={
+
                   availability
+
                 }
 
                 onChangeText={
+
                   setAvailability
+
                 }
 
                 style={
+
                   styles.input
+
                 }
+
               />
 
             </View>
 
           </>
+
         )}
 
-
         <View
-          style={
-            styles.divider
-          }
-        />
 
+          style={
+
+            styles.divider
+
+          }
+
+        />
 
         {/* PASSWORD */}
 
         <View
+
           style={
+
             styles.inputWrapper
+
           }
+
         >
 
           <Ionicons
+
             name="lock-closed-outline"
+
             size={20}
+
             color="#7A9A9A"
+
           />
 
-
           <TextInput
+
             placeholder={
+
               t.common.password
+
             }
 
             value={
+
               password
+
             }
 
             onChangeText={
+
               setPassword
+
             }
 
             secureTextEntry={
+
               !showpassword
+
             }
 
             style={
+
               styles.input
+
             }
+
           />
 
-
           <TouchableOpacity
+
             onPress={() =>
+
               setshowpassword(
+
                 !showpassword
+
               )
+
             }
+
           >
 
             <Ionicons
 
               name={
+
                 showpassword
+
                   ? "eye-off-outline"
+
                   : "eye-outline"
+
               }
 
               size={20}
 
               color="#7A9A9A"
+
             />
 
           </TouchableOpacity>
 
         </View>
-
 
         {/* CONFIRM PASSWORD */}
 
         <View
+
           style={
+
             styles.inputWrapper
+
           }
+
         >
 
           <Ionicons
+
             name="lock-closed-outline"
+
             size={20}
+
             color="#7A9A9A"
+
           />
 
-
           <TextInput
+
             placeholder={
+
               t.createAccount
+
                 .confirmPassword
+
             }
 
             value={
+
               confpassword
+
             }
 
             onChangeText={
+
               setconfPassword
+
             }
 
             secureTextEntry={
+
               !showconfpassword
+
             }
 
             style={
-              styles.input
-            }
-          />
 
+              styles.input
+
+            }
+
+          />
 
           <TouchableOpacity
 
             onPress={() =>
+
               setconfShowpassword(
+
                 !showconfpassword
+
               )
+
             }
+
           >
 
             <Ionicons
 
               name={
+
                 showconfpassword
+
                   ? "eye-off-outline"
+
                   : "eye-outline"
+
               }
 
               size={20}
 
               color="#7A9A9A"
+
             />
 
           </TouchableOpacity>
 
         </View>
-
 
         {/* CREATE ACCOUNT */}
 
         <TouchableOpacity
 
           style={[
+
             styles.button,
 
             loading && {
+
               opacity: 0.6,
+
             },
+
           ]}
 
           onPress={
+
             handleCreateAccount
+
           }
 
           disabled={
+
             loading
+
           }
+
         >
 
           {loading ? (
 
             <ActivityIndicator
+
               color="#fff"
+
             />
 
           ) : (
 
             <Text
+
               style={
+
                 styles.buttonText
+
               }
+
             >
 
               {
+
                 logrole ===
+
                 "counselor"
+
                   ? t.createAccount
+
                       .createCounselor
+
                   : t.createAccount
+
                       .createAccount
+
               }
 
             </Text>
@@ -1132,34 +1629,48 @@ export default function CreateAccount() {
 
         </TouchableOpacity>
 
-
         <Text
+
           style={
+
             styles.bottomText
+
           }
+
         >
 
           {
-            t.createAccount
-              .haveAccount
-          }{" "}
 
+            t.createAccount
+
+              .haveAccount
+
+          }{" "}
 
           <Text
 
             style={
+
               styles.loginText
+
             }
 
             onPress={() =>
+
               router.push(
+
                 "/(auth)/Login/login"
+
               )
+
             }
+
           >
 
             {
+
               t.common.login
+
             }
 
           </Text>
@@ -1169,5 +1680,7 @@ export default function CreateAccount() {
       </View>
 
     </ScrollView>
+
   );
+
 }

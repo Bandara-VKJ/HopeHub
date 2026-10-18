@@ -1,8 +1,50 @@
+import path from "node:path";
+import { unlink } from "node:fs/promises";
+
+// Upload middleware must store profile images under the public uploads folder.
+// Supports Multer single(), array(), and fields() request shapes.
+const uploadedFiles = (req) => [...new Set([
+  ...(req.file ? [req.file] : []),
+  ...(Array.isArray(req.files)
+    ? req.files
+    : Object.values(req.files || {}).flat()),
+].filter(Boolean))];
+
+const profileImagePath = (req) => {
+  const file = req.file || uploadedFiles(req).find((item) =>
+    ["image", "profileImage", "profilePic"].includes(item.fieldname)
+  );
+  if (!file) return undefined;
+  if (!file.path) {
+    throw new Error("Profile image upload must use disk storage");
+  }
+  const relative = path.relative(
+    path.resolve(process.cwd(), "uploads"),
+    path.resolve(file.path)
+  );
+  if (!relative || relative === ".." || relative.startsWith(".." + path.sep) || path.isAbsolute(relative)) {
+    throw new Error("Profile image must be stored inside the uploads folder");
+  }
+  return "/uploads/" + relative.split(path.sep).join("/");
+};
+
+const cleanupRegistrationUploads = async (req) => {
+  await Promise.all(uploadedFiles(req).map(async (file) => {
+    if (!file.path) return;
+    try {
+      await unlink(file.path);
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        console.error("Failed to remove registration upload:", error);
+      }
+    }
+  }));
+};
+
 import Counselor from "../models/Counselor.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
 
 // ============================================================
 // TOKEN
@@ -20,7 +62,6 @@ const generateToken = (counselor) => {
     }
   );
 };
-
 
 // ============================================================
 // SAFE COUNSELOR
@@ -60,12 +101,12 @@ const safeCounselor = (counselor) => ({
   createdAt: counselor.createdAt,
 });
 
-
 // ============================================================
 // REGISTER COUNSELOR
 // ============================================================
 
 export const registerCounselor = async (req, res) => {
+  let registrationSaved = false;
   try {
     const {
       firstName,
@@ -108,6 +149,8 @@ export const registerCounselor = async (req, res) => {
           "Counselor email already exists",
       });
     }
+
+    const image = profileImagePath(req);
 
     const hashedPassword =
       await bcrypt.hash(password, 10);
@@ -156,6 +199,8 @@ export const registerCounselor = async (req, res) => {
 
         avatarColor: "#2CA6A4",
 
+        ...(image ? { image } : {}),
+
         // Counselor must wait for
         // HopeHub System approval
         approvalStatus: "pending",
@@ -164,6 +209,8 @@ export const registerCounselor = async (req, res) => {
 
         rejectedAt: null,
       });
+
+    registrationSaved = true;
 
     // IMPORTANT:
     // Do NOT create a token here.
@@ -195,9 +242,12 @@ export const registerCounselor = async (req, res) => {
 
       error: error.message,
     });
+  } finally {
+    if (!registrationSaved) {
+      await cleanupRegistrationUploads(req);
+    }
   }
 };
-
 
 // ============================================================
 // COUNSELOR LOGIN
@@ -247,7 +297,6 @@ export const loginCounselor = async (
       });
     }
 
-
     // ========================================================
     // HOPEHUB SYSTEM APPROVAL CHECK
     // ========================================================
@@ -266,7 +315,6 @@ export const loginCounselor = async (
       });
     }
 
-
     if (
       counselor.approvalStatus ===
       "rejected"
@@ -281,7 +329,6 @@ export const loginCounselor = async (
       });
     }
 
-
     if (
       counselor.approvalStatus !==
       "approved"
@@ -293,7 +340,6 @@ export const loginCounselor = async (
           "Your counselor account does not have permission to access the system.",
       });
     }
-
 
     // ========================================================
     // ONLY APPROVED COUNSELORS REACH HERE
@@ -333,7 +379,6 @@ export const loginCounselor = async (
   }
 };
 
-
 // ============================================================
 // ADMIN - GET COUNSELORS
 // ============================================================
@@ -369,7 +414,6 @@ export const getCounselorsForAdmin =
       });
     }
   };
-
 
 // ============================================================
 // ADMIN - APPROVE COUNSELOR
@@ -426,7 +470,6 @@ export const approveCounselor =
     }
   };
 
-
 // ============================================================
 // ADMIN - CANCEL COUNSELOR ACCESS
 // ============================================================
@@ -481,7 +524,6 @@ export const rejectCounselor =
       });
     }
   };
-
 
 // ============================================================
 // ADMIN - DELETE COUNSELOR ACCOUNT
@@ -540,7 +582,6 @@ export const deleteCounselor =
     }
   };
 
-
 // ============================================================
 // GET ALL COUNSELORS
 // ============================================================
@@ -574,7 +615,6 @@ export const getCounselors =
       });
     }
   };
-
 
 // ============================================================
 // GET COUNSELOR BY ID
@@ -612,7 +652,6 @@ export const getCounselorById =
       });
     }
   };
-
 
 // ============================================================
 // UPDATE AVAILABILITY
@@ -679,7 +718,6 @@ export const updateCounselorAvailability =
     }
   };
 
-
 // ============================================================
 // GET ALL PATIENTS
 // ============================================================
@@ -735,7 +773,6 @@ export const getAllPatients =
     }
   };
 
-
 // ============================================================
 // GET PATIENT BY ID
 // ============================================================
@@ -779,7 +816,6 @@ export const getPatientById =
       });
     }
   };
-
 
 // ============================================================
 // DELETE PATIENT

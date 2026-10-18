@@ -1,3 +1,4 @@
+import { useCallRating } from "@/hooks/useCallRating";
 import React, {
   useCallback,
   useEffect,
@@ -161,6 +162,8 @@ export default function VoiceCallScreen() {
   // CONNECT TO LIVEKIT
   // ==========================================
 
+  const callRating = useCallRating({ bookingId, disconnectRoom, onEnding: setEnding });
+
   useEffect(() => {
     mountedRef.current = true;
 
@@ -287,6 +290,7 @@ if (!userId) {
           });
 
           roomRef.current = room;
+          callRating.attachRoom(room, data.role);
 
           // ----------------------------------
           // LiveKit events
@@ -356,6 +360,7 @@ if (!userId) {
           }
 
           setConnected(true);
+          void callRating.connected();
 
           setRemoteJoined(
             room.remoteParticipants.size > 0
@@ -407,6 +412,8 @@ if (!userId) {
     bookingId,
     passedRole,
     disconnectRoom,
+    callRating.attachRoom,
+    callRating.connected,
   ]);
 
   // ==========================================
@@ -446,29 +453,7 @@ if (!userId) {
   // END CALL
   // ==========================================
 
-  const endCall = useCallback(async () => {
-    if (ending) {
-      return;
-    }
-
-    setEnding(true);
-
-    await disconnectRoom();
-
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace(
-        passedRole === "counselor"
-          ? "/(counselor)/counselor"
-          : "/(tabs)/Support/support"
-      );
-    }
-  }, [
-    disconnectRoom,
-    ending,
-    passedRole,
-  ]);
+  const endCall = callRating.endCall;
 
   // ==========================================
   // ANDROID BACK BUTTON

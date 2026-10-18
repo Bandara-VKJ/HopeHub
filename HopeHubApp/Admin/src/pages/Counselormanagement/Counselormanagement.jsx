@@ -15,6 +15,39 @@ const BASE_URL =
   "http://localhost:5000";
 
 
+const resolveImageUrl = (value) => {
+  const image = typeof value === "string" ? value.trim().replace(/\\/g, "/") : "";
+  if (!image) return null;
+  try {
+    return new URL(image, BASE_URL.replace(/\/+$/, "") + "/").toString();
+  } catch {
+    return null;
+  }
+};
+
+function CounselorAvatar({ counselor }) {
+  const image = counselor.image || counselor.imageUrl || counselor.profileImage;
+  const uri = resolveImageUrl(image);
+  const [failedUri, setFailedUri] = useState(null);
+  const initials = counselor.avatar ||
+    ((counselor.firstName?.charAt(0) || "") +
+      (counselor.lastName?.charAt(0) || "")) || "CN";
+
+  return (
+    <div className="avatar" style={{ overflow: "hidden", flexShrink: 0 }}>
+      {uri && failedUri !== uri ? (
+        <img
+          key={uri}
+          src={uri}
+          alt={counselor.name ? counselor.name + " profile photo" : "Counselor profile photo"}
+          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit", display: "block" }}
+          onError={() => setFailedUri(uri)}
+        />
+      ) : initials}
+    </div>
+  );
+}
+
 function CounselorManagement() {
 
   const [
@@ -604,20 +637,7 @@ function CounselorManagement() {
                     className="card-top"
                   >
 
-                    <div
-                      className="avatar"
-                    >
-
-                      {
-                        counselor.avatar ||
-                        `${counselor.firstName?.charAt(
-                          0
-                        ) || ""}${counselor.lastName?.charAt(
-                          0
-                        ) || ""}`
-                      }
-
-                    </div>
+                    <CounselorAvatar counselor={counselor} />
 
 
                     <div

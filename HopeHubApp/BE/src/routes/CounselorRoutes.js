@@ -1,3 +1,4 @@
+
 import express from "express";
 
 import {
@@ -19,32 +20,42 @@ import {
   protect,
 } from "../middlewares/authMiddleware.js";
 
+import uploadCounselorImage from
+  "../middlewares/counselorImageUpload.js";
 
 const router = express.Router();
 
-
-// ============================================================
-// REGISTRATION / LOGIN
-// ============================================================
-
+// REGISTRATION
 router.post(
   "/register",
+  (req, res, next) => {
+    uploadCounselorImage.single("image")(
+      req,
+      res,
+      (error) => {
+        if (error) {
+          return res.status(400).json({
+            success: false,
+            message: error.message,
+          });
+        }
+
+        next();
+      }
+    );
+  },
   registerCounselor
 );
 
+// LOGIN
 router.post(
   "/login",
   loginCounselor
 );
 
-
-// ============================================================
-// ADMIN COUNSELOR MANAGEMENT
-//
-// IMPORTANT:
-// Keep these BEFORE "/:id"
-// ============================================================
-
+// ADMIN MANAGEMENT
+// These endpoints must additionally use
+// verified admin-role authorization.
 router.get(
   "/admin/all",
   getCounselorsForAdmin
@@ -65,22 +76,14 @@ router.delete(
   deleteCounselor
 );
 
-
-// ============================================================
 // COUNSELOR AVAILABILITY
-// ============================================================
-
 router.patch(
   "/:id/availability",
   protect,
   updateCounselorAvailability
 );
 
-
-// ============================================================
 // PATIENT ROUTES
-// ============================================================
-
 router.get(
   "/all-patients",
   protect,
@@ -99,30 +102,18 @@ router.delete(
   deletePatient
 );
 
-
-// ============================================================
 // COUNSELOR LIST
-// ============================================================
-
 router.get(
   "/",
   protect,
   getCounselors
 );
 
-
-// ============================================================
-// COUNSELOR BY ID
-//
-// IMPORTANT:
-// Keep this last.
-// ============================================================
-
+// COUNSELOR DETAILS
 router.get(
   "/:id",
   protect,
   getCounselorById
 );
-
 
 export default router;
