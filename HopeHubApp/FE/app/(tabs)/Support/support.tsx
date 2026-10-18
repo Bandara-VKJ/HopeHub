@@ -12,12 +12,14 @@ import {
   Modal,
   SafeAreaView,
   Platform,
+  BackHandler,
+  StyleSheet,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import {
   styles,
@@ -1111,6 +1113,7 @@ const BookingModal = ({
             styles.modalHeader
           }
         >
+          <PageBack onPress={onClose} dark disabled={booking} />
           <View>
 
             <Text
@@ -1654,6 +1657,7 @@ const CounselorProfileModal = ({
             styles.modalHeader
           }
         >
+          <PageBack onPress={onClose} dark />
 
           <Text
             style={
@@ -2811,6 +2815,7 @@ const CounselorCard = ({
 
 export default function SupportScreen() {
   const Alert = useLocalizedAlert();
+  const bookingFromProfile = useRef(false);
 
   const [
     activeFilter,
@@ -3316,6 +3321,8 @@ export default function SupportScreen() {
     }
 
 
+    bookingFromProfile.current = profileVisible;
+
     setSelectedCounselor(
       counselor
     );
@@ -3349,6 +3356,11 @@ export default function SupportScreen() {
       setBookingVisible(
         false
       );
+
+      if (bookingFromProfile.current) {
+        setProfileVisible(true);
+        bookingFromProfile.current = false;
+      }
 
       setSelectedDate("");
 
@@ -4227,6 +4239,22 @@ export default function SupportScreen() {
 
   
 
+
+  const handleBack = () => {
+    if (bookingVisible) { closeBooking(); return; }
+    if (profileVisible) { closeProfile(); return; }
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
+  };
+
+  useFocusEffect(useCallback(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      handleBack();
+      return true;
+    });
+    return () => subscription.remove();
+  }, [bookingVisible, profileVisible, bookingLoading]));
+
   if (loading) {
 
     return (
@@ -4235,6 +4263,7 @@ export default function SupportScreen() {
           styles.loadingContainer
         }
       >
+        <PageBack onPress={handleBack} dark />
 
         <ActivityIndicator
           size="large"
@@ -4265,6 +4294,8 @@ export default function SupportScreen() {
     >
 
      
+
+      <View style={backStyles.bar}><PageBack onPress={handleBack} /></View>
 
       <CounselorProfileModal
         visible={
@@ -4910,3 +4941,25 @@ export default function SupportScreen() {
     </View>
   );
 }
+
+function PageBack({ onPress, dark = false, disabled = false }: {
+  onPress: () => void;
+  dark?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <TouchableOpacity onPress={onPress} disabled={disabled}
+      accessibilityRole="button" accessibilityLabel="Go back"
+      style={[backStyles.button, disabled && backStyles.disabled]}>
+      <Ionicons name="chevron-back" size={20} color={dark ? "#1A3A3A" : "#FFFFFF"} />
+      <Text style={[backStyles.label, { color: dark ? "#1A3A3A" : "#FFFFFF" }]}>Back</Text>
+    </TouchableOpacity>
+  );
+}
+
+const backStyles = StyleSheet.create({
+  bar: { backgroundColor: "#2CA6A4", paddingHorizontal: 12, paddingTop: 4 },
+  button: { minHeight: 44, minWidth: 44, flexDirection: "row", alignItems: "center", alignSelf: "flex-start", paddingHorizontal: 6 },
+  label: { fontSize: 13, fontWeight: "600" },
+  disabled: { opacity: 0.45 },
+});
