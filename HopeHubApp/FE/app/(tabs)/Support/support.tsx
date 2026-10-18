@@ -6,14 +6,12 @@ import React, {
 
 import {
   View,
-  Text,
   ScrollView,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
   Modal,
   SafeAreaView,
-  Alert,
+  Platform,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -30,18 +28,519 @@ import { ngrokFetch } from "@/utill/ngrokFetch";
 
 
 
+import { forwardRef, useMemo, useRef } from "react";
+import {
+  Text as NativeText,
+  TextInput as NativeTextInput,
+  Image as NativeImage,
+  TouchableOpacity as NativeTouchableOpacity,
+  Alert as NativeAlert,
+} from "react-native";
+import { useLanguage } from "@/i18n/LanguageContext";
+
+
+
+// UI-only translations. Backend/session/filter values remain English.
+const sinhala: Record<string, string> = {
+  "Error": "දෝෂයකි",
+  "Success": "සාර්ථකයි",
+  "Network Error": "ජාල දෝෂයකි",
+  "Network error": "ජාල දෝෂයකි",
+  "OK": "හරි",
+  "Yes": "ඔව්",
+  "No": "නැත",
+  "Cancel": "අවලංගු කරන්න",
+  "Confirm": "තහවුරු කරන්න",
+  "Counselor": "උපදේශක",
+  "Patient": "රෝගියා",
+  "A patient": "රෝගියෙකු",
+  "No email": "විද්‍යුත් තැපෑලක් නොමැත",
+  "Welcome Back 👋": "නැවත සාදරයෙන් පිළිගනිමු 👋",
+  "Professional Counselor": "වෘත්තීය උපදේශක",
+  "Mental Health & Wellness Counselor": "මානසික සෞඛ්‍ය සහ යහපැවැත්ම පිළිබඳ උපදේශක",
+  "Current Status": "වත්මන් තත්ත්වය",
+  "● Available": "● ලබා ගත හැක",
+  "● Busy": "● කාර්යබහුලයි",
+  "Available": "ලබා ගත හැක",
+  "Available Now": "දැන් ලබා ගත හැක",
+  "Available Today": "අද ලබා ගත හැක",
+  "Busy": "කාර්යබහුලයි",
+  "Set Busy": "කාර්යබහුල ලෙස සකසන්න",
+  "Set Available": "ලබා ගත හැකි ලෙස සකසන්න",
+  "Status Updated": "තත්ත්වය යාවත්කාලීන කරන ලදී",
+  "You are now Available.": "ඔබ දැන් සැසි සඳහා ලබා ගත හැක.",
+  "You are now Busy.": "ඔබ දැන් කාර්යබහුලයි.",
+  "Booking Requests": "සැසි ඉල්ලීම්",
+  "pending request": "පොරොත්තු ඉල්ලීම්",
+  "s": "",
+  "No Booking Requests": "සැසි ඉල්ලීම් නොමැත",
+  "New patient session requests will appear here.": "නව රෝගී සැසි ඉල්ලීම් මෙහි දිස්වනු ඇත.",
+  "Pending": "පොරොත්තුවෙන්",
+  "Confirmed": "තහවුරු කරන ලදී",
+  "Cancelled": "අවලංගු කරන ලදී",
+  "Confirm Session": "සැසිය තහවුරු කරන්න",
+  "Cancel Session": "සැසිය අවලංගු කරන්න",
+  "Open Chat": "කතාබහ විවෘත කරන්න",
+  "Finished Session": "අවසන් වූ සැසිය",
+  "Session Finished": "සැසිය අවසන් වී ඇත",
+  "Waiting for counselor confirmation.": "උපදේශකවරයාගේ තහවුරු කිරීම බලාපොරොත්තුවෙන්.",
+  "Session confirmed.": "සැසිය තහවුරු කරන ලදී.",
+  "Session cancelled.": "සැසිය අවලංගු කරන ලදී.",
+  "Chat": "කතාබහ",
+  "Voice": "හඬ",
+  "Video": "වීඩියෝ",
+  "Voice Call": "හඬ ඇමතුම",
+  "Video Call": "වීඩියෝ ඇමතුම",
+  "Sessions": "සැසි",
+  "My Profile Details": "මගේ පැතිකඩ විස්තර",
+  "Email": "විද්‍යුත් තැපෑල",
+  "Mobile": "ජංගම දුරකථනය",
+  "Title": "පදවි නාමය",
+  "Specialty": "විශේෂඥතාව",
+  "Experience": "පළපුරුද්ද",
+  "Availability": "ලබා ගත හැකි වේලාව",
+  "Quick Actions": "ඉක්මන් ක්‍රියාමාර්ග",
+  "Schedule": "කාලසටහන",
+  "Chats": "කතාබස්",
+  "Reports": "වාර්තා",
+  "Patients": "රෝගීන්",
+  "Patient Profile": "රෝගී පැතිකඩ",
+  "View patient details": "රෝගී විස්තර බලන්න",
+  "My Schedule": "මගේ කාලසටහන",
+  "All your scheduled counseling sessions": "ඔබේ නියමිත සියලු උපදේශන සැසි",
+  "My Chats": "මගේ කතාබස්",
+  "Active and previous counseling chats": "සක්‍රිය සහ පෙර උපදේශන කතාබස්",
+  "Patient Reports": "රෝගී වාර්තා",
+  "Create and manage patient reports": "රෝගී වාර්තා සාදන්න සහ කළමනාකරණය කරන්න",
+  "My Patients": "මගේ රෝගීන්",
+  "Patients assigned to your counseling sessions": "ඔබේ උපදේශන සැසි සඳහා යොමු කළ රෝගීන්",
+  "View detailed patient information": "විස්තරාත්මක රෝගී තොරතුරු බලන්න",
+  "No Scheduled Sessions": "නියමිත සැසි නොමැත",
+  "Your scheduled counseling sessions will appear here.": "ඔබේ නියමිත උපදේශන සැසි මෙහි දිස්වනු ඇත.",
+  "No Chats Yet": "තවම කතාබස් නොමැත",
+  "Confirmed or previous counseling sessions will appear here.": "තහවුරු කළ හෝ පෙර උපදේශන සැසි මෙහි දිස්වනු ඇත.",
+  "Select Patient": "රෝගියෙකු තෝරන්න",
+  "No patients available.": "රෝගීන් නොමැත.",
+  "Counseling Report": "උපදේශන වාර්තාව",
+  "Write your counseling session report...": "ඔබේ උපදේශන සැසි වාර්තාව ලියන්න...",
+  "Create Report": "වාර්තාව සාදන්න",
+  "Previous Reports": "පෙර වාර්තා",
+  "No Patients": "රෝගීන් නොමැත",
+  "Patients with your counseling sessions will appear here.": "ඔබේ උපදේශන සැසිවලට සහභාගී වන රෝගීන් මෙහි දිස්වනු ඇත.",
+  "Chat with Patient": "රෝගියා සමඟ කතාබහ කරන්න",
+  "Last session:": "අවසන් සැසිය:",
+  "Full Name": "සම්පූර්ණ නම",
+  "Last Session": "අවසන් සැසිය",
+  "Session Time": "සැසි වේලාව",
+  "Session Type": "සැසි වර්ගය",
+  "Booking Status": "වෙන්කිරීමේ තත්ත්වය",
+  "Logout": "ගිණුමෙන් ඉවත් වන්න",
+  "Are you sure you want to logout?": "ඔබට ගිණුමෙන් ඉවත් වීමට අවශ්‍ය බව විශ්වාසද?",
+  "\"Healing takes time, and asking for help is a courageous step.\"": "“සුවය ලැබීමට කාලය ගත වන අතර, උදව් ඉල්ලා සිටීම ධෛර්ය සම්පන්න පියවරකි.”",
+  "Loading counselor profile...": "උපදේශක පැතිකඩ පූරණය වෙමින්...",
+  "Counselor profile not found.": "උපදේශක පැතිකඩ සොයාගත නොහැක.",
+  "Login Again": "නැවත පිවිසෙන්න",
+  "Login Error": "පිවිසුම් දෝෂයකි",
+  "Counselor information is incomplete. Please login again.": "උපදේශක තොරතුරු අසම්පූර්ණයි. කරුණාකර නැවත පිවිසෙන්න.",
+  "Unable to load counselor profile.": "උපදේශක පැතිකඩ පූරණය කළ නොහැක.",
+  "Failed to load bookings.": "සැසි වෙන්කිරීම් පූරණය කිරීම අසාර්ථකයි.",
+  "Could not load bookings. Please check your backend and ngrok connection.": "සැසි වෙන්කිරීම් පූරණය කළ නොහැක. කරුණාකර සේවාදායක සම්බන්ධතාව පරීක්ෂා කරන්න.",
+  "Invalid Booking": "වලංගු නොවන වෙන්කිරීමකි",
+  "Only pending bookings can be confirmed.": "තහවුරු කළ හැක්කේ පොරොත්තු වෙන්කිරීම් පමණි.",
+  "Failed to confirm booking.": "වෙන්කිරීම තහවුරු කිරීම අසාර්ථකයි.",
+  "The booking has been confirmed successfully.": "වෙන්කිරීම සාර්ථකව තහවුරු කරන ලදී.",
+  "Could not confirm the booking.": "වෙන්කිරීම තහවුරු කළ නොහැක.",
+  "Already Cancelled": "දැනටමත් අවලංගු කර ඇත",
+  "This booking has already been cancelled.": "මෙම වෙන්කිරීම දැනටමත් අවලංගු කර ඇත.",
+  "Failed to cancel booking.": "වෙන්කිරීම අවලංගු කිරීම අසාර්ථකයි.",
+  "The booking has been cancelled successfully.": "වෙන්කිරීම සාර්ථකව අවලංගු කරන ලදී.",
+  "Could not cancel the booking.": "වෙන්කිරීම අවලංගු කළ නොහැක.",
+  "Chat Unavailable": "කතාබහ ලබා ගත නොහැක",
+  "You can chat with the patient only after confirming the booking.": "රෝගියා සමඟ කතාබහ කළ හැක්කේ වෙන්කිරීම තහවුරු කිරීමෙන් පසුව පමණි.",
+  "Chat Error": "කතාබස් දෝෂයකි",
+  "Booking ID is missing.": "වෙන්කිරීමේ හැඳුනුම නොමැත.",
+  "Counselor ID was not found. Please login again.": "උපදේශක හැඳුනුම සොයාගත නොහැක. කරුණාකර නැවත පිවිසෙන්න.",
+  "Voice Unavailable": "හඬ සැසිය ලබා ගත නොහැක",
+  "You can start a voice session only after confirming the booking.": "හඬ සැසියක් ආරම්භ කළ හැක්කේ වෙන්කිරීම තහවුරු කිරීමෙන් පසුව පමණි.",
+  "Voice Error": "හඬ සැසි දෝෂයකි",
+  "Video Unavailable": "වීඩියෝ සැසිය ලබා ගත නොහැක",
+  "You can start a video session only after confirming the booking.": "වීඩියෝ සැසියක් ආරම්භ කළ හැක්කේ වෙන්කිරීම තහවුරු කිරීමෙන් පසුව පමණි.",
+  "Video Error": "වීඩියෝ සැසි දෝෂයකි",
+  "Failed to update availability.": "ලබා ගත හැකි තත්ත්වය යාවත්කාලීන කිරීම අසාර්ථකයි.",
+  "Could not update your availability. Please try again.": "ඔබේ ලබා ගත හැකි තත්ත්වය යාවත්කාලීන කළ නොහැක. නැවත උත්සාහ කරන්න.",
+  "Please select a patient first.": "කරුණාකර පළමුව රෝගියෙකු තෝරන්න.",
+  "Report Required": "වාර්තාවක් අවශ්‍යයි",
+  "Please enter the counseling report.": "කරුණාකර උපදේශන වාර්තාව ඇතුළත් කරන්න.",
+  "Report Created": "වාර්තාව සාදන ලදී",
+  "Could not save the report.": "වාර්තාව සුරැකීමට නොහැකි විය.",
+  "Logout failed. Please try again.": "ගිණුමෙන් ඉවත් වීම අසාර්ථකයි. නැවත උත්සාහ කරන්න.",
+  "🔔 New Booking": "🔔 නව සැසි වෙන්කිරීමක්",
+  "View Booking": "වෙන්කිරීම බලන්න",
+  "Date:": "දිනය:",
+  "Time:": "වේලාව:",
+  "Type:": "වර්ගය:",
+  "Counselor Profile": "උපදේශක පැතිකඩ",
+  "Professional Details": "වෘත්තීය විස්තර",
+  "Book Session": "සැසියක් වෙන්කරන්න",
+  "Currently Busy": "දැනට කාර්යබහුලයි",
+  "All Counselors": "සියලු උපදේශකවරු",
+  "No ratings yet": "තවම ඇගයීම් නොමැත",
+  "Ratings unavailable": "ඇගයීම් ලබා ගත නොහැක",
+  "ratings": "ඇගයීම්",
+  "Patient ratings": "රෝගී ඇගයීම්",
+  "Rate your sessions": "ඔබේ සැසි ඇගයීමට ලක් කරන්න",
+  "Your rating": "ඔබේ ඇගයීම",
+  "Choose a score": "ලකුණු තෝරන්න",
+  "Submit rating": "ඇගයීම යවන්න",
+  "Saving...": "සුරකිමින්...",
+  "Rating saved": "ඇගයීම සුරකින ලදී",
+  "Thank you for your feedback.": "ඔබේ අදහස් සඳහා ස්තූතියි.",
+  "Could not save your rating. Please try again.": "ඇගයීම සුරැකිය නොහැක. නැවත උත්සාහ කරන්න.",
+  "Could not load rating sessions.": "ඇගයීම් සඳහා සැසි පූරණය කළ නොහැක.",
+  "Retry": "නැවත උත්සාහ කරන්න",
+  "Rate 1 star": "තරුවක් දෙන්න",
+  "Rate 2 stars": "තරු දෙකක් දෙන්න",
+  "Rate 3 stars": "තරු තුනක් දෙන්න",
+  "Rate 4 stars": "තරු හතරක් දෙන්න",
+  "Rate 5 stars": "තරු පහක් දෙන්න",
+  "Rate your session after a connected voice or video call ends.": "සම්බන්ධ වූ හඬ හෝ වීඩියෝ ඇමතුම අවසන් වූ පසු ඔබේ සැසිය ඇගයීමට ලක් කරන්න.",
+  "Recommended Counselors": "නිර්දේශිත උපදේශකවරු",
+  "Booking Confirmation": "වෙන්කිරීම තහවුරු කිරීම",
+  "Select Date": "දිනය තෝරන්න",
+  "Select Time": "වේලාව තෝරන්න",
+  "Select a date": "දිනයක් තෝරන්න",
+  "Select a time": "වේලාවක් තෝරන්න",
+  "Please select a date first.": "කරුණාකර පළමුව දිනයක් තෝරන්න.",
+  "Booked": "වෙන්කර ඇත",
+  "Your Session": "ඔබේ සැසිය",
+  "Selected Session": "තෝරාගත් සැසිය",
+  "Confirm Book Session": "සැසි වෙන්කිරීම තහවුරු කරන්න",
+  "Your booking will initially be marked as Pending. The counselor must confirm it before the session is officially confirmed.": "ඔබේ වෙන්කිරීම මුලින් පොරොත්තු තත්ත්වයේ සටහන් වේ. සැසිය නිල වශයෙන් තහවුරු වීමට උපදේශකවරයා එය තහවුරු කළ යුතුය.",
+  "SESSION STARTS IN": "සැසිය ආරම්භ වීමට",
+  "HR": "පැය",
+  "MIN": "මිනිත්තු",
+  "SEC": "තත්පර",
+  "Session time has arrived": "සැසි වේලාව පැමිණ ඇත",
+  "YOUR COUNSELING SUPPORT": "ඔබේ උපදේශන සහාය",
+  "Connect with Counselors": "උපදේශකවරුන් සමඟ සම්බන්ධ වන්න",
+  "Professional Support Available": "වෘත්තීය සහාය ලබා ගත හැක",
+  "Connect with counselors who specialize in addiction recovery. All conversations are confidential and secure.": "ඇබ්බැහිවීමෙන් සුවය ලැබීම පිළිබඳ විශේෂඥ උපදේශකවරුන් සමඟ සම්බන්ධ වන්න. සියලු කතාබස් රහසිගත සහ ආරක්ෂිතයි.",
+  "Your Counselors": "ඔබේ උපදේශකවරු",
+  "Your selected recovery support counselors": "ඔබ තෝරාගත් සුවය ලැබීමේ සහාය උපදේශකවරු",
+  "SELECTED": "තෝරාගෙන ඇත",
+  "Explore Other Counselors": "වෙනත් උපදේශකවරු සොයන්න",
+  "Find another counselor who matches your support needs.": "ඔබේ සහාය අවශ්‍යතාවලට ගැලපෙන වෙනත් උපදේශකවරයෙකු සොයන්න.",
+  "other counselor": "වෙනත් උපදේශකවරු",
+  "found": "හමු විය",
+  "No counselors found": "උපදේශකවරු හමු නොවීය",
+  "No counselors are currently available. Please refresh the page or try again later.": "දැනට උපදේශකවරු ලබා ගත නොහැක. පිටුව නැවුම් කරන්න හෝ පසුව නැවත උත්සාහ කරන්න.",
+  "Need Immediate Help?": "වහාම උදව් අවශ්‍යද?",
+  "If you're in crisis, contact your local emergency service or a qualified crisis professional immediately.": "ඔබ අර්බුදයක සිටී නම්, වහාම ඔබේ ප්‍රදේශයේ හදිසි සේවාවක් හෝ සුදුසුකම් ලත් අර්බුද සහාය වෘත්තිකයෙකු අමතන්න.",
+  "Loading counselors...": "උපදේශකවරු පූරණය වෙමින්...",
+  "AI": "කෘත්‍රිම බුද්ධිය",
+  "Counselor Busy": "උපදේශකවරයා කාර්යබහුලයි",
+  "Counselor ID is missing.": "උපදේශක හැඳුනුම නොමැත.",
+  "This counselor is currently unavailable. Please choose another counselor.": "මෙම උපදේශකවරයා දැනට ලබා ගත නොහැක. කරුණාකර වෙනත් උපදේශකවරයෙකු තෝරන්න.",
+  "Counselor information is missing.": "උපදේශක තොරතුරු නොමැත.",
+  "Please select a session date.": "කරුණාකර සැසි දිනයක් තෝරන්න.",
+  "Please select a session time.": "කරුණාකර සැසි වේලාවක් තෝරන්න.",
+  "Time Unavailable": "වේලාව ලබා ගත නොහැක",
+  "This time slot has already been booked. Please select another time.": "මෙම වේලාව දැනටමත් වෙන්කර ඇත. කරුණාකර වෙනත් වේලාවක් තෝරන්න.",
+  "Login Required": "පිවිසීම අවශ්‍යයි",
+  "Your user ID was not found. Please logout and login again.": "ඔබේ පරිශීලක හැඳුනුම සොයාගත නොහැක. කරුණාකර ඉවත් වී නැවත පිවිසෙන්න.",
+  "Existing Booking": "පවතින වෙන්කිරීමක්",
+  "Booking Failed": "වෙන්කිරීම අසාර්ථකයි",
+  "Could not parse booking response.": "වෙන්කිරීමේ ප්‍රතිචාරය කියවීමට නොහැකි විය.",
+  "Booking Error": "වෙන්කිරීමේ දෝෂයකි",
+  "The server did not return a valid booking.": "සේවාදායකය වලංගු වෙන්කිරීමක් ලබා දී නොමැත.",
+  "Booking Submitted": "වෙන්කිරීම ඉදිරිපත් කරන ලදී",
+  "Your counseling session has been booked successfully. Status: Pending The counselor must confirm the session before it becomes confirmed.": "ඔබේ උපදේශන සැසිය සාර්ථකව වෙන්කර ඇත.\n\nතත්ත්වය: පොරොත්තුවෙන්\n\nසැසිය තහවුරු වීමට උපදේශකවරයා එය තහවුරු කළ යුතුය.",
+  "Could not connect to the server. Please make sure the backend and ngrok are running.": "සේවාදායකයට සම්බන්ධ විය නොහැක. කරුණාකර සේවාදායකය සහ ngrok ක්‍රියාත්මක බව තහවුරු කරන්න.",
+  "Session Unavailable": "සැසිය ලබා ගත නොහැක",
+  "The booking ID could not be found. Please refresh the Support page and try again.": "වෙන්කිරීමේ හැඳුනුම සොයාගත නොහැක. සහාය පිටුව නැවුම් කර නැවත උත්සාහ කරන්න.",
+  "Account Created Successfully": "ගිණුම සාර්ථකව සාදන ලදී",
+  "Your counselor account has been created successfully. Please wait for HopeHub System approval before logging in.": "ඔබේ උපදේශක ගිණුම සාර්ථකව සාදන ලදී. පිවිසීමට පෙර HopeHub පද්ධතියේ අනුමැතිය ලැබෙන තෙක් රැඳී සිටින්න.",
+  "Please allow photo library access to select a counselor image.": "උපදේශක ඡායාරූපයක් තෝරා ගැනීමට ඡායාරූප ගබඩාවට ප්‍රවේශ වීමට අවසර දෙන්න.",
+  "Unable to select an image. Please try again.": "ඡායාරූපයක් තෝරාගත නොහැක. කරුණාකර නැවත උත්සාහ කරන්න.",
+  "Change counselor image": "උපදේශක ඡායාරූපය වෙනස් කරන්න",
+  "Select counselor image": "උපදේශක ඡායාරූපයක් තෝරන්න",
+  "Select counselor image (optional)": "උපදේශක ඡායාරූපයක් තෝරන්න (අත්‍යවශ්‍ය නොවේ)",
+  "Selected counselor image": "තෝරාගත් උපදේශක ඡායාරූපය",
+  "Counselor profile photo": "උපදේශක පැතිකඩ ඡායාරූපය",
+  "active": "සක්‍රිය",
+  "reports": "වාර්තා",
+  "patients": "රෝගීන්",
+  "sessions": "සැසි",
+  "Sun": "ඉරිදා",
+  "Mon": "සඳුදා",
+  "Tue": "අඟහරුවාදා",
+  "Wed": "බදාදා",
+  "Thu": "බ්‍රහස්පතින්දා",
+  "Fri": "සිකුරාදා",
+  "Sat": "සෙනසුරාදා",
+  "Jan": "ජනවාරි",
+  "Feb": "පෙබරවාරි",
+  "Mar": "මාර්තු",
+  "Apr": "අප්‍රේල්",
+  "May": "මැයි",
+  "Jun": "ජූනි",
+  "Jul": "ජූලි",
+  "Aug": "අගෝස්තු",
+  "Sep": "සැප්තැම්බර්",
+  "Oct": "ඔක්තෝබර්",
+  "Nov": "නොවැම්බර්",
+  "Dec": "දෙසැම්බර්",
+  "AM": "පෙ.ව.",
+  "PM": "ප.ව."
+};
+
+function translateCounselorText(value: string, language: string): string {
+  if (language !== "si" || !value.trim()) return value;
+  const key = value.replace(/\s+/g, " ").trim();
+  if (Object.prototype.hasOwnProperty.call(sinhala, key)) {
+    return (value.match(/^\s*/)?.[0] || "") + sinhala[key] + (value.match(/\s*$/)?.[0] || "");
+  }
+  let match = key.match(/^Confirm the session with (.+)\?$/);
+  if (match) return match[1] + " සමඟ සැසිය තහවුරු කරන්නද?";
+  match = key.match(/^Cancel the session with (.+)\?$/);
+  if (match) return match[1] + " සමඟ සැසිය අවලංගු කරන්නද?";
+  match = key.match(/^The report for (.+) has been saved successfully\.$/);
+  if (match) return match[1] + " සඳහා වාර්තාව සාර්ථකව සුරකින ලදී.";
+  match = key.match(/^You already have a (\w+) session with this counselor on (.+) at (.+)\.$/);
+  if (match) {
+    const status = ({ pending: "පොරොත්තු", confirmed: "තහවුරු කළ", cancelled: "අවලංගු කළ" } as Record<string, string>)[match[1]] || match[1];
+    return "ඔබට මෙම උපදේශකවරයා සමඟ " + match[2] + " දින " + match[3] + " වේලාවට " + status + " සැසියක් දැනටමත් ඇත.";
+  }
+  match = key.match(/^Server returned (\d+)\.$/);
+  if (match) return "සේවාදායකය ලබා දුන් තත්ත්ව කේතය: " + match[1] + ".";
+  // Notification template: keep patient identity and date/time values untouched.
+  const booked = value.indexOf(" has booked a counseling session.");
+  if (booked >= 0) {
+    return value.slice(0, booked) + " උපදේශන සැසියක් වෙන්කර ඇත." +
+      value.slice(booked + " has booked a counseling session.".length)
+        .replace(/Date:/g, "දිනය:").replace(/Time:/g, "වේලාව:")
+        .replace(/Type: (Chat|Video|Voice)/g, (_, kind) => "වර්ගය: " + sinhala[kind]);
+  }
+  if (/^\d{1,2}:\d{2}\s+(AM|PM)$/.test(key)) {
+    return value.replace(/\bAM\b/, "පෙ.ව.").replace(/\bPM\b/, "ප.ව.");
+  }
+  return value;
+}
+
+function localizeChildren(children: React.ReactNode, language: string): React.ReactNode {
+  if (typeof children === "string") return translateCounselorText(children, language);
+  if (Array.isArray(children)) return children.map(child => localizeChildren(child, language));
+  return children;
+}
+
+type TextProps = React.ComponentProps<typeof NativeText> & { translateText?: boolean };
+const Text = forwardRef<React.ElementRef<typeof NativeText>, TextProps>(
+  ({ children, accessibilityLabel, accessibilityHint, translateText = true, ...props }, ref) => {
+    const { language } = useLanguage();
+    return (
+      <NativeText {...props} ref={ref}
+        accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
+        accessibilityHint={accessibilityHint ? translateCounselorText(accessibilityHint, language) : accessibilityHint}
+      >
+        {translateText ? localizeChildren(children, language) : children}
+      </NativeText>
+    );
+  }
+);
+Text.displayName = "CounselorLocalizedText";
+
+const TextInput = forwardRef<React.ElementRef<typeof NativeTextInput>, React.ComponentProps<typeof NativeTextInput>>(
+  ({ placeholder, accessibilityLabel, ...props }, ref) => {
+    const { language } = useLanguage();
+    return <NativeTextInput {...props} ref={ref}
+      placeholder={placeholder ? translateCounselorText(placeholder, language) : placeholder}
+      accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
+    />;
+  }
+);
+TextInput.displayName = "CounselorLocalizedTextInput";
+
+const Image = forwardRef<React.ElementRef<typeof NativeImage>, React.ComponentProps<typeof NativeImage>>(
+  ({ accessibilityLabel, ...props }, ref) => {
+    const { language } = useLanguage();
+    return <NativeImage {...props} ref={ref}
+      accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
+    />;
+  }
+);
+Image.displayName = "CounselorLocalizedImage";
+
+const TouchableOpacity = forwardRef<React.ElementRef<typeof NativeTouchableOpacity>, React.ComponentProps<typeof NativeTouchableOpacity>>(
+  ({ accessibilityLabel, accessibilityHint, ...props }, ref) => {
+    const { language } = useLanguage();
+    return <NativeTouchableOpacity {...props} ref={ref}
+      accessibilityLabel={accessibilityLabel ? translateCounselorText(accessibilityLabel, language) : accessibilityLabel}
+      accessibilityHint={accessibilityHint ? translateCounselorText(accessibilityHint, language) : accessibilityHint}
+    />;
+  }
+);
+TouchableOpacity.displayName = "CounselorLocalizedTouchableOpacity";
+
+// A stable object with a live language reference also localizes socket callbacks.
+function useLocalizedAlert() {
+  const { language } = useLanguage();
+  const currentLanguage = useRef(language);
+  currentLanguage.current = language;
+  return useMemo(() => ({
+    alert: (...args: Parameters<typeof NativeAlert.alert>) => {
+      const [title, message, buttons, options] = args;
+      const translate = (text: string) => translateCounselorText(text, currentLanguage.current);
+      NativeAlert.alert(
+        translate(title),
+        message ? translate(message) : message,
+        buttons?.map(button => ({ ...button, text: button.text ? translate(button.text) : button.text })),
+        options
+      );
+    },
+  }), []);
+}
+
+
+
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+
+type RatingSession = {
+  _id: string;
+  counselorName: string;
+  sessionDate: string;
+  sessionTime: string;
+  score?: number;
+};
+
+const RatingSummary = ({ counselor, profile = false }: {
+  counselor: Counselor; profile?: boolean;
+}) => {
+  const summary = counselor.ratingSummary;
+  return (
+    <View style={{ alignItems: profile ? "center" : "flex-start", marginTop: 6, marginBottom: 8 }}>
+      {profile && <Text style={{ fontWeight: "600", color: "#466363", marginBottom: 5 }}>Patient ratings</Text>}
+      {counselor.ratingsUnavailable ? <Text style={{ color: "#667777" }}>Ratings unavailable</Text>
+        : !summary?.count ? <Text style={{ color: "#667777", fontSize: 12 }}>No ratings yet</Text>
+        : <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <Ionicons key={value} name={summary.average >= value ? "star" : summary.average >= value - 0.5 ? "star-half" : "star-outline"}
+                size={profile ? 20 : 14} color="#B87500" accessible={false} />
+            ))}
+            <Text style={{ marginLeft: 6, fontWeight: "700", color: "#354B4B" }}>{summary.average.toFixed(1)} / 5</Text>
+            <Text style={{ marginLeft: 5, color: "#667777", fontSize: 12 }}>({summary.count} <Text>ratings</Text>)</Text>
+          </View>}
+    </View>
+  );
+};
+
+function RatingSessionRow({ session, onSaved }: { session: RatingSession; onSaved: () => Promise<void> }) {
+  const Alert = useLocalizedAlert();
+  const [score, setScore] = useState(session.score || 0);
+  const [savedScore, setSavedScore] = useState(session.score || 0);
+  const [saving, setSaving] = useState(false);
+  const submitting = useRef(false);
+  useEffect(() => {
+    if (session.score) { setSavedScore(session.score); setScore(session.score); }
+  }, [session.score]);
+  const submit = async () => {
+    if (submitting.current || savedScore || score < 1 || score > 5) return;
+    submitting.current = true;
+    setSaving(true);
+    try {
+      const response = await ngrokFetch(BASE_URL + "/api/bookings/" + encodeURIComponent(session._id) + "/rating", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ score }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        // Another device, double submission, or a retried response may already have saved it.
+        if (response.status === 409 && data.score) {
+          setSavedScore(data.score); setScore(data.score); await onSaved(); return;
+        }
+        throw new Error("Rating request failed");
+      }
+      setSavedScore(data.score); setScore(data.score);
+      Alert.alert("Rating saved", "Thank you for your feedback.");
+      await onSaved();
+    } catch {
+      Alert.alert("Error", "Could not save your rating. Please try again.");
+    } finally { submitting.current = false; setSaving(false); }
+  };
+  return (
+    <View style={{ padding: 14, marginTop: 10, backgroundColor: "#fff", borderRadius: 14, borderWidth: 1, borderColor: "#DDEAEA" }}>
+      <Text style={{ fontWeight: "700", color: "#244444" }}>{session.counselorName}</Text>
+      <Text style={{ marginTop: 3, color: "#667777", fontSize: 12 }}>{session.sessionDate} · {session.sessionTime}</Text>
+      <Text style={{ marginTop: 10 }}>{savedScore ? "Your rating" : "Choose a score"}</Text>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 4 }}>
+        {[1, 2, 3, 4, 5].map((value) => (
+          <TouchableOpacity key={value} disabled={saving || !!savedScore} onPress={() => setScore(value)}
+            accessibilityRole="button" accessibilityLabel={value === 1 ? "Rate 1 star" : `Rate ${value} stars`}
+            accessibilityState={{ selected: score === value, disabled: saving || !!savedScore }}
+            style={{ width: 44, height: 44, alignItems: "center", justifyContent: "center" }}>
+            <Ionicons name={score >= value ? "star" : "star-outline"} size={28} color="#B87500" />
+          </TouchableOpacity>
+        ))}
+      </View>
+      {savedScore ? <Text style={{ color: "#26775B", marginTop: 5 }}>{savedScore} / 5</Text>
+        : <TouchableOpacity onPress={submit} disabled={!score || saving} accessibilityRole="button"
+            style={{ backgroundColor: "#247E7C", opacity: !score || saving ? 0.5 : 1, borderRadius: 10, padding: 12, marginTop: 8, alignItems: "center" }}>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>{saving ? "Saving..." : "Submit rating"}</Text>
+          </TouchableOpacity>}
+    </View>
+  );
+}
+
+function SessionRatings({ onSaved }: { onSaved: () => Promise<void> }) {
+  const [sessions, setSessions] = useState<RatingSession[]>([]);
+  const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const inFlight = useRef(false);
+  const mounted = useRef(true);
+  const load = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    try {
+      const response = await ngrokFetch(BASE_URL + "/api/bookings/ratings/mine");
+      if (!response.ok) throw new Error("Rating sessions request failed");
+      const data = await response.json();
+      if (!Array.isArray(data.sessions)) throw new Error("Invalid sessions response");
+      if (mounted.current) { setSessions(data.sessions); setFailed(false); }
+    } catch { if (mounted.current) setFailed(true); }
+    finally { inFlight.current = false; if (mounted.current) setLoading(false); }
+  }, []);
+  useEffect(() => {
+    mounted.current = true;
+    void load();
+    const timer = setInterval(() => { void load(); }, 10000);
+    return () => { mounted.current = false; clearInterval(timer); };
+  }, [load]);
+  return (
+    <View style={{ marginHorizontal: 20, marginTop: 18, marginBottom: 18 }}>
+      <Text style={{ fontSize: 19, fontWeight: "700", color: "#244444" }}>Rate your sessions</Text>
+      <Text style={{ marginTop: 5, color: "#667777", fontSize: 12 }}>Rate your session after a connected voice or video call ends.</Text>
+      {loading && <ActivityIndicator color="#247E7C" style={{ marginTop: 10 }} />}
+      {failed && <View style={{ marginTop: 10 }}>
+        <Text>Could not load rating sessions.</Text>
+        <TouchableOpacity onPress={() => { void load(); }} accessibilityRole="button" style={{ paddingVertical: 12 }}><Text>Retry</Text></TouchableOpacity>
+      </View>}
+      {sessions.map((session) => <RatingSessionRow key={session._id} session={session}
+        onSaved={async () => { await Promise.all([load(), onSaved()]); }} />)}
+    </View>
+  );
+}
+
 
 
 
 
 type FilterType =
-  | "All Counselors"
+  | "Recommended Counselors"
   | "Available Now"
-  | "Top Rated";
+  | "All Counselors";
 
 
 type Counselor = {
+  ratingSummary?: { average: number; count: number };
+  ratingsUnavailable?: boolean;
   _id: string;
 
   firstName?: string;
@@ -51,15 +550,12 @@ type Counselor = {
 
   title: string;
 
-  rating: number;
-  reviews: number;
 
   specialty: string;
   experience: string;
   availability: string;
 
   available: boolean;
-  topRated: boolean;
 
   avatar: string;
   avatarColor: string;
@@ -68,6 +564,8 @@ type Counselor = {
   mobile?: string;
 
   image?: string;
+  imageUrl?: string;
+  profileImage?: string;
 };
 
 
@@ -137,10 +635,34 @@ const TIME_SLOTS = [
 
 
 
+const isImageReference = (value?: string) => {
+  const path = value?.trim();
+  return Boolean(path && (
+    /^(https?:|data:image\/|file:|content:|blob:)/i.test(path) ||
+    /[/\\]/.test(path) ||
+    /\.(jpe?g|png|webp|gif|heic|heif)(?:[?#]|$)/i.test(path)
+  ));
+};
+
+const getCounselorImageUri = (counselor: Counselor): string | null => {
+  const image = [counselor.image, counselor.imageUrl, counselor.profileImage]
+    .find(value => typeof value === "string" && value.trim());
+  const raw = image || (isImageReference(counselor.avatar) ? counselor.avatar : undefined);
+  const path = raw?.trim().replace(/\\/g, "/");
+  if (!path) return null;
+  if (/^(https?:|data:image\/|file:|content:|blob:)/i.test(path)) return path;
+  if (!BASE_URL) return null;
+  try {
+    return new URL(path, BASE_URL.replace(/\/+$/, "") + "/").toString();
+  } catch {
+    return null;
+  }
+};
+
 const getAvatar = (
   counselor: Counselor
 ) => {
-  if (counselor.avatar) {
+  if (counselor.avatar && !isImageReference(counselor.avatar)) {
     return counselor.avatar;
   }
 
@@ -158,6 +680,105 @@ const getAvatar = (
 
 
 
+
+async function fetchCounselorPhoto(uri: string, signal: AbortSignal) {
+  const response = await fetch(uri, {
+    headers: { "ngrok-skip-browser-warning": "true" },
+    signal,
+  });
+  if (!response.ok) {
+    throw new Error("Photo request returned HTTP " + response.status);
+  }
+  const type = (response.headers.get("content-type") || "").toLowerCase();
+  if (!type.startsWith("image/")) {
+    throw new Error("Photo URL returned " + (type || "an unknown content type") + " instead of an image");
+  }
+  const blob = await response.blob();
+  return URL.createObjectURL(blob);
+}
+
+// Browser image elements cannot attach the ngrok header themselves.
+// Fetch first, then display a local blob URL; native keeps the remote URL.
+function useCounselorPhoto(remoteUri: string | null): string | null {
+  const [photo, setPhoto] = useState<{ remote: string; local: string } | null>(null);
+
+  useEffect(() => {
+    if (Platform.OS !== "web" || !remoteUri || !/^https?:/i.test(remoteUri)) {
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    let objectUrl: string | null = null;
+
+    fetchCounselorPhoto(remoteUri, controller.signal)
+      .then(local => {
+        if (!active) {
+          URL.revokeObjectURL(local);
+          return;
+        }
+        objectUrl = local;
+        setPhoto({ remote: remoteUri, local });
+      })
+      .catch(error => {
+        if (active) console.log("Counselor photo download failed:", remoteUri, error.message);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [remoteUri]);
+
+  if (Platform.OS !== "web" || !remoteUri || !/^https?:/i.test(remoteUri)) {
+    return remoteUri;
+  }
+  return photo?.remote === remoteUri ? photo.local : null;
+}
+
+// Shared by list cards and the profile modal; each instance tracks image failures.
+const CounselorAvatar = ({
+  counselor,
+  profile = false,
+}: {
+  counselor: Counselor;
+  profile?: boolean;
+}) => {
+  const uri = useCounselorPhoto(getCounselorImageUri(counselor));
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  const avatarColor = counselor.avatarColor || "#2CA6A4";
+
+  if (uri && failedUri !== uri) {
+    return (
+      <Image
+        key={uri}
+        source={{
+          uri,
+          headers: { "ngrok-skip-browser-warning": "true" },
+        }}
+        style={{ width: "100%", height: "100%", borderRadius: 999 }}
+        resizeMode="cover"
+        accessibilityLabel={counselor.name ? counselor.name + " profile photo" : "Counselor profile photo"}
+        onError={(event) => {
+          console.log("Support counselor photo failed:", uri, event.nativeEvent.error);
+          setFailedUri(uri);
+        }}
+      />
+    );
+  }
+
+  return (
+    <Text
+      style={[
+        profile ? styles.profileAvatarText : styles.avatarText,
+        { color: avatarColor },
+      ]}
+    >
+      {getAvatar(counselor)}
+    </Text>
+  );
+};
 
 const AICounsellingFAB = ({
   onPress,
@@ -202,27 +823,7 @@ const AICounsellingFAB = ({
 
 
 
-const StarRating = ({
-  rating,
-}: {
-  rating: number;
-}) => {
-  return (
-    <View style={styles.ratingRow}>
-      <Ionicons
-        name="star"
-        size={14}
-        color="#F09C00"
-      />
 
-      <Text
-        style={styles.ratingText}
-      >
-        {rating || 0}
-      </Text>
-    </View>
-  );
-};
 
 
 
@@ -527,6 +1128,7 @@ const BookingModal = ({
             >
               {counselor.name}
             </Text>
+            <RatingSummary counselor={counselor} profile />
 
           </View>
 
@@ -1026,9 +1628,6 @@ const CounselorProfileModal = ({
   }
 
 
-  const avatar =
-    getAvatar(counselor);
-
   const avatarColor =
     counselor.avatarColor ||
     "#2CA6A4";
@@ -1111,17 +1710,7 @@ const CounselorProfileModal = ({
               ]}
             >
 
-              <Text
-                style={[
-                  styles.profileAvatarText,
-                  {
-                    color:
-                      avatarColor,
-                  },
-                ]}
-              >
-                {avatar}
-              </Text>
+              <CounselorAvatar counselor={counselor} profile />
 
             </View>
 
@@ -1183,113 +1772,6 @@ const CounselorProfileModal = ({
                 {counselor.available
                   ? "Available Now"
                   : "Busy"}
-              </Text>
-
-            </View>
-
-          </View>
-
-
-          {/* STATS */}
-
-          <View
-            style={
-              styles.profileStatsRow
-            }
-          >
-
-            <View
-              style={
-                styles.profileStatCard
-              }
-            >
-
-              <Ionicons
-                name="star"
-                size={22}
-                color="#F09C00"
-              />
-
-              <Text
-                style={
-                  styles.profileStatNumber
-                }
-              >
-                {counselor.rating ||
-                  0}
-              </Text>
-
-              <Text
-                style={
-                  styles.profileStatLabel
-                }
-              >
-                Rating
-              </Text>
-
-            </View>
-
-
-            <View
-              style={
-                styles.profileStatCard
-              }
-            >
-
-              <Ionicons
-                name="chatbubbles-outline"
-                size={22}
-                color="#2CA6A4"
-              />
-
-              <Text
-                style={
-                  styles.profileStatNumber
-                }
-              >
-                {counselor.reviews ||
-                  0}
-              </Text>
-
-              <Text
-                style={
-                  styles.profileStatLabel
-                }
-              >
-                Reviews
-              </Text>
-
-            </View>
-
-
-            <View
-              style={
-                styles.profileStatCard
-              }
-            >
-
-              <Ionicons
-                name="medal-outline"
-                size={22}
-                color="#8B5CF6"
-              />
-
-              <Text
-                style={
-                  styles.profileStatNumber
-                }
-              >
-                {counselor.topRated
-                  ? "Yes"
-                  : "No"}
-              </Text>
-
-              <Text
-                style={
-                  styles.profileStatLabel
-                }
-              >
-                Top Rated
               </Text>
 
             </View>
@@ -1804,9 +2286,6 @@ const CounselorCard = ({
   ) => void;
 }) => {
 
-  const avatar =
-    getAvatar(counselor);
-
   const avatarColor =
     counselor.avatarColor ||
     "#2CA6A4";
@@ -1877,17 +2356,7 @@ const CounselorCard = ({
           ]}
         >
 
-          <Text
-            style={[
-              styles.avatarText,
-              {
-                color:
-                  avatarColor,
-              },
-            ]}
-          >
-            {avatar}
-          </Text>
+          <CounselorAvatar counselor={counselor} />
 
         </View>
 
@@ -1905,6 +2374,7 @@ const CounselorCard = ({
           >
             {counselor.name}
           </Text>
+          <RatingSummary counselor={counselor} />
 
 
           <Text
@@ -1916,30 +2386,7 @@ const CounselorCard = ({
           </Text>
 
 
-          <View
-            style={
-              styles.ratingReviewRow
-            }
-          >
 
-            <StarRating
-              rating={
-                counselor.rating ||
-                0
-              }
-            />
-
-            <Text
-              style={
-                styles.reviewCount
-              }
-            >
-              ({counselor.reviews ||
-                0}{" "}
-              reviews)
-            </Text>
-
-          </View>
 
         </View>
 
@@ -2363,13 +2810,14 @@ const CounselorCard = ({
 
 
 export default function SupportScreen() {
+  const Alert = useLocalizedAlert();
 
   const [
     activeFilter,
     setActiveFilter,
   ] =
     useState<FilterType>(
-      "All Counselors"
+      "Recommended Counselors"
     );
 
 
@@ -2458,12 +2906,11 @@ export default function SupportScreen() {
     );
 
 
-  const filters:
-    FilterType[] = [
-      "All Counselors",
-      "Available Now",
-      "Top Rated",
-    ];
+  const filters: FilterType[] = [
+    "Recommended Counselors",
+    "Available Now",
+    "All Counselors",
+  ];
 
 
   
@@ -2578,9 +3025,26 @@ export default function SupportScreen() {
         );
 
 
-        setCounselors(
-          counselorList
-        );
+        // Always use saved patient ratings; legacy counselor.rating is not a vote source.
+        try {
+          const summaryResponse = await ngrokFetch(BASE_URL + "/api/bookings/ratings/summary");
+          if (!summaryResponse.ok) throw new Error("Rating summary request failed");
+          const summaryData = await summaryResponse.json();
+          if (!Array.isArray(summaryData.summaries)) throw new Error("Invalid rating summary response");
+          const summaries = new Map<string, { average: number; count: number }>(
+            summaryData.summaries.map((item: any) => [String(item.counselorId),
+              { average: item.average, count: item.count }])
+          );
+          counselorList = counselorList.map((item: any) => ({ ...item,
+            ratingSummary: summaries.get(String(item._id)) || { average: 0, count: 0 },
+            ratingsUnavailable: false,
+          }));
+        } catch {
+          counselorList = counselorList.map((item: any) => ({ ...item,
+            ratingSummary: undefined, ratingsUnavailable: true,
+          }));
+        }
+        setCounselors(counselorList);
 
       } catch (error) {
 
@@ -3748,31 +4212,17 @@ export default function SupportScreen() {
     );
 
 
+  // Recommendations prioritize availability without using scores or changing API data.
+  // Keep the existing order within each availability group.
   const filteredCounselors =
-    otherCounselors.filter(
-      (counselor) => {
-
-        if (
-          activeFilter ===
-          "Available Now"
-        ) {
-
-          return counselor.available;
-        }
-
-
-        if (
-          activeFilter ===
-          "Top Rated"
-        ) {
-
-          return counselor.topRated;
-        }
-
-
-        return true;
-      }
-    );
+    activeFilter === "Available Now"
+      ? otherCounselors.filter((counselor) => counselor.available)
+      : activeFilter === "Recommended Counselors"
+      ? [
+          ...otherCounselors.filter((counselor) => counselor.available),
+          ...otherCounselors.filter((counselor) => !counselor.available),
+        ]
+      : otherCounselors;
 
 
   
@@ -3822,7 +4272,7 @@ export default function SupportScreen() {
         }
 
         counselor={
-          selectedCounselor
+          counselors.find((item) => item._id === selectedCounselor?._id) || selectedCounselor
         }
 
         onClose={
@@ -3974,6 +4424,7 @@ export default function SupportScreen() {
             </View>
 
           </View>
+
 
 
           {/* HERO */}
@@ -4192,6 +4643,8 @@ export default function SupportScreen() {
 
 
 
+
+        <SessionRatings onSaved={fetchCounselors} />
 
         <View
           style={

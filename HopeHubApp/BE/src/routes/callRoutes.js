@@ -1,3 +1,4 @@
+import { verifyCallConnected, endVerifiedCall, getCallStatus } from "../controllers/callLifecycleController.js";
 import express from "express";
 
 import {
@@ -9,6 +10,10 @@ import {
 } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
+
+router.post("/:bookingId/connected", protect, verifyCallConnected);
+router.post("/:bookingId/end", protect, endVerifiedCall);
+router.get("/:bookingId/status", protect, getCallStatus);
 
 router.post(
   "/voice/token",
