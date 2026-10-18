@@ -1,5 +1,5 @@
 import express from "express";
-import { createJob, getJobs, getJobById } from "../controllers/jobController.js"
+import { createJob, getJobs, getJobById } from "../controllers/jobController.js";
 
 import upload from "../middlewares/upload.js";
 

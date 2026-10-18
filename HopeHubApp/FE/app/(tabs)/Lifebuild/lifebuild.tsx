@@ -63,6 +63,8 @@ const PROFILE_QUESTIONS: ProfileQuestion[] = [
       "Working outdoors",
     ],
   },
+  // Skills rating grid (1-5 per skill)
+  { id: "skills", type: "skills" },
 ];
 
 const SKILLS = [
@@ -100,7 +102,6 @@ export default function LifeBuildScreen() {
     "start" | "profile" | "assessment" | "score" | "result"
   >("start");
 
-  const [profileIndex, setProfileIndex] = useState(0);
   const [questionIndex, setQuestionIndex] = useState(0);
 
   const [profileAnswers, setProfileAnswers] = useState<Record<string, string>>({});
@@ -208,7 +209,6 @@ export default function LifeBuildScreen() {
 
   /* ------------------------------ HELPERS ------------------------------- */
 
-  const currentProfileQuestion = PROFILE_QUESTIONS[profileIndex];
   const currentRecoveryQuestion = RECOVERY_QUESTIONS[questionIndex];
 
   const startAssessment = () => setScreen("assessment");
@@ -217,15 +217,14 @@ export default function LifeBuildScreen() {
     if (profileCompleted) {
       setScreen("score"); // straight to <JobPage />
     } else {
-      setProfileIndex(0);
       setScreen("profile");
     }
   };
 
-  const saveProfileAnswer = (value: string) => {
+  const saveProfileAnswer = (questionId: string, value: string) => {
     setProfileAnswers((previous) => ({
       ...previous,
-      [currentProfileQuestion.id]: value,
+      [questionId]: value,
     }));
   };
 
@@ -259,14 +258,14 @@ export default function LifeBuildScreen() {
     setSkillAnswers((previous) => ({ ...previous, [skill]: value }));
   };
 
-  const isCurrentProfileQuestionAnswered = () => {
-    if (currentProfileQuestion.type === "multiSelect") {
-      return (multiAnswers[currentProfileQuestion.id] || []).length > 0;
+  const isProfileQuestionAnswered = (question: ProfileQuestion) => {
+    if (question.type === "multiSelect") {
+      return (multiAnswers[question.id] || []).length > 0;
     }
-    if (currentProfileQuestion.type === "skills") {
+    if (question.type === "skills") {
       return SKILLS.every((skill) => skillAnswers[skill]);
     }
-    const answer = profileAnswers[currentProfileQuestion.id];
+    const answer = profileAnswers[question.id];
     return !!answer && answer.trim() !== "";
   };
 
@@ -376,26 +375,19 @@ export default function LifeBuildScreen() {
 
   /* ----------------------------- NAVIGATION ----------------------------- */
 
-  const goToNextProfileQuestion = () => {
-    if (!isCurrentProfileQuestionAnswered()) {
+  // All profile questions are on one page: validate everything, then submit once
+  const handleSubmitProfile = () => {
+    const allAnswered = PROFILE_QUESTIONS.every(isProfileQuestionAnswered);
+
+    if (!allAnswered) {
       Alert.alert(lb.answerRequiredTitle, lb.answerRequiredMsg);
       return;
     }
 
-    if (profileIndex < PROFILE_QUESTIONS.length - 1) {
-      setProfileIndex(profileIndex + 1);
-    } else {
-      submitProfile();
-    }
+    submitProfile();
   };
 
-  const goToPreviousProfileQuestion = () => {
-    if (profileIndex > 0) {
-      setProfileIndex(profileIndex - 1);
-    } else {
-      setScreen("start");
-    }
-  };
+  const goBackFromProfile = () => setScreen("start");
 
   const selectRecoveryAnswer = (value: number) => {
     setRecoveryAnswers((previous) => ({
@@ -419,19 +411,6 @@ export default function LifeBuildScreen() {
 
   const goToPreviousRecoveryQuestion = () => {
     if (questionIndex > 0) setQuestionIndex(questionIndex - 1);
-  };
-
-  const restartAssessment = () => {
-    setProfileIndex(0);
-    setQuestionIndex(0);
-    setProfileAnswers({});
-    setMultiAnswers({});
-    setSkillAnswers({});
-    setRecoveryAnswers({});
-    setSafetyScore(0);
-    setObtainedScore(0);
-    setScoreCompleted(false);
-    setScreen("start");
   };
 
   if (loadingScore) {
@@ -522,10 +501,6 @@ export default function LifeBuildScreen() {
                   <Text style={lifeBuildStyles.startButtonText}>{lb.findJob}</Text>
                   <Ionicons name="briefcase-outline" size={20} color="#fff" />
                 </TouchableOpacity>
-
-                <TouchableOpacity onPress={restartAssessment} style={{ marginTop: 14 }}>
-                  <Text style={{ color: "#2CA6A4", fontWeight: "600" }}>{lb.retake}</Text>
-                </TouchableOpacity>
               </>
             ) : (
               <>
@@ -573,15 +548,6 @@ export default function LifeBuildScreen() {
   }
 
   if (screen === "profile") {
-    const savedAnswer = profileAnswers[currentProfileQuestion.id] || "";
-    const selectedMultiAnswers = multiAnswers[currentProfileQuestion.id] || [];
-    const progress = ((profileIndex + 1) / PROFILE_QUESTIONS.length) * 100;
-    const isLastProfileQuestion = profileIndex === PROFILE_QUESTIONS.length - 1;
-
-    // translated text for the current question
-    const profileText = lb.profileQuestions[profileIndex];
-    const optionLabels = lb.profileOptions[currentProfileQuestion.id] || [];
-
     return (
       <ScrollView
         style={lifeBuildStyles.container}
@@ -592,150 +558,183 @@ export default function LifeBuildScreen() {
         <Text style={lifeBuildStyles.screenTitle}>{lb.profileTitle}</Text>
         <Text style={lifeBuildStyles.screenSubtitle}>{lb.profileSubtitle}</Text>
 
-        <View style={lifeBuildStyles.progressTrack}>
-          <View style={[lifeBuildStyles.progressFill, { width: `${progress}%` }]} />
-        </View>
-        <Text style={lifeBuildStyles.progressText}>
-          {lb.progress(profileIndex + 1, PROFILE_QUESTIONS.length)}
-        </Text>
+        {/* ALL QUESTIONS ON ONE PAGE */}
+        {PROFILE_QUESTIONS.map((question, questionNumber) => {
+          const profileText = lb.profileQuestions[questionNumber];
+          const optionLabels = lb.profileOptions[question.id] || [];
+          const savedAnswer = profileAnswers[question.id] || "";
+          const selectedMultiAnswers = multiAnswers[question.id] || [];
 
-        <View style={lifeBuildStyles.questionCard}>
-          <Text style={lifeBuildStyles.questionSection}>{profileText.section}</Text>
-          <Text style={lifeBuildStyles.questionText}>{profileText.question}</Text>
+          return (
+            <View
+              key={question.id}
+              style={[lifeBuildStyles.questionCard, { marginBottom: 16 }]}
+            >
+              <Text style={lifeBuildStyles.questionSection}>{profileText.section}</Text>
+              <Text style={lifeBuildStyles.questionText}>
+                {questionNumber + 1}. {profileText.question}
+              </Text>
 
-          {/* TEXT / NUMBER */}
-          {(currentProfileQuestion.type === "text" ||
-            currentProfileQuestion.type === "number") && (
-            <TextInput
-              value={savedAnswer}
-              onChangeText={saveProfileAnswer}
-              placeholder={lb.enterAnswer}
-              keyboardType={
-                currentProfileQuestion.type === "number" ? "numeric" : "default"
-              }
-              style={lifeBuildStyles.textInput}
-            />
-          )}
-
-          {/* SINGLE SELECT */}
-          {currentProfileQuestion.type === "select" &&
-            currentProfileQuestion.options?.map((option, optionIndex) => {
-              const selected = savedAnswer === option;
-              return (
-                <TouchableOpacity
-                  key={option}
-                  onPress={() => saveProfileAnswer(option)}
-                  style={[
-                    lifeBuildStyles.optionButton,
-                    selected && lifeBuildStyles.optionButtonSelected,
-                  ]}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      lifeBuildStyles.optionText,
-                      selected && lifeBuildStyles.optionTextSelected,
-                    ]}
-                  >
-                    {optionLabels[optionIndex] ?? option}
-                  </Text>
-                  {selected && (
-                    <Ionicons name="checkmark-circle" size={22} color="#2CA6A4" />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-
-          {/* MULTI SELECT */}
-          {currentProfileQuestion.type === "multiSelect" && (
-            <>
-              {currentProfileQuestion.maxSelections && (
-                <Text style={lifeBuildStyles.maxSelectHint}>
-                  {lb.selectUpTo(currentProfileQuestion.maxSelections)}
-                </Text>
+              {/* TEXT / NUMBER */}
+              {(question.type === "text" || question.type === "number") && (
+                <TextInput
+                  value={savedAnswer}
+                  onChangeText={(value) => saveProfileAnswer(question.id, value)}
+                  placeholder={lb.enterAnswer}
+                  keyboardType={question.type === "number" ? "numeric" : "default"}
+                  style={lifeBuildStyles.textInput}
+                />
               )}
 
-              {currentProfileQuestion.options?.map((option, optionIndex) => {
-                const selected = selectedMultiAnswers.includes(option);
-                return (
-                  <TouchableOpacity
-                    key={option}
-                    onPress={() =>
-                      toggleMultiAnswer(
-                        currentProfileQuestion.id,
-                        option,
-                        currentProfileQuestion.maxSelections
-                      )
-                    }
-                    style={[
-                      lifeBuildStyles.optionButton,
-                      selected && lifeBuildStyles.optionButtonSelected,
-                    ]}
-                    activeOpacity={0.7}
-                  >
-                    <Text
+              {/* SINGLE SELECT */}
+              {question.type === "select" &&
+                question.options?.map((option, optionIndex) => {
+                  const selected = savedAnswer === option;
+                  return (
+                    <TouchableOpacity
+                      key={option}
+                      onPress={() => saveProfileAnswer(question.id, option)}
                       style={[
-                        lifeBuildStyles.optionText,
-                        selected && lifeBuildStyles.optionTextSelected,
+                        lifeBuildStyles.optionButton,
+                        selected && lifeBuildStyles.optionButtonSelected,
                       ]}
+                      activeOpacity={0.7}
                     >
-                      {optionLabels[optionIndex] ?? option}
+                      <Text
+                        style={[
+                          lifeBuildStyles.optionText,
+                          selected && lifeBuildStyles.optionTextSelected,
+                        ]}
+                      >
+                        {optionLabels[optionIndex] ?? option}
+                      </Text>
+                      {selected && (
+                        <Ionicons name="checkmark-circle" size={22} color="#2CA6A4" />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+
+              {/* MULTI SELECT */}
+              {question.type === "multiSelect" && (
+                <>
+                  {question.maxSelections && (
+                    <Text style={lifeBuildStyles.maxSelectHint}>
+                      {lb.selectUpTo(question.maxSelections)}
                     </Text>
-                    <Ionicons
-                      name={selected ? "checkbox" : "square-outline"}
-                      size={22}
-                      color={selected ? "#2CA6A4" : "#8a9a9a"}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </>
-          )}
+                  )}
 
-          {/* SKILLS */}
-          {currentProfileQuestion.type === "skills" && (
-            <View>
-              <Text style={lifeBuildStyles.maxSelectHint}>{lb.rateSkills}</Text>
-
-              {SKILLS.map((skill, skillIndex) => (
-                <View key={skill}>
-                  <Text style={lifeBuildStyles.skillLabel}>
-                    {lb.skills[skillIndex] ?? skill}
-                  </Text>
-                  <View style={lifeBuildStyles.skillRow}>
-                    {[1, 2, 3, 4, 5].map((value) => {
-                      const selected = skillAnswers[skill] === value;
-                      return (
-                        <TouchableOpacity
-                          key={value}
-                          onPress={() => selectSkillRating(skill, value)}
+                  {question.options?.map((option, optionIndex) => {
+                    const selected = selectedMultiAnswers.includes(option);
+                    return (
+                      <TouchableOpacity
+                        key={option}
+                        onPress={() =>
+                          toggleMultiAnswer(question.id, option, question.maxSelections)
+                        }
+                        style={[
+                          lifeBuildStyles.optionButton,
+                          selected && lifeBuildStyles.optionButtonSelected,
+                        ]}
+                        activeOpacity={0.7}
+                      >
+                        <Text
                           style={[
-                            lifeBuildStyles.skillButton,
-                            selected && lifeBuildStyles.skillButtonSelected,
+                            lifeBuildStyles.optionText,
+                            selected && lifeBuildStyles.optionTextSelected,
                           ]}
-                          activeOpacity={0.7}
                         >
-                          <Text
-                            style={[
-                              lifeBuildStyles.skillButtonText,
-                              selected && lifeBuildStyles.skillButtonTextSelected,
-                            ]}
-                          >
-                            {value}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
+                          {optionLabels[optionIndex] ?? option}
+                        </Text>
+                        <Ionicons
+                          name={selected ? "checkbox" : "square-outline"}
+                          size={22}
+                          color={selected ? "#2CA6A4" : "#8a9a9a"}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </>
+              )}
+
+              {/* SKILLS - rating grid: skill name + radio circles for 1-5 */}
+              {question.type === "skills" && (
+                <View>
+                  <Text style={lifeBuildStyles.maxSelectHint}>{lb.rateSkills}</Text>
+
+                  {/* Header row: Skill | 1 2 3 4 5 */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 8,
+                      borderBottomWidth: 1,
+                      borderBottomColor: "#dfe8e8",
+                    }}
+                  >
+                    <Text style={{ flex: 2.2, fontWeight: "700", color: "#2b3a3a" }}>
+                      {lb.skillHeader}
+                    </Text>
+                    {ANSWER_VALUES.map((value) => (
+                      <Text
+                        key={value}
+                        style={{
+                          flex: 1,
+                          textAlign: "center",
+                          fontWeight: "700",
+                          color: "#2b3a3a",
+                        }}
+                      >
+                        {value}
+                      </Text>
+                    ))}
                   </View>
+
+                  {/* One row per skill */}
+                  {SKILLS.map((skill, skillIndex) => (
+                    <View
+                      key={skill}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: 10,
+                        borderBottomWidth: 1,
+                        borderBottomColor: "#eef3f3",
+                      }}
+                    >
+                      <Text style={{ flex: 2.2, color: "#2b3a3a", fontSize: 14 }}>
+                        {lb.skills[skillIndex] ?? skill}
+                      </Text>
+
+                      {ANSWER_VALUES.map((value) => {
+                        const selected = skillAnswers[skill] === value;
+                        return (
+                          <TouchableOpacity
+                            key={value}
+                            onPress={() => selectSkillRating(skill, value)}
+                            style={{ flex: 1, alignItems: "center" }}
+                            activeOpacity={0.7}
+                            hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+                          >
+                            <Ionicons
+                              name={selected ? "radio-button-on" : "radio-button-off"}
+                              size={24}
+                              color={selected ? "#2CA6A4" : "#8a9a9a"}
+                            />
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  ))}
                 </View>
-              ))}
+              )}
             </View>
-          )}
-        </View>
+          );
+        })}
 
         <View style={lifeBuildStyles.navigationRow}>
           <TouchableOpacity
-            onPress={goToPreviousProfileQuestion}
+            onPress={goBackFromProfile}
             disabled={submitting}
             style={lifeBuildStyles.previousButton}
             activeOpacity={0.7}
@@ -744,20 +743,22 @@ export default function LifeBuildScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={goToNextProfileQuestion}
+            onPress={handleSubmitProfile}
             disabled={submitting}
             style={[
               lifeBuildStyles.nextButton,
-              isLastProfileQuestion && lifeBuildStyles.nextButtonSuccess,
+              lifeBuildStyles.nextButtonSuccess,
               submitting && { opacity: 0.6 },
             ]}
             activeOpacity={0.85}
           >
             <Text style={lifeBuildStyles.nextButtonText}>
-              {submitting ? lb.saving : isLastProfileQuestion ? lb.findJobs : lb.next}
+              {submitting ? lb.saving : lb.findJobs}
             </Text>
           </TouchableOpacity>
         </View>
+
+        <View style={{ height: 24 }} />
       </ScrollView>
     );
   }
@@ -855,7 +856,7 @@ export default function LifeBuildScreen() {
   }
 
   if (screen === "score") {
-    return <JobPage safetyScore={safetyScore} onRestart={restartAssessment} />;
+    return <JobPage safetyScore={safetyScore} />;
   }
 
   return null;

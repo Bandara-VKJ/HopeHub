@@ -7,8 +7,10 @@ import {
   ActivityIndicator,
   Image,
   Modal,
+  Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jobPageStyles } from "./jobpagestyles";
 import { useLanguage } from "@/i18n/LanguageContext";
 
@@ -23,6 +25,7 @@ type Job = {
   location?: string;
   type?: string;
   salary?: string;
+  contactNumber?: string;
   description?: string;
   recommendedFor?: string;
   image?: string;
@@ -30,7 +33,6 @@ type Job = {
 
 type JobPageProps = {
   safetyScore: number;
-  onRestart: () => void;
 };
 
 const getImageUrl = (image?: string) => {
@@ -39,11 +41,11 @@ const getImageUrl = (image?: string) => {
   return `${BASE_URL}${image.startsWith("/") ? "" : "/"}${image}`;
 };
 
-export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
+export default function JobPage({ safetyScore }: JobPageProps) {
   const { t } = useLanguage();
   const jp = t.jobPage;
 
-  // Moved inside the component so the text follows the selected language
+  // Inside the component so the text follows the selected language
   const getRiskLevel = (score: number) => {
     if (score >= 75) {
       return {
@@ -87,12 +89,19 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
 
     const controller = new AbortController();
 
-    const fetchJobs = async () => {
+    const loadJobs = async () => {
       try {
         setLoadingJobs(true);
         setJobsError("");
 
-        const response = await fetch(`${BASE_URL}/api/job/all-jobs`, {
+        const userId = await AsyncStorage.getItem("userId");
+
+        // The backend returns only the recommended jobs when userId is sent
+        const url = userId
+          ? `${BASE_URL}/api/job/all-jobs?userId=${encodeURIComponent(userId)}`
+          : `${BASE_URL}/api/job/all-jobs`;
+
+        const response = await fetch(url, {
           headers: NGROK_HEADERS,
           signal: controller.signal,
         });
@@ -113,7 +122,7 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
       }
     };
 
-    fetchJobs();
+    loadJobs();
 
     return () => controller.abort();
   }, [isEligibleForCareer]);
@@ -286,14 +295,6 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
               <Text style={jobPageStyles.supportDescription}>{jp.focusDesc}</Text>
             </View>
           )}
-
-          <TouchableOpacity
-            onPress={onRestart}
-            style={jobPageStyles.restartButton}
-            activeOpacity={0.7}
-          >
-            <Text style={jobPageStyles.restartButtonText}>{jp.restart}</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -339,6 +340,30 @@ export default function JobPage({ safetyScore, onRestart }: JobPageProps) {
                   <Text style={jobPageStyles.tag}>{selectedJob.salary}</Text>
                 ) : null}
               </View>
+
+              {selectedJob?.contactNumber ? (
+                <TouchableOpacity
+                  onPress={() => Linking.openURL(`tel:${selectedJob.contactNumber}`)}
+                  activeOpacity={0.7}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginVertical: 8,
+                  }}
+                >
+                  <Ionicons name="call-outline" size={18} color="#2CA6A4" />
+                  <Text
+                    style={{
+                      marginLeft: 8,
+                      fontSize: 15,
+                      fontWeight: "600",
+                      color: "#2CA6A4",
+                    }}
+                  >
+                    {selectedJob.contactNumber}
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
 
               {selectedJob?.description ? (
                 <>
